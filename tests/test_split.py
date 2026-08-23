@@ -5,12 +5,12 @@ so these tests assert the invariants directly rather than trusting the report.
 """
 import pytest
 
-from ddinet.data import curated, split as split_mod
+from ddinet.data import synthetic_fixture, split as split_mod
 
 
 @pytest.fixture(scope="module")
 def data():
-    return curated.load_drugs(), curated.load_pairs()
+    return synthetic_fixture.load_drugs(), synthetic_fixture.load_pairs()
 
 
 @pytest.mark.parametrize("group_by", ["drug", "scaffold"])

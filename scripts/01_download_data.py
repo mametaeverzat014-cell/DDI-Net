@@ -82,7 +82,7 @@ def main() -> int:
             "not help. Run this script from an unrestricted network and copy the\n"
             "resulting data/raw/ directory across. In the meantime the entire\n"
             "pipeline still runs against the curated seed set:\n"
-            "    python scripts/02_build_dataset.py --source curated\n"
+            "    python scripts/02_build_dataset.py --source fixture\n"
         )
         for key, reason in blocked:
             print(f"    - {key}")

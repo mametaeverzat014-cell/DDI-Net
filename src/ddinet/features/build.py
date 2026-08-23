@@ -31,7 +31,7 @@ import numpy as np
 import pandas as pd
 import torch
 
-from ..data.curated import cyp_vocabulary, transporter_vocabulary
+from ..data.synthetic_fixture import cyp_vocabulary, transporter_vocabulary
 from ..data.split import DrugLevelSplit
 from .ddi_graph import DDIGraph, assert_no_evaluation_edges, build_ddi_graph
 from .fingerprints import (

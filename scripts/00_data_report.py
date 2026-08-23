@@ -15,7 +15,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
-from ddinet.data import curated
+from ddinet.data import synthetic_fixture
 from ddinet.data.download import RAW_DIR, _load_manifest
 from ddinet.data.sources import SOURCES, citation_block
 
@@ -56,15 +56,15 @@ def main() -> int:
         print("    Run scripts/01_download_data.py on an unrestricted network.")
 
     print("\n[3] CURATED SEED SET (offline fixture, always available)\n")
-    report = curated.validate()
+    report = synthetic_fixture.validate()
     for line in report.summary().splitlines():
         print("  " + line)
 
-    drugs = curated.load_drugs()
-    pairs = curated.load_pairs()
-    print(f"\n  CYP enzymes represented : {', '.join(curated.cyp_vocabulary())}")
-    print(f"  Transporters represented: {', '.join(curated.transporter_vocabulary())}")
-    print(f"  Pharmacodynamic classes : {len(curated.pd_class_vocabulary())}")
+    drugs = synthetic_fixture.load_drugs()
+    pairs = synthetic_fixture.load_pairs()
+    print(f"\n  CYP enzymes represented : {', '.join(synthetic_fixture.cyp_vocabulary())}")
+    print(f"  Transporters represented: {', '.join(synthetic_fixture.transporter_vocabulary())}")
+    print(f"  Pharmacodynamic classes : {len(synthetic_fixture.pd_class_vocabulary())}")
     print(f"  Molecular weight range  : "
           f"{drugs['mol_weight'].min():.1f} - {drugs['mol_weight'].max():.1f} Da")
     n = len(drugs)

@@ -2,12 +2,12 @@
 import numpy as np
 import pytest
 
-from ddinet.data import assemble, curated, split as split_mod
+from ddinet.data import assemble, synthetic_fixture, split as split_mod
 
 
 @pytest.fixture(scope="module")
 def built():
-    drugs, pairs = curated.load_drugs(), curated.load_pairs()
+    drugs, pairs = synthetic_fixture.load_drugs(), synthetic_fixture.load_pairs()
     keys = set(pairs["pair_key"])
     sp = split_mod.build_split(drugs, pairs, seed=42)
     return drugs, pairs, keys, sp

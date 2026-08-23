@@ -2,8 +2,8 @@
 """
 Build the labelled, split, leakage-checked supervised dataset.
 
-    python scripts/02_build_dataset.py --source curated
-    python scripts/02_build_dataset.py --source curated --group-by scaffold
+    python scripts/02_build_dataset.py --source fixture
+    python scripts/02_build_dataset.py --source fixture --group-by scaffold
     python scripts/02_build_dataset.py --source drugbank --neg-ratio 10
 
 Writes to data/processed/:
@@ -22,18 +22,20 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import pandas as pd
 
-from ddinet.data import assemble, curated, split as split_mod
+from ddinet.data import assemble, synthetic_fixture, split as split_mod
 from ddinet.data.download import RAW_DIR
 
 PROCESSED = Path(__file__).resolve().parents[1] / "data" / "processed"
 
 
-def load_curated() -> tuple[pd.DataFrame, pd.DataFrame]:
-    report = curated.validate()
+def load_fixture() -> tuple[pd.DataFrame, pd.DataFrame]:
+    report = synthetic_fixture.validate()
     print(report.summary())
     if not report.ok:
-        raise SystemExit("Curated data failed validation - fix it before continuing.")
-    return curated.load_drugs(), curated.load_pairs()
+        raise SystemExit("Fixture failed self-consistency check.")
+    print("\n  *** WARNING: this is the SYNTHETIC test fixture, not data. ***")
+    print("  Metrics computed from it are meaningless and must not be reported.")
+    return synthetic_fixture.load_drugs(), synthetic_fixture.load_pairs()
 
 
 def load_drugbank() -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -86,7 +88,7 @@ def load_drugbank() -> tuple[pd.DataFrame, pd.DataFrame]:
     pairs["drug_b"] = [k[1] for k in keys]
     pairs["pair_key"] = keys
     pairs["severity_rank"] = pairs["severity"].map(
-        {s: i for i, s in enumerate(curated.SEVERITY_ORDER)}
+        {s: i for i, s in enumerate(synthetic_fixture.SEVERITY_ORDER)}
     ).fillna(-1).astype(int)
     pairs["is_dangerous"] = (pairs["severity"] == "major").astype(int)
     pairs["mechanism_family"] = pairs["mechanism"].str.split("_").str[0]
@@ -99,7 +101,7 @@ def load_drugbank() -> tuple[pd.DataFrame, pd.DataFrame]:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--source", choices=("curated", "drugbank"), default="curated")
+    ap.add_argument("--source", choices=("fixture", "drugbank"), default="fixture")
     ap.add_argument("--group-by", choices=("drug", "scaffold"), default="drug")
     ap.add_argument("--generic-scaffold", action="store_true",
                     help="strictest split: erase atom types in the scaffold")
@@ -118,7 +120,7 @@ def main() -> int:
     print(f"BUILDING DATASET  (source={args.source})")
     print("=" * 78 + "\n")
 
-    drugs, pairs = load_curated() if args.source == "curated" else load_drugbank()
+    drugs, pairs = load_fixture() if args.source == "fixture" else load_drugbank()
 
     print(f"\nSplitting by {args.group_by} (seed={args.seed})...")
     sp = split_mod.build_split(

@@ -4,7 +4,7 @@ import pytest
 import torch
 from rdkit import Chem
 
-from ddinet.data import assemble, curated, split as split_mod
+from ddinet.data import assemble, synthetic_fixture, split as split_mod
 from ddinet.features import ddi_graph as dg
 from ddinet.features.build import FeatureConfig, build_feature_bundle
 from ddinet.features.fingerprints import (
@@ -19,7 +19,7 @@ ASPIRIN = "CC(=O)Oc1ccccc1C(=O)O"
 
 @pytest.fixture(scope="module")
 def data():
-    return curated.load_drugs(), curated.load_pairs()
+    return synthetic_fixture.load_drugs(), synthetic_fixture.load_pairs()
 
 
 @pytest.fixture(scope="module")

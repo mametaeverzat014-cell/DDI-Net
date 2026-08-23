@@ -20,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import pandas as pd
 
-from ddinet.data import assemble, curated, split as split_mod
+from ddinet.data import assemble, synthetic_fixture, split as split_mod
 from ddinet.features.build import FeatureConfig, build_feature_bundle
 from ddinet.features.ddi_graph import leakage_audit
 
@@ -41,7 +41,7 @@ def main() -> int:
 
     pd.set_option("display.width", 200)
 
-    drugs, pairs = curated.load_drugs(), curated.load_pairs()
+    drugs, pairs = synthetic_fixture.load_drugs(), synthetic_fixture.load_pairs()
     sp = split_mod.build_split(drugs, pairs, seed=args.seed, group_by=args.group_by)
     print(sp.report())
 
