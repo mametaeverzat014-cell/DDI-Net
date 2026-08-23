@@ -1,13 +1,22 @@
 # ---- Data -------------------------------------------------------------
-# Raw downloads are NEVER committed: some sources (DrugBank full release)
-# are licence-restricted, and all of them are large + reproducible from code.
-data/raw/
+# Raw downloads are normally NEVER committed: some sources (DrugBank full
+# release) are licence-restricted, and all of them are large + reproducible
+# from code.
+#
+# EXCEPTION: data/raw/drugbank.tab (TDC DDI benchmark, PyTDC 1.1.15,
+# downloaded 2026-08-24, 42 MB, CC BY-NC 4.0). The agent container has no
+# egress to dataverse.harvard.edu, so the file cannot be re-downloaded
+# there. It is committed deliberately; see DATA_PROVENANCE.md.
+# Note: the pattern must be data/raw/* — an ignored *directory* is never
+# descended into, so a negation on a file inside it would not apply.
+data/raw/*
+!data/raw/.gitkeep
+!data/raw/drugbank.tab
+
 data/processed/
 data/external/
-!data/raw/.gitkeep
 !data/processed/.gitkeep
 !data/external/.gitkeep
-# data/curated/ IS committed - it is small, hand-made, and part of the method.
 
 # ---- Artefacts --------------------------------------------------------
 runs/
