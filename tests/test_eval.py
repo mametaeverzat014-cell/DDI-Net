@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from ddinet.data import assemble, curated, split as split_mod
+from ddinet.data import assemble, synthetic_fixture, split as split_mod
 from ddinet.eval.baselines import (
     BaselineContext, DegreeBaseline, LogisticRegressionBaseline, PrevalenceBaseline,
     RandomForestBaseline, RulesBaseline, SimilarityBaseline, default_baselines,
@@ -21,7 +21,7 @@ from ddinet.features.build import FeatureConfig, build_feature_bundle
 
 @pytest.fixture(scope="module")
 def env():
-    drugs, pairs = curated.load_drugs(), curated.load_pairs()
+    drugs, pairs = synthetic_fixture.load_drugs(), synthetic_fixture.load_pairs()
     sp = split_mod.build_split(drugs, pairs, seed=42)
     bundle = build_feature_bundle(drugs, sp, FeatureConfig())
     dataset = assemble.build_supervised_dataset(
@@ -184,17 +184,43 @@ def test_ml_baselines_produce_valid_probabilities(env, factory):
     assert np.all((p >= 0) & (p <= 1))
 
 
-def test_all_baselines_use_symmetric_pair_features(env):
-    """No baseline may exploit argument order; a DDI is symmetric."""
+def test_symmetric_encoding_is_order_invariant(env):
+    """With the symmetric encoding no baseline may exploit argument order."""
     *_, dataset, ctx = env
     train = dataset[dataset.bucket == "train"]
     test = dataset[dataset.bucket == "test_S2"].head(30)
     swapped = test.rename(columns={"drug_a": "drug_b", "drug_b": "drug_a"})
-    for bl in default_baselines(seed=0):
+    for bl in default_baselines(seed=0, pair_encodings=("symmetric",)):
         bl.fit(train, ctx)
         assert np.allclose(
             bl.predict_proba(test, ctx), bl.predict_proba(swapped, ctx), atol=1e-8
         ), f"{bl.name} is order-dependent"
+
+
+def test_concat_encoding_is_order_dependent(env):
+    """The published encoding is asymmetric, and that is the point of measuring it.
+
+    This test documents the defect rather than fixing it: [a; b] lets a model
+    score the same pair differently depending on which drug came first. Phase A
+    quantifies how much of the published advantage that buys.
+    """
+    *_, dataset, ctx = env
+    train = dataset[dataset.bucket == "train"]
+    test = dataset[dataset.bucket == "test_S2"].head(50)
+    swapped = test.rename(columns={"drug_a": "drug_b", "drug_b": "drug_a"})
+    lr = LogisticRegressionBaseline(mode="concat").fit(train, ctx)
+    assert not np.allclose(
+        lr.predict_proba(test, ctx), lr.predict_proba(swapped, ctx), atol=1e-8
+    ), "concat encoding unexpectedly symmetric - check pair_features()"
+
+
+def test_both_pair_encodings_are_present_and_named(env):
+    """Both schemes must appear in the suite, with the encoding in the name."""
+    names = {bl.name for bl in default_baselines(seed=0)}
+    assert "logistic_regression[concat]" in names
+    assert "logistic_regression[symmetric]" in names
+    assert "random_forest[concat]" in names
+    assert "random_forest[symmetric]" in names
 
 
 # -- Cross-validation -------------------------------------------------------
@@ -276,7 +302,7 @@ def test_signal_enrichment_computes_the_rate_ratio():
 
 def test_meddra_mapping_covers_the_curated_effects():
     """Every clinical effect we predict should map to a queryable MedDRA term."""
-    effects = set(curated.load_pairs()["clinical_effect"]) - {""}
+    effects = set(synthetic_fixture.load_pairs()["clinical_effect"]) - {""}
     mapped = effects & set(EFFECT_TO_MEDDRA)
     assert len(mapped) / len(effects) > 0.4, (
         f"only {len(mapped)}/{len(effects)} effects mapped: "

@@ -266,6 +266,9 @@ class LogisticRegressionBaseline(Baseline):
     def __init__(self, C: float = 1.0, mode: str = "symmetric") -> None:
         self.C = C
         self.mode = mode
+        # The encoding is part of the model's identity, so it belongs in the
+        # name - otherwise two rows of a results table are indistinguishable.
+        self.name = f"logistic_regression[{mode}]"
 
     def fit(self, train, context):
         X = context.pair_matrix(train, self.mode)
@@ -299,6 +302,7 @@ class RandomForestBaseline(Baseline):
         self.max_depth = max_depth
         self.mode = mode
         self.seed = seed
+        self.name = f"random_forest[{mode}]"
 
     def fit(self, train, context):
         X = context.pair_matrix(train, self.mode)
@@ -321,13 +325,50 @@ class RandomForestBaseline(Baseline):
         return self.model.feature_importances_
 
 
-def default_baselines(seed: int = 0) -> list[Baseline]:
-    """The standard suite, ordered from weakest to strongest."""
-    return [
+#: Pair-encoding schemes compared in Phase A.
+#:
+#:   "concat"     [a; b]           - what most published DDI models use.
+#:                                   NOT symmetric: the same pair yields
+#:                                   different features depending on argument
+#:                                   order, so the model may learn an
+#:                                   asymmetric function for a symmetric
+#:                                   relation.
+#:   "symmetric"  [|a-b|; a*b]     - commutative by construction. |a-b| encodes
+#:                                   "present in one but not the other", which
+#:                                   is the inhibitor/substrate asymmetry that
+#:                                   drives CYP interactions; a*b encodes
+#:                                   shared motifs.
+#:
+#: The GAP BETWEEN THEM IS ITSELF A RESULT for this project's main question: if
+#: concatenation scores higher under a leaky split and the advantage vanishes
+#: under a drug-level split, part of the published advantage was the model
+#: exploiting argument order rather than chemistry.
+PAIR_ENCODINGS: tuple[str, ...] = ("concat", "symmetric")
+
+
+def default_baselines(
+    seed: int = 0,
+    *,
+    pair_encodings: tuple[str, ...] = PAIR_ENCODINGS,
+) -> list[Baseline]:
+    """The standard suite, ordered from weakest to strongest.
+
+    Feature-based baselines are instantiated once per pair encoding, so both
+    schemes are measured on identical folds. Encoding is a PARAMETER, not a
+    forked copy of the code - a second copy would drift and the comparison
+    would stop being like-for-like.
+
+    Baselines that do not consume pair features (prevalence, degree, rules,
+    similarity) are instantiated once; duplicating them per encoding would
+    produce identical rows under different names.
+    """
+    suite: list[Baseline] = [
         PrevalenceBaseline(),
         DegreeBaseline(),
         RulesBaseline(),
         SimilarityBaseline(),
-        LogisticRegressionBaseline(),
-        RandomForestBaseline(seed=seed),
     ]
+    for mode in pair_encodings:
+        suite.append(LogisticRegressionBaseline(mode=mode))
+        suite.append(RandomForestBaseline(mode=mode, seed=seed))
+    return suite
