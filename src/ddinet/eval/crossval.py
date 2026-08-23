@@ -228,7 +228,6 @@ def make_gnn_factory(
     patience: int = 50,
     dropout: float = 0.2,
     lr: float = 1e-3,
-    use_coattention: bool = True,
     use_molecular_branch: bool = True,
     use_graph_branch: bool = True,
     name: str | None = None,
@@ -253,7 +252,6 @@ def make_gnn_factory(
             hidden_dim=hidden_dim,
             dropout=dropout,
             architecture=architecture,
-            use_coattention=use_coattention,
             use_molecular_branch=use_molecular_branch,
             use_graph_branch=use_graph_branch,
         )
@@ -266,7 +264,7 @@ def make_gnn_factory(
         trainer.fit()
         y_by, s_by = {}, {}
         for bucket in buckets:
-            y, s, _ = trainer.predict_bucket(bucket)
+            y, s = trainer.predict_bucket(bucket)
             if len(y):
                 y_by[bucket] = y
                 s_by[bucket] = s

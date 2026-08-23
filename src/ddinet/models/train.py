@@ -43,10 +43,7 @@ from torch_geometric.loader import DataLoader
 
 from ..eval.metrics import BinaryMetrics, compute_binary_metrics
 from ..features.build import FeatureBundle
-from .ddinet import DDINet, DDINetConfig, LossWeights, PairPrediction, compute_loss
-
-#: Mechanism family -> class index for the auxiliary head.
-MECHANISM_CLASSES = {"pk": 0, "pd": 1}
+from .ddinet import DDINet, DDINetConfig, compute_loss
 
 
 @dataclass
@@ -59,7 +56,6 @@ class TrainConfig:
     seed: int = 0
     device: str = "cpu"
     grad_clip: float = 1.0
-    loss_weights: LossWeights = field(default_factory=LossWeights)
     #: Cap on pos_weight. Uncapped, a 1:50 ratio yields pos_weight=50 and the
     #: model predicts "interaction" for everything - the mirror image of the
     #: majority-class failure it was meant to fix.
@@ -150,20 +146,13 @@ class Trainer:
         )
 
     def _prepare(self, group: pd.DataFrame) -> dict:
+        """Index a bucket's pairs into the drug ordering used by the graph."""
         idx = self.bundle.name_to_idx
         keep = [
             i for i, (a, b) in enumerate(zip(group["drug_a"], group["drug_b"]))
             if a in idx and b in idx
         ]
         group = group.iloc[keep]
-        mech = group.get("mechanism")
-        if mech is None:
-            mech_codes = np.full(len(group), -1, dtype=np.int64)
-        else:
-            families = mech.fillna("").astype(str).str.split("_").str[0]
-            mech_codes = np.array(
-                [MECHANISM_CLASSES.get(f, -1) for f in families], dtype=np.int64
-            )
         return {
             "idx_a": torch.tensor([idx[a] for a in group["drug_a"]], dtype=torch.long,
                                   device=self.device),
@@ -171,10 +160,6 @@ class Trainer:
                                   device=self.device),
             "labels": torch.tensor(group["label"].to_numpy(), dtype=torch.long,
                                    device=self.device),
-            "severity": torch.tensor(
-                group["severity_rank"].to_numpy().astype(np.int64),
-                dtype=torch.long, device=self.device),
-            "mechanism": torch.tensor(mech_codes, dtype=torch.long, device=self.device),
             "frame": group.reset_index(drop=True),
         }
 
@@ -202,12 +187,7 @@ class Trainer:
             enc = self._encode()
             pred = self.model.score_pairs(enc, train["idx_a"][sel], train["idx_b"][sel])
             loss, _ = compute_loss(
-                pred,
-                train["labels"][sel],
-                train["severity"][sel],
-                train["mechanism"][sel],
-                pos_weight=self.pos_weight,
-                weights=self.cfg.loss_weights,
+                pred, train["labels"][sel], pos_weight=self.pos_weight
             )
             loss.backward()
             if self.cfg.grad_clip:
@@ -219,19 +199,17 @@ class Trainer:
         return total / max(n_batches, 1)
 
     @torch.no_grad()
-    def predict_bucket(self, bucket: str) -> tuple[np.ndarray, np.ndarray, np.ndarray | None]:
-        """Returns ``(y_true, interaction_prob, severity_probs)``."""
+    def predict_bucket(self, bucket: str) -> tuple[np.ndarray, np.ndarray]:
+        """Returns ``(y_true, interaction_prob)``."""
         data = self.buckets.get(bucket)
         if data is None or len(data["labels"]) == 0:
-            return np.array([]), np.array([]), None
+            return np.array([]), np.array([])
         self.model.eval()
         enc = self._encode()
         pred = self.model.score_pairs(enc, data["idx_a"], data["idx_b"])
-        sev = pred.severity_prob()
         return (
             data["labels"].cpu().numpy(),
             pred.interaction_prob().cpu().numpy(),
-            sev.cpu().numpy() if sev is not None else None,
         )
 
     def _selection_score(self) -> tuple[float, str]:
@@ -243,13 +221,13 @@ class Trainer:
                 return float("nan"), "none"
             y_all, s_all = [], []
             for b in available:
-                y, s, _ = self.predict_bucket(b)
+                y, s = self.predict_bucket(b)
                 y_all.append(y)
                 s_all.append(s)
             y, s = np.concatenate(y_all), np.concatenate(s_all)
             bucket = "val_pooled"
         else:
-            y, s, _ = self.predict_bucket(bucket)
+            y, s = self.predict_bucket(bucket)
 
         if len(np.unique(y)) < 2:
             return float("nan"), bucket
@@ -258,7 +236,7 @@ class Trainer:
 
     def fit(self) -> TrainHistory:
         history = TrainHistory(
-            config={**asdict(self.cfg), "loss_weights": asdict(self.cfg.loss_weights)},
+            config=asdict(self.cfg),
             selection_bucket=self.cfg.selection_bucket,
         )
         best_state = None
@@ -304,7 +282,7 @@ class Trainer:
 
     # -- evaluation --------------------------------------------------------
     def evaluate(self, bucket: str, *, threshold: float = 0.5) -> BinaryMetrics | None:
-        y, s, _ = self.predict_bucket(bucket)
+        y, s = self.predict_bucket(bucket)
         if len(y) == 0 or len(np.unique(y)) < 2:
             return None
         return compute_binary_metrics(y, s, threshold=threshold)
