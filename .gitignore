@@ -1,0 +1,29 @@
+# ---- Data -------------------------------------------------------------
+# Raw downloads are NEVER committed: some sources (DrugBank full release)
+# are licence-restricted, and all of them are large + reproducible from code.
+data/raw/
+data/processed/
+data/external/
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/external/.gitkeep
+# data/curated/ IS committed - it is small, hand-made, and part of the method.
+
+# ---- Artefacts --------------------------------------------------------
+runs/
+checkpoints/
+*.pt
+*.ckpt
+reports/figures/
+reports/*.json
+!reports/.gitkeep
+
+# ---- Python -----------------------------------------------------------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+.venv/
+venv/
+.env

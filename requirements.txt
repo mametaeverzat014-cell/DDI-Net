@@ -1,0 +1,29 @@
+# ---- Core scientific stack -------------------------------------------
+numpy>=1.26
+pandas>=2.0
+scipy>=1.11
+scikit-learn>=1.3
+
+# ---- Cheminformatics --------------------------------------------------
+# RDKit provides SMILES parsing, Morgan/ECFP fingerprints, substructure
+# highlighting and 2-D depiction. It is the de-facto open standard in
+# computational chemistry, which matters for reproducibility claims.
+rdkit>=2023.9
+
+# ---- Graphs & deep learning ------------------------------------------
+networkx>=3.0
+torch>=2.0
+torch-geometric>=2.5
+
+# ---- Plumbing ---------------------------------------------------------
+requests>=2.31
+tqdm>=4.66
+PyYAML>=6.0
+
+# ---- Figures & demo ---------------------------------------------------
+matplotlib>=3.8
+seaborn>=0.13
+streamlit>=1.30
+
+# ---- Tests ------------------------------------------------------------
+pytest>=7.4
