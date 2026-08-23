@@ -40,7 +40,7 @@ import numpy as np
 import pandas as pd
 import torch
 
-from ddinet.data import assemble, curated, split as split_mod
+from ddinet.data import assemble, synthetic_fixture, split as split_mod
 from ddinet.eval.faers import FAERSClient, signal_enrichment, validate_predictions
 from ddinet.features.build import FeatureConfig, build_feature_bundle
 from ddinet.features.molgraph import ATOM_FEATURE_DIM, BOND_FEATURE_DIM
@@ -48,6 +48,22 @@ from ddinet.models.ddinet import DDINet, DDINetConfig
 from ddinet.models.train import Trainer, TrainConfig
 
 REPORTS = Path(__file__).resolve().parents[1] / "reports"
+
+
+def _fixture_warning() -> None:
+    """Print the prohibition banner when running against the synthetic fixture.
+
+    Without this the code contradicts the documentation: LIMITATIONS.md and
+    reports/ANNULLED.md say metrics from the fixture are void, while the script
+    would happily print a results table that looks authoritative. Anything that
+    prints a metric has to say what it was computed on.
+    """
+    print("\n" + "!" * 78)
+    print("!! SYNTHETIC FIXTURE - EVERY NUMBER BELOW IS VOID")
+    print("!! Source: tests/fixtures/synthetic_ddi/ (LLM-generated, no citable source)")
+    print("!! These outputs exercise code paths only. Reporting them is prohibited.")
+    print("!! See LIMITATIONS.md and reports/ANNULLED.md")
+    print("!" * 78 + "\n")
 
 
 def main() -> int:
@@ -58,6 +74,8 @@ def main() -> int:
     ap.add_argument("--offline", action="store_true",
                     help="serve from cache only; never touch the network")
     args = ap.parse_args()
+
+    _fixture_warning()
 
     client = FAERSClient(offline=args.offline)
     if not args.offline:
@@ -70,7 +88,7 @@ def main() -> int:
         print(f"openFDA reachable: {probe:,} reports mention warfarin.\n")
 
     # ---- Train a model and score every undocumented pair -----------------
-    drugs, pairs = curated.load_drugs(), curated.load_pairs()
+    drugs, pairs = synthetic_fixture.load_drugs(), synthetic_fixture.load_pairs()
     known = set(pairs["pair_key"])
     sp = split_mod.build_split(drugs, pairs, seed=args.seed)
     bundle = build_feature_bundle(drugs, sp, FeatureConfig())
@@ -143,6 +161,7 @@ def main() -> int:
         json.dumps(enrichment, indent=2, default=float))
     scored.head(200).to_csv(REPORTS / "top_undocumented_predictions.csv", index=False)
     print(f"\nWrote FAERS results and top predictions to {REPORTS}/")
+    _fixture_warning()
     return 0
 
 

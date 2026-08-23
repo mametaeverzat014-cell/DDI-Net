@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 import pandas as pd
 
-from ddinet.data import curated
+from ddinet.data import synthetic_fixture
 from ddinet.eval.baselines import default_baselines
 from ddinet.eval.crossval import CVResult, make_gnn_factory, run_cross_validation
 
@@ -33,6 +33,22 @@ def section(title: str) -> None:
     print("\n" + "=" * 78)
     print(title)
     print("=" * 78)
+
+
+def _fixture_warning() -> None:
+    """Print the prohibition banner when running against the synthetic fixture.
+
+    Without this the code contradicts the documentation: LIMITATIONS.md and
+    reports/ANNULLED.md say metrics from the fixture are void, while the script
+    would happily print a results table that looks authoritative. Anything that
+    prints a metric has to say what it was computed on.
+    """
+    print("\n" + "!" * 78)
+    print("!! SYNTHETIC FIXTURE - EVERY NUMBER BELOW IS VOID")
+    print("!! Source: tests/fixtures/synthetic_ddi/ (LLM-generated, no citable source)")
+    print("!! These outputs exercise code paths only. Reporting them is prohibited.")
+    print("!! See LIMITATIONS.md and reports/ANNULLED.md")
+    print("!" * 78 + "\n")
 
 
 def main() -> int:
@@ -49,9 +65,11 @@ def main() -> int:
     ap.add_argument("--skip-faers", action="store_true")
     args = ap.parse_args()
 
+    _fixture_warning()
+
     pd.set_option("display.width", 220)
     REPORTS.mkdir(parents=True, exist_ok=True)
-    drugs, pairs = curated.load_drugs(), curated.load_pairs()
+    drugs, pairs = synthetic_fixture.load_drugs(), synthetic_fixture.load_pairs()
 
     common = dict(
         n_folds=args.folds, seed=args.seed, group_by=args.group_by,
@@ -78,8 +96,10 @@ def main() -> int:
     section("2. PAIRED COMPARISONS (same folds, so shared difficulty cancels)")
     comparisons = []
     model_name = "DDI-Net[gat]"
-    for other in ("rules", "similarity", "random_forest",
-                  "logistic_regression", "degree"):
+    for other in ("rules", "similarity",
+                  "random_forest[symmetric]", "random_forest[concat]",
+                  "logistic_regression[symmetric]", "logistic_regression[concat]",
+                  "degree"):
         for bucket in ("test_S2", "test_S3"):
             c = main_result.paired_comparison(model_name, other,
                                               bucket=bucket, metric="auprc")
@@ -109,7 +129,6 @@ def main() -> int:
     if not args.skip_ablations:
         section("4. ABLATIONS (what is each component actually contributing?)")
         ablations = [
-            ("no co-attention", dict(use_coattention=False)),
             ("molecular branch only", dict(use_graph_branch=False)),
             ("graph branch only", dict(use_molecular_branch=False)),
         ]
@@ -162,6 +181,7 @@ def main() -> int:
         print("\nQuote AUPRC with the prevalence beside it "
               f"(= {1/(1+args.neg_ratio):.3f} here), and quote the")
         print("cross-validated SD. A single-split number is not a result.")
+    _fixture_warning()
     return 0
 
 

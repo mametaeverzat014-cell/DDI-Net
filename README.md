@@ -1,121 +1,122 @@
 # DDI-Net
 
-**An interpretable graph neural network for predicting dangerous drug–drug interactions.**
+**Насколько метрики опубликованных моделей предсказания лекарственных взаимодействий
+завышены из-за утечки данных, и сохраняется ли преимущество GNN над простыми
+baseline при честной оценке?**
 
-Regeneron ISEF project — Computational Biology & Bioinformatics.
+Regeneron ISEF, категория Computational Biology & Bioinformatics.
 
 ---
 
-## The problem
+## ⛔ Текущий статус: реальных данных в репозитории нет
 
-Adverse drug–drug interactions (DDIs) are a major, partly preventable source of harm. The number of
-possible pairs grows quadratically with the number of drugs, so exhaustive clinical testing is
-impossible — which makes computational prediction genuinely useful rather than merely convenient.
+`data/raw/` пуст. Ни один внешний датасет не загружен. Все посчитанные ранее
+метрики **аннулированы** — они получены на наборе, сгенерированном LLM по
+памяти, без цитируемого источника. См. [`reports/ANNULLED.md`](reports/ANNULLED.md)
+и [`LIMITATIONS.md`](LIMITATIONS.md).
 
-DDI-Net predicts, for a pair of drugs, whether they interact and whether the interaction is
-**clinically dangerous** (operationally: DDInter severity = *Major*), and explains **which molecular
-substructures and metabolic pathways drove the prediction**.
+Данные придут через PyTDC (`tdc.multi_pred.DDI`: DrugBank и TWOSIDES) и
+загружаются вручную вне этого окружения — см. [`DATA_PROVENANCE.md`](DATA_PROVENANCE.md).
+До этого момента работа с реальными данными не начинается.
 
-## Project status
+В `tests/fixtures/synthetic_ddi/` лежит синтетическая фикстура. Она существует
+ровно для одного: прогонять код-пути в юнит-тестах без сети. **Расчёт и
+публикация метрик по ней запрещены.**
 
-| Step | Status |
+## Научный вопрос
+
+**Основной.** Насколько завышены метрики из-за утечки данных, и переживает ли
+преимущество GNN над логистической регрессией и Random Forest переход к честной
+схеме разбиения?
+
+**Дополнительный.** Соответствуют ли веса co-attention известным
+фармакологическим механизмам (субстраты/ингибиторы CYP450)?
+
+Это **не** проект «обучить модель и получить высокий AUC». Отрицательный
+результат с корректной методологией здесь ценнее положительного с дырявой.
+
+## План
+
+| Фаза | Недели | Содержание | Статус |
+|---|---|---|---|
+| **A** | 1–5 | Бенчмарк утечки: три схемы разбиения × пять моделей, калибровка | код частично готов, данных нет |
+| **B** | 6–10 | Механистическая валидация co-attention с permutation-тестами | вынесена в ветку `feature/coattention-phase-b` |
+| **C** | 11–14 | Проспективная проверка на FAERS (опционально) | харнесс написан, не запускался |
+
+### Фаза A — что должно получиться
+
+Три схемы разбиения, от самой протекающей к самой честной:
+
+| Схема | Описание | Статус кода |
+|---|---|---|
+| random pair split | Как в большинстве публикаций | **не реализовано** |
+| drug-level split | Ни один препарат не встречается в двух сплитах | реализовано |
+| scaffold split | Группировка по Murcko scaffold (RDKit) | реализовано |
+
+Пять моделей: логистическая регрессия и Random Forest на ECFP4, стандартный
+GIN/GINE через PyTorch Geometric, плюс SSI-DDI и MHCADDI (авторский код,
+адаптированный под наши сплиты).
+
+Главный артефакт фазы — **график падения метрик при ужесточении сплита для всех
+моделей**.
+
+## Две методологические позиции
+
+**1. Разбиение по препаратам, а не по парам.** Перемешивание *пар* позволяет
+модели запомнить, какие препараты промискуитетны, вместо того чтобы учить химию.
+Утечка не видна на кривой обучения — обучающий и валидационный loss оба выглядят
+прекрасно. Она вскрывается только сменой схемы разбиения.
+
+Три режима отчитываются раздельно:
+
+- **S1** оба препарата видны при обучении — оптимистично, заполнение пробелов в базе
+- **S2** один препарат новый — *клинически значимый вопрос*
+- **S3** оба препарата новые — честная проверка на одной химии
+
+Падение S1 → S3 — это результат, а не провал.
+
+**2. Негативы — это неразмеченные примеры, а не отрицательные.** Ни одна база не
+фиксирует отсутствие взаимодействия, поэтому формально это positive-unlabelled
+learning. Измеренная precision — нижняя оценка.
+
+## Структура репозитория
+
+```
+data/raw/                  загрузки (пусто; наполняется вручную через PyTDC)
+data/processed/            производные датасеты (gitignored)
+tests/fixtures/synthetic_ddi/   СИНТЕТИЧЕСКАЯ фикстура, не данные
+src/ddinet/
+  data/       реестр источников, загрузчик, парсеры, сплиты, сборка датасета
+  features/   фингерпринты, молекулярные графы, граф взаимодействий
+  models/     стандартный GINE + GNN-энкодер (Фаза A)
+  eval/       метрики, baselines, CV, FAERS
+scripts/      пронумерованные точки входа 00…06
+tests/        интеграционные и юнит-тесты, сеть не требуется
+docs/         рабочие записи по шагам (числа аннулированы)
+external/     SSI-DDI, MHCADDI (клонируются вручную)
+```
+
+## Документы, обязательные к ведению
+
+| Файл | Назначение |
 |---|---|
-| 1. Data collection, parsing, leakage-free splits | **complete** |
-| 2. Molecular features + interaction graph | in progress |
-| 3. GNN with attention | pending |
-| 4. Evaluation, CV, baselines, FAERS validation | pending |
-| 5. Interpretability + visualisation | pending |
-| 6. Streamlit demo | pending |
+| [`DATA_PROVENANCE.md`](DATA_PROVENANCE.md) | Каждый источник: URL, версия, дата загрузки, лицензия, цитирование |
+| [`LIMITATIONS.md`](LIMITATIONS.md) | Все методологические ограничения, пополняется по ходу |
+| [`AI_USE.md`](AI_USE.md) | Лог использования ИИ (требование правил ISEF) |
+| [`reports/ANNULLED.md`](reports/ANNULLED.md) | Что и почему признано недействительным |
 
-## Quick start
+## Запуск
 
 ```bash
 pip install -r requirements.txt
 
-python scripts/00_data_report.py        # data provenance, licences, validation
-python scripts/01_download_data.py      # fetch external sources (network permitting)
-python scripts/02_build_dataset.py --source curated --group-by scaffold --neg-ratio 3
-python -m pytest tests/ -q
+python scripts/00_data_report.py     # провенанс, лицензии, что загружено
+python scripts/01_download_data.py   # загрузка (в этом окружении заблокирована)
+python -m pytest tests/ -q           # тесты, сети не требуют
 ```
 
-The pipeline runs immediately against a committed, hand-curated seed dataset — no licence wait, no
-network required.
+## Дисклеймер
 
-## Two methodological commitments
-
-These are the decisions the whole project rests on.
-
-**1. Drug-level splits, always.** Shuffling *pairs* lets a model memorise which drugs are
-promiscuous instead of learning chemistry, and produces AUCs around 0.99 that mean nothing. We
-partition *drugs* (optionally *scaffolds*) and report three settings separately:
-
-- **S1** both drugs seen in training — optimistic, database gap-filling
-- **S2** one drug new — *the clinically important question*
-- **S3** both drugs new — the honest structure-only test
-
-The drop from S1 → S3 is a result, not a failure.
-
-**2. Negatives are unlabelled, not negative.** No database records non-interactions, so this is
-positive-unlabelled learning. Precision is a lower bound. We sample negatives *degree-matched* so
-hub-drug frequency can't be exploited as a shortcut — measured to shrink the exploitable degree gap
-from 4.17 to 0.68.
-
-## Repository layout
-
-```
-data/
-  curated/      committed seed set: 104 drugs, 467 interactions (formula-verified)
-  raw/          downloads (gitignored — some sources are licence-restricted)
-  processed/    built datasets (gitignored — reproducible from code)
-src/ddinet/
-  data/         sources registry, downloader, parsers, splits, assembly
-  features/     fingerprints, molecular graphs        (Step 2)
-  models/       GNN architectures                     (Step 3)
-  eval/         metrics, CV, baselines, leakage audit (Step 4)
-  explain/      attention → substructure attribution  (Step 5)
-scripts/        numbered CLI entry points
-tests/          integrity tests (no network required)
-docs/           per-step write-up notes with ISEF talking points
-app/            Streamlit demo                        (Step 6)
-```
-
-## Data sources and licences
-
-Run `python scripts/00_data_report.py` for the full table with citations. Summary:
-
-| Source | Provides | Licence | Access |
-|---|---|---|---|
-| DrugBank Open Data | ID ↔ name ↔ InChIKey crosswalk | CC0 | direct |
-| DrugBank full (XML) | interactions, mechanisms, CYP450 roles | Academic | **manual licence** |
-| PubChem PUG-REST | SMILES by InChIKey | Public domain | API |
-| SIDER 4.1 | side-effect profiles | CC BY-NC-SA | direct |
-| DDInter 2.0 | **clinical severity** | Free academic | direct |
-| BioSNAP ChCh-Miner | benchmark DDI graph | Research use | direct |
-| TWOSIDES | FAERS-mined pairs | CC BY 4.0 | direct |
-| openFDA FAERS | real-world validation | Public domain | API |
-
-Raw downloads are gitignored: several sources prohibit redistribution, and all are reproducible
-from code. Every download is SHA-256 pinned in `data/raw/manifest.json`, because "we used DrugBank"
-is not a reproducible statement but "we used the release hashing to `a1b2c3…`" is.
-
-## About the curated seed set
-
-`data/curated/` holds 104 drugs and 467 documented interactions, hand-assembled from standard
-clinical pharmacology. Every SMILES is validated against an independently stated molecular formula
-by RDKit — a check that caught 4 real structural errors during construction.
-
-**It is a development fixture, not an evaluation corpus.** Because its pairs were curated with
-mechanism in mind, its labels are strongly determined by the CYP450 annotation columns, so a model
-given those features and evaluated here would be re-deriving the rule that made the labels.
-Headline numbers come from DrugBank / DDInter / BioSNAP. See
-[`docs/step1_data.md`](docs/step1_data.md) §1.3.
-
-## Documentation
-
-- [`docs/step1_data.md`](docs/step1_data.md) — data sources, splitting, negative sampling,
-  limitations, and ISEF interview preparation
-
-## Disclaimer
-
-Research and educational software. **Not a medical device and not clinical decision support.** No
-output should be used to make treatment decisions.
+Исследовательское и учебное программное обеспечение. **Не медицинское изделие и
+не система поддержки клинических решений.** Ни один вывод не должен
+использоваться для принятия решений о лечении.

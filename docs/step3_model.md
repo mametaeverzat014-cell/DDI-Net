@@ -1,3 +1,23 @@
+> # ⛔ ВСЕ ЧИСЛА В ЭТОМ ФАЙЛЕ АННУЛИРОВАНЫ / ALL NUMBERS IN THIS FILE ARE VOID
+>
+> Каждая метрика ниже посчитана на `data/curated/` — наборе, сгенерированном
+> LLM по памяти, без цитируемого источника. Он перенесён в
+> `tests/fixtures/synthetic_ddi/` и понижен до тестовой фикстуры.
+> **Ни одно число ниже не является научным результатом.**
+>
+> Every metric below was computed on an LLM-generated fixture with no citable
+> source. It has been moved to `tests/fixtures/synthetic_ddi/` and demoted to a
+> unit-test fixture. **No number below is a scientific result.**
+>
+> Файл сохранён целиком, ничего не удалено — чтобы был виден исходный ход
+> рассуждений. Методологические аргументы (почему сплит по препаратам, почему
+> AUPRC, почему симметрия) остаются в силе; иллюстрирующие их числа — нет.
+>
+> Реальные результаты появятся только после загрузки данных через PyTDC.
+> См. `DATA_PROVENANCE.md` и `LIMITATIONS.md`.
+>
+> Аннулировано: 2026-08-23.
+
 # Step 3 — Model Architecture
 
 ## The architecture

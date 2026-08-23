@@ -25,10 +25,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 import numpy as np
 import torch
 
-from ddinet.data import assemble, curated, split as split_mod
+from ddinet.data import assemble, synthetic_fixture, split as split_mod
 from ddinet.eval.metrics import (
     best_threshold, bootstrap_ci, compute_binary_metrics, recall_at_precision,
-    severity_metrics,
 )
 from ddinet.features.build import FeatureConfig, build_feature_bundle
 from ddinet.features.ddi_graph import leakage_audit
@@ -37,6 +36,22 @@ from ddinet.models.ddinet import DDINet, DDINetConfig
 from ddinet.models.train import Trainer, TrainConfig
 
 REPORTS = Path(__file__).resolve().parents[1] / "reports"
+
+
+def _fixture_warning() -> None:
+    """Print the prohibition banner when running against the synthetic fixture.
+
+    Without this the code contradicts the documentation: LIMITATIONS.md and
+    reports/ANNULLED.md say metrics from the fixture are void, while the script
+    would happily print a results table that looks authoritative. Anything that
+    prints a metric has to say what it was computed on.
+    """
+    print("\n" + "!" * 78)
+    print("!! SYNTHETIC FIXTURE - EVERY NUMBER BELOW IS VOID")
+    print("!! Source: tests/fixtures/synthetic_ddi/ (LLM-generated, no citable source)")
+    print("!! These outputs exercise code paths only. Reporting them is prohibited.")
+    print("!! See LIMITATIONS.md and reports/ANNULLED.md")
+    print("!" * 78 + "\n")
 
 
 def main() -> int:
@@ -51,13 +66,14 @@ def main() -> int:
     ap.add_argument("--lr", type=float, default=1e-3)
     ap.add_argument("--dropout", type=float, default=0.2)
     ap.add_argument("--seed", type=int, default=42)
-    ap.add_argument("--no-coattention", action="store_true")
     ap.add_argument("--no-molecular", action="store_true")
     ap.add_argument("--no-graph", action="store_true")
     ap.add_argument("--out", type=Path, default=REPORTS / "train_results.json")
     args = ap.parse_args()
 
-    drugs, pairs = curated.load_drugs(), curated.load_pairs()
+    _fixture_warning()
+
+    drugs, pairs = synthetic_fixture.load_drugs(), synthetic_fixture.load_pairs()
     sp = split_mod.build_split(drugs, pairs, seed=args.seed, group_by=args.group_by)
     print(sp.report())
 
@@ -77,7 +93,6 @@ def main() -> int:
         hidden_dim=args.hidden_dim,
         dropout=args.dropout,
         architecture=args.architecture,
-        use_coattention=not args.no_coattention,
         use_molecular_branch=not args.no_molecular,
         use_graph_branch=not args.no_graph,
     )
@@ -95,7 +110,7 @@ def main() -> int:
     print("\n" + history.summary())
 
     # ---- Threshold selected on VALIDATION only ---------------------------
-    y_val, s_val, _ = trainer.predict_bucket("val_S2")
+    y_val, s_val = trainer.predict_bucket("val_S2")
     threshold = best_threshold(y_val, s_val, metric="f2") if len(y_val) else 0.5
     print(f"\nDecision threshold chosen on val_S2 (max F2): {threshold:.3f}")
     print("  F2 weights recall 4x precision: a missed dangerous interaction is")
@@ -121,7 +136,7 @@ def main() -> int:
     print("RESULTS BY SETTING")
     print("=" * 78)
     for bucket in ("train", "val_S2", "val_S3", "test_S2", "test_S3"):
-        y, s, sev = trainer.predict_bucket(bucket)
+        y, s = trainer.predict_bucket(bucket)
         if len(y) == 0 or len(np.unique(y)) < 2:
             print(f"\n[{bucket}] not estimable (fewer than two classes present)")
             continue
@@ -140,16 +155,6 @@ def main() -> int:
         entry.update({"auprc_ci_low": lo, "auprc_ci_high": hi,
                       "recall_at_p90": rec90, "recall_at_p75": rec75})
 
-        if sev is not None:
-            pos = y == 1
-            frame = trainer.buckets[bucket]["frame"]
-            ranks = frame["severity_rank"].to_numpy()[pos]
-            valid = ranks >= 0
-            if valid.any():
-                sm = severity_metrics(ranks[valid], sev[pos][valid])
-                print(f"  severity head (positives only): macro-F1 {sm['macro_f1']:.3f}, "
-                      f"mean |rank error| {sm['mae_rank']:.3f}, n={sm['n']}")
-                entry["severity"] = sm
         results["buckets"][bucket] = entry
 
     # ---- The comparison that matters -------------------------------------
@@ -174,6 +179,7 @@ def main() -> int:
     args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(results, indent=2, default=float))
     print(f"\nWrote {args.out}")
+    _fixture_warning()
     return 0
 
 
