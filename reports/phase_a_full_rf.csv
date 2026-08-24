@@ -1,0 +1,3 @@
+scheme,negatives,seed,model,encoding,max_depth,test_view,auc_roc,auprc,f1,brier,prevalence,n,threshold,fit_seconds
+random_pair,uniform,0,random_forest_full,symmetric,None,pooled,0.9189708940250632,0.9159033177954076,0.8432491260470946,0.13374303242163207,0.5,57418,0.4744153160073273,295.3
+random_pair,uniform,1,random_forest_full,symmetric,None,pooled,0.9168023390482564,0.9143437645907264,0.8395495779366159,0.13519247102301718,0.5,57418,0.4811694773008561,301.0
