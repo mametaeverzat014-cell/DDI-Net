@@ -38,6 +38,18 @@ interaction types.  ``classify_description`` maps a description onto a coarse
 mechanism family plus a direction, which becomes the multi-class target in
 Step 3.  It is a rule-based classifier over machine-generated text, so it is
 accurate - but you should say plainly that it is regex-based, not learned.
+
+.. NOTE:: UNUSED AS OF 2026-08-24.
+
+   This module is not part of the Phase A pipeline. Data now comes from the TDC
+   DrugBank export via ``ddinet.data.tdc_drugbank``.
+
+   It is retained rather than deleted because two things the Phase A/B plan
+   needs are absent from the TDC export: CYP450 substrate/inhibitor/inducer
+   annotations (required for Phase B) and clinical severity grades. If those
+   turn out to be needed, these parsers are already written and tested. The
+   decision to delete is deferred until that is settled - see
+   DATA_PROVENANCE.md section 3.
 """
 
 from __future__ import annotations

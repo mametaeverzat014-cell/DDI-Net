@@ -27,6 +27,18 @@ SHA-256 into ``data/raw/manifest.json``.  On later runs a mismatch is reported
 loudly.  We do not hard-fail by default because upstream releases legitimately
 change - but you want to KNOW, because "my numbers changed and I don't know why"
 is the worst possible position to be in during judging.
+
+.. NOTE:: UNUSED AS OF 2026-08-24.
+
+   This module is not part of the Phase A pipeline. Data now comes from the TDC
+   DrugBank export via ``ddinet.data.tdc_drugbank``.
+
+   It is retained rather than deleted because two things the Phase A/B plan
+   needs are absent from the TDC export: CYP450 substrate/inhibitor/inducer
+   annotations (required for Phase B) and clinical severity grades. If those
+   turn out to be needed, these parsers are already written and tested. The
+   decision to delete is deferred until that is settled - see
+   DATA_PROVENANCE.md section 3.
 """
 
 from __future__ import annotations

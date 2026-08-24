@@ -38,6 +38,18 @@ SIDER labels compounds with STITCH ids like ``CID100002244``.  The scheme is
 stereo-specific compound, ``0`` = the flat/parent compound.  Stripping the
 prefix and leading zeros recovers the PubChem CID, which is how we join to
 structures.
+
+.. NOTE:: UNUSED AS OF 2026-08-24.
+
+   This module is not part of the Phase A pipeline. Data now comes from the TDC
+   DrugBank export via ``ddinet.data.tdc_drugbank``.
+
+   It is retained rather than deleted because two things the Phase A/B plan
+   needs are absent from the TDC export: CYP450 substrate/inhibitor/inducer
+   annotations (required for Phase B) and clinical severity grades. If those
+   turn out to be needed, these parsers are already written and tested. The
+   decision to delete is deferred until that is settled - see
+   DATA_PROVENANCE.md section 3.
 """
 
 from __future__ import annotations
