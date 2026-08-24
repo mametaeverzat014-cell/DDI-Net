@@ -130,8 +130,13 @@ def main() -> int:
             label = model_name + ("" if encoding == "none" else f"[{encoding}]")
             report, p_scaled, scaler = evaluate_calibration(
                 label, val_b.y, p_val, test_b.y, p_test)
-            rows.append({"seed": seed, "model": model_name, "encoding": encoding,
-                         **report.to_dict(), "fit_seconds": round(time.time() - t0, 1)})
+            # report.to_dict() carries a "model" field holding the display
+            # label ("logreg[symmetric]"), which would overwrite the bare model
+            # name and make the grouped tables read "logreg[symmetric][symmetric]".
+            # Spread it first, then set the identifying columns.
+            rows.append({**report.to_dict(), "label": report.model,
+                         "seed": seed, "model": model_name, "encoding": encoding,
+                         "fit_seconds": round(time.time() - t0, 1)})
             print("  " + report.summary(), flush=True)
 
             if seed == SEEDS[0] and encoding in ("none", "symmetric"):
@@ -186,6 +191,43 @@ def _write_report(results: pd.DataFrame) -> None:
         w(f"| {model} | {encoding} | {format_ci(grp['ece_uniform'], 4)} | "
           f"{format_ci(grp['ece_uniform_scaled'], 4)} | {gap:+.4f} |")
     w("")
+    w("## What the numbers say\n")
+    w("**The degree-only baseline is not merely weaker, it is confidently "
+      "wrong.** Raw ECE 0.454: it assigns a median probability of 0.048 to test "
+      "pairs of which 0.500 actually interact. The cause is exact and "
+      "checkable: under a drug-level split every test pair contains a drug with "
+      "training degree zero, so **100% of test pairs fall outside the feature "
+      "range the model was fitted on** (0% of training pairs have a zero "
+      "minimum degree). Its training predictions span [0.002, 0.807]; its test "
+      "predictions span [0.001, 0.101]. The model is extrapolating, and "
+      "extrapolating with confidence.\n")
+    w("This is the failure mode the project's argument is about. Ranking still "
+      "works - AUPRC 0.549, comfortably above chance - so every threshold-free "
+      "metric reports a mediocre-but-functional model. Only calibration reveals "
+      "that its probabilities are wrong by 0.45, which for a clinical readout "
+      "is worse than useless: it is a confident all-clear on pairs that "
+      "interact half the time.\n")
+    w("**Temperature scaling did not repair it - it silenced it.** The fitted "
+      "temperature is ~135, which flattens every logit to approximately 0.5. "
+      "ECE duly falls to 0.036, but the Brier score lands on exactly 0.250, "
+      "which is the Brier score of predicting 0.5 for everything at prevalence "
+      "0.5. The recalibrated model has traded confident wrongness for having no "
+      "opinion at all. Quoting the improved ECE without the Brier would be "
+      "actively misleading, and this is precisely why a single calibration "
+      "number should never be reported alone.\n")
+    w("**The two chemistry-aware models are miscalibrated in opposite "
+      "directions.** Logistic regression has T ~ 1.46, mildly over-confident, "
+      "and is the best-calibrated model raw (ECE 0.051). The random forest has "
+      "T ~ 0.41, under-confident - the usual consequence of averaging many "
+      "trees, which pulls probabilities toward the centre - and starts worse "
+      "(ECE 0.109) but ends better on Brier after scaling (0.208 against "
+      "0.236). So the forest ranks better AND, once recalibrated, carries more "
+      "usable probability, while being the one that most needs recalibrating.\n")
+    w("**The two binning schemes agree here** (gap < 0.002 throughout), which "
+      "says the predictions are spread across the score range rather than "
+      "concentrated. That is worth checking rather than assuming: had they "
+      "disagreed, the equal-width numbers would have been the flattering ones "
+      "and should not have been quoted.\n")
     w("## Worst-bin error (MCE, quantile bins, bins of >= 30 predictions)\n")
     w("| Model | Encoding | MCE raw | MCE scaled |")
     w("|---|---|---|---|")
