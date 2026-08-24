@@ -153,6 +153,11 @@ class DrugLevelSplit:
     group_by: GroupBy = "drug"
     seed: int = 0
 
+    @property
+    def scheme(self) -> str:
+        """Name of the splitting scheme, for the leakage verifier."""
+        return self.group_by
+
     # -- membership helpers -------------------------------------------------
     def split_of(self, drug: str) -> str:
         if drug in self.train_drugs:
@@ -207,8 +212,11 @@ class DrugLevelSplit:
         ]
         for name in sorted(self.buckets):
             df = self.buckets[name]
-            n_major = int((df["severity"] == "major").sum()) if len(df) else 0
-            lines.append(f"    {name:12s} n={len(df):5d}  major={n_major}")
+            # 'severity' exists only in the retired fixture; TDC data has none.
+            extra = ""
+            if len(df) and "severity" in df.columns:
+                extra = f"  major={int((df['severity'] == 'major').sum())}"
+            lines.append(f"    {name:12s} n={len(df):6d}{extra}")
         if self.discarded is not None:
             lines.append(
                 f"  discarded (val/test drug straddle): {len(self.discarded)} pairs"
@@ -471,3 +479,166 @@ def drug_level_kfold(
         s.assert_no_leakage()
         splits.append(s)
     return splits
+
+
+# --------------------------------------------------------------------------
+# Random pair split - the deliberately leaky scheme
+# --------------------------------------------------------------------------
+
+@dataclass
+class RandomPairSplit:
+    """Pairs shuffled and cut 70/15/15, with no regard for which drugs occur.
+
+    *** THIS SCHEME IS KNOWN TO LEAK. IT IS NOT A WORKING OPTION. ***
+
+    It exists as the OBJECT OF MEASUREMENT for this project's main question:
+    how much of the reported performance of published DDI models is an artefact
+    of evaluating this way? A large fraction of the DDI literature splits pairs
+    rather than drugs, so reproducing that choice faithfully - and quantifying
+    what it buys - is the experiment. Never select it because it scores well.
+
+    Why it leaks, concretely. With 1,706 drugs and 191,402 pairs the mean drug
+    appears in roughly 224 interactions. Shuffling pairs puts about 70% of any
+    given drug's edges in training, so at test time the model already holds a
+    learned embedding for both endpoints of nearly every test pair. It can score
+    that pair from node identity alone, without representing the interaction
+    mechanism at all. The leak is invisible in the loss curve - training and
+    validation loss both look excellent - and is only exposed by changing the
+    scheme.
+
+    The object deliberately mirrors :class:`DrugLevelSplit`'s attribute names
+    (``buckets``, ``train_drugs``, ``val_drugs``, ``test_drugs``) so that one
+    leakage verifier can accept either. It does NOT provide
+    ``assert_no_leakage``: there is no invariant to assert here, only a quantity
+    to report. See :mod:`ddinet.data.leakage`.
+
+    Note the bucket names differ from the drug-level scheme. There, buckets are
+    named by setting (``test_S2``, ``test_S3``) because drug membership
+    determines the setting. Here membership is not controlled, so the buckets
+    are plain ``train``/``val``/``test`` and the S1/S2/S3 composition is
+    *measured* afterwards rather than constructed.
+    """
+
+    train_drugs: set[str]
+    val_drugs: set[str]
+    test_drugs: set[str]
+    buckets: dict[str, pd.DataFrame] = field(default_factory=dict)
+    discarded: pd.DataFrame | None = None
+    seed: int = 0
+
+    @property
+    def scheme(self) -> str:
+        return "random_pair"
+
+    @property
+    def group_by(self) -> str:
+        return "pair"
+
+    def split_of(self, drug: str) -> str:
+        """Which split a drug appears in.
+
+        Under this scheme a drug routinely appears in all three, so the answer
+        is the first match and is not meaningful on its own. Provided only for
+        interface compatibility.
+        """
+        if drug in self.train_drugs:
+            return "train"
+        if drug in self.val_drugs:
+            return "val"
+        if drug in self.test_drugs:
+            return "test"
+        return "unknown"
+
+    def setting_of(self, drug_a: str, drug_b: str) -> Setting:
+        """S1/S2/S3 by how many endpoints were seen in TRAINING pairs.
+
+        This is the measurement that exposes the leak: under a random pair
+        split almost every test pair turns out to be S1.
+        """
+        n_unseen = int(drug_a not in self.train_drugs) + int(drug_b not in self.train_drugs)
+        return ("S1", "S2", "S3")[n_unseen]
+
+    def report(self) -> str:
+        lines = [
+            f"Random pair split (LEAKY BY CONSTRUCTION, seed={self.seed})",
+            f"  drugs appearing in each split: train={len(self.train_drugs)} "
+            f"val={len(self.val_drugs)} test={len(self.test_drugs)}",
+            "  (these sets overlap heavily - that is the point)",
+            "  pair buckets:",
+        ]
+        for name in ("train", "val", "test"):
+            df = self.buckets.get(name)
+            if df is not None:
+                lines.append(f"    {name:12s} n={len(df):6d}")
+        return "\n".join(lines)
+
+
+def build_random_pair_split(
+    drugs: pd.DataFrame,
+    pairs: pd.DataFrame,
+    *,
+    val_fraction: float = 0.15,
+    test_fraction: float = 0.15,
+    seed: int = 0,
+) -> RandomPairSplit:
+    """Shuffle pairs and cut them, ignoring drug identity entirely.
+
+    ``drugs`` is accepted but unused; it is in the signature so this function is
+    interchangeable with :func:`build_split` at the call site.
+
+    No pairs are discarded. The drug-level scheme throws away pairs that
+    straddle the validation and test drug groups; here there are no drug groups
+    to straddle, so ``discarded`` is always empty. That difference is itself
+    worth reporting: the leaky scheme looks like it uses more data, and part of
+    any apparent advantage is simply that.
+    """
+    if not 0 < val_fraction + test_fraction < 1:
+        raise ValueError("val_fraction + test_fraction must be strictly between 0 and 1")
+
+    rng = np.random.default_rng(seed)
+    order = np.arange(len(pairs))
+    rng.shuffle(order)
+
+    n = len(pairs)
+    n_val = int(round(n * val_fraction))
+    n_test = int(round(n * test_fraction))
+    idx = {
+        "val": order[:n_val],
+        "test": order[n_val : n_val + n_test],
+        "train": order[n_val + n_test :],
+    }
+    buckets = {
+        name: pairs.iloc[sorted(rows)].reset_index(drop=True)
+        for name, rows in idx.items()
+    }
+
+    def drugs_in(df: pd.DataFrame) -> set[str]:
+        return set(df["drug_a"]) | set(df["drug_b"])
+
+    return RandomPairSplit(
+        train_drugs=drugs_in(buckets["train"]),
+        val_drugs=drugs_in(buckets["val"]),
+        test_drugs=drugs_in(buckets["test"]),
+        buckets=buckets,
+        discarded=pairs.iloc[[]].reset_index(drop=True),
+        seed=seed,
+    )
+
+
+#: Every scheme, by name, behind one call signature.
+SPLIT_BUILDERS = {
+    "random_pair": build_random_pair_split,
+    "drug": lambda d, p, **kw: build_split(d, p, group_by="drug", **kw),
+    "scaffold": lambda d, p, **kw: build_split(d, p, group_by="scaffold", **kw),
+}
+
+
+def build_any(scheme: str, drugs: pd.DataFrame, pairs: pd.DataFrame, **kwargs):
+    """Dispatch to a splitting scheme by name.
+
+    Keeps experiment scripts free of branching, so adding a scheme never
+    requires editing the code that consumes splits.
+    """
+    if scheme not in SPLIT_BUILDERS:
+        raise ValueError(f"Unknown scheme {scheme!r}; expected one of {sorted(SPLIT_BUILDERS)}")
+    return SPLIT_BUILDERS[scheme](drugs, pairs, **kwargs)
