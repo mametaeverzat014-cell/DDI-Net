@@ -241,3 +241,55 @@ def severity_metrics(
         "exact_match": float(np.mean(pred_rank == y_true_rank)),
         "n": int(len(y_true_rank)),
     }
+
+
+# --------------------------------------------------------------------------
+# Aggregation across seeds
+# --------------------------------------------------------------------------
+
+def mean_ci(values, alpha: float = 0.05) -> tuple[float, float, float, float]:
+    """Mean and a Student-t confidence interval over repeated runs.
+
+    Returns ``(mean, low, high, half_width)``.
+
+    A t-interval rather than a normal one because the number of seeds is small
+    (5 here), where the normal approximation is materially too narrow: t(0.975,
+    df=4) = 2.776 against z = 1.96, so a normal interval would understate the
+    uncertainty by ~30%.
+
+    What this interval covers and what it does not: it captures variability
+    across **seeds**, which here bundles together the random split assignment,
+    the negative sample drawn, and any stochasticity in the fit. It does NOT
+    capture uncertainty from the finite test set, nor from the choice of data
+    source. Quote it as "mean +/- 95% CI over N seeds" and not as a general
+    error bar on the underlying quantity.
+
+    Fewer than two finite values gives a NaN interval rather than a fake zero
+    width, because a single run has no measurable spread.
+    """
+    arr = np.asarray([v for v in values if np.isfinite(v)], dtype=float)
+    n = len(arr)
+    if n == 0:
+        return float("nan"), float("nan"), float("nan"), float("nan")
+    mean = float(arr.mean())
+    if n < 2:
+        return mean, float("nan"), float("nan"), float("nan")
+    sem = float(arr.std(ddof=1) / np.sqrt(n))
+    try:
+        from scipy import stats
+
+        t = float(stats.t.ppf(1 - alpha / 2, df=n - 1))
+    except Exception:
+        t = 1.96
+    half = t * sem
+    return mean, mean - half, mean + half, half
+
+
+def format_ci(values, digits: int = 3, alpha: float = 0.05) -> str:
+    """``"0.612 +/- 0.008"`` - the reporting format for the results tables."""
+    mean, _, _, half = mean_ci(values, alpha)
+    if not np.isfinite(mean):
+        return "n/a"
+    if not np.isfinite(half):
+        return f"{mean:.{digits}f} (1 run)"
+    return f"{mean:.{digits}f} +/- {half:.{digits}f}"
