@@ -286,3 +286,101 @@ def build_report(path: str | None = None) -> DatasetReport:
         degree=pd.Series(degree).sort_values(ascending=False),
         type_counts=type_vocabulary(path),
     )
+
+# --------------------------------------------------------------------------
+# Explicit exclusion of unparseable structures
+# --------------------------------------------------------------------------
+
+@dataclass
+class DropReport:
+    """What an exclusion step removed, and why. Printed into every run log."""
+
+    dropped_drug_ids: list[str]
+    n_dropped_drugs: int
+    n_dropped_pairs: int
+    n_drugs_before: int
+    n_drugs_after: int
+    n_pairs_before: int
+    n_pairs_after: int
+    reason: str
+
+    def summary(self) -> str:
+        pct_pairs = (
+            100 * self.n_dropped_pairs / self.n_pairs_before
+            if self.n_pairs_before else 0.0
+        )
+        return (
+            f"Exclusion: {self.reason}\n"
+            f"  drugs {self.n_drugs_before} -> {self.n_drugs_after} "
+            f"(dropped {self.n_dropped_drugs}: {self.dropped_drug_ids})\n"
+            f"  pairs {self.n_pairs_before} -> {self.n_pairs_after} "
+            f"(dropped {self.n_dropped_pairs} = {pct_pairs:.4f}% of the corpus)"
+        )
+
+
+def drop_unparseable(
+    drugs: pd.DataFrame, pairs: pd.DataFrame
+) -> tuple[pd.DataFrame, pd.DataFrame, DropReport]:
+    """Remove drugs whose SMILES RDKit cannot parse, and every pair touching them.
+
+    *** THIS IS A DELIBERATE, VISIBLE EXCLUSION STEP, NOT A SILENT FILTER. ***
+
+    Exactly one drug is affected: DB11630, a porphyrin macrocycle whose SMILES
+    in the TDC export uses malformed ring-closure syntax (``C-1=``, ``\\-1N2``).
+    That is an upstream defect, not a parsing bug on our side. It appears in 10
+    of 191,402 pairs.
+
+    Why drop rather than carry a zero feature vector:
+
+      * 10 pairs is 0.005% of the corpus - far below the resolution of any
+        confidence interval this project will report, so nothing is lost.
+      * An all-zero ECFP4 vector is not a neutral encoding. It would be the
+        *only* drug with an empty fingerprint, so every model could identify it
+        exactly, and under the symmetric pair encoding ``|a-0| = a`` and
+        ``a*0 = 0`` - the pair features would collapse to "drug A alone". The
+        model would learn a rule for one specific molecule from 10 examples.
+        That is a systematic distortion, not missing data.
+      * A missingness indicator flag would work in principle, but it buys one
+        drug's worth of coverage at the cost of an extra feature that only ever
+        fires 10 times.
+
+    The alternative was considered and rejected on those grounds; the decision
+    is recorded in LIMITATIONS.md so it is auditable rather than folklore.
+
+    Returns ``(drugs, pairs, report)``. Callers should print the report.
+    """
+    bad = set(drugs.loc[~drugs["valid"], "drugbank_id"])
+    n_drugs_before, n_pairs_before = len(drugs), len(pairs)
+
+    if not bad:
+        return drugs, pairs, DropReport([], 0, 0, n_drugs_before, n_drugs_before,
+                                        n_pairs_before, n_pairs_before,
+                                        "no unparseable structures")
+
+    kept_drugs = drugs.loc[drugs["valid"]].reset_index(drop=True)
+    touches_bad = pairs["drug_a"].isin(bad) | pairs["drug_b"].isin(bad)
+    kept_pairs = pairs.loc[~touches_bad].reset_index(drop=True)
+
+    report = DropReport(
+        dropped_drug_ids=sorted(bad),
+        n_dropped_drugs=len(bad),
+        n_dropped_pairs=int(touches_bad.sum()),
+        n_drugs_before=n_drugs_before,
+        n_drugs_after=len(kept_drugs),
+        n_pairs_before=n_pairs_before,
+        n_pairs_after=len(kept_pairs),
+        reason="SMILES unparseable by RDKit (upstream defect in the TDC export)",
+    )
+    return kept_drugs, kept_pairs, report
+
+
+def load_modelling_data(
+    path: str | None = None,
+) -> tuple[pd.DataFrame, pd.DataFrame, DropReport]:
+    """The single entry point every experiment should use.
+
+    Applies the exclusion step above so that no experiment can accidentally
+    forget it, and returns the report so every run log records what was removed.
+    """
+    drugs, pairs = load_drugs(path), load_pairs(path)
+    return drop_unparseable(drugs, pairs)
