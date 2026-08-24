@@ -26,6 +26,10 @@ checkpoints/
 *.ckpt
 # reports/figures/ is a committed artefact of Phase A
 reports/*.json
+# ...but result artefacts are committed; only transient run output is ignored.
+!reports/phase_a_statistics.json
+!reports/phase_a_tuning.json
+!reports/phase_a_full_rf.json
 !reports/.gitkeep
 
 # ---- Python -----------------------------------------------------------
