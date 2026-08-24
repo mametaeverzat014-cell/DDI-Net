@@ -173,7 +173,14 @@ def main() -> int:
     total = len(schemes) * len(seeds) * len(NEGATIVE_STRATEGIES)
     done = 0
 
-    for scheme, seed in product(schemes, seeds):
+    # Seed-outermost, not scheme-outermost. The grid runs for hours and can be
+    # interrupted, so the ordering decides what a partial result looks like.
+    # Iterating seeds outside means an interrupted run leaves a COMPLETE grid at
+    # fewer seeds - every scheme, every negative scheme, comparable - rather
+    # than all five seeds of one split scheme and nothing for the others. The
+    # headline artefact is the comparison across schemes, so that is the axis
+    # that must be filled in first.
+    for seed, scheme in product(seeds, schemes):
         if all((scheme, seed, st) in completed for st in NEGATIVE_STRATEGIES):
             done += len(NEGATIVE_STRATEGIES)
             print(f"[{done}/{total}] scheme={scheme} seed={seed} - already done")
