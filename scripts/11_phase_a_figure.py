@@ -146,10 +146,13 @@ def main() -> int:
             end_labels.sort()
             placed: list[float] = []
             for y, _, _, _ in end_labels:
-                target = y
-                while placed and target - placed[-1] < min_gap:
-                    target = placed[-1] + min_gap
-                placed.append(target)
+                # Computed directly, never iterated. A `while target - placed[-1]
+                # < min_gap: target = placed[-1] + min_gap` loop looks equivalent
+                # but never terminates when the subtraction rounds to slightly
+                # below min_gap: placed[-1] does not change inside the loop, so
+                # target is recomputed to the same value forever. That bug only
+                # surfaced once two series happened to end at the same value.
+                placed.append(y if not placed else max(y, placed[-1] + min_gap))
             for (y, x, text, colour), y_text in zip(end_labels, placed):
                 ax.annotate(
                     text, xy=(x, y), xytext=(8, 0),
