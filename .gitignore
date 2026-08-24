@@ -24,7 +24,7 @@ runs/
 checkpoints/
 *.pt
 *.ckpt
-reports/figures/
+# reports/figures/ is a committed artefact of Phase A
 reports/*.json
 !reports/.gitkeep
 
