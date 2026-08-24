@@ -58,6 +58,7 @@ REPORTS = Path(__file__).resolve().parents[1] / "reports"
 EQUIVALENCE_MARGIN = 0.01
 
 RF = {"model": "random_forest", "encoding": "symmetric"}
+RF_FULL = {"model": "random_forest_full", "encoding": "symmetric"}
 LR = {"model": "logreg", "encoding": "symmetric"}
 DEG = {"model": "degree_only", "encoding": "none"}
 
@@ -69,7 +70,15 @@ def at(scheme: str, negatives: str, base: dict) -> dict:
 
 #: (label, selector_a, selector_b, use_equivalence_test)
 COMPARISONS = [
-    ("HEADLINE - random_pair + uniform: random forest vs degree-only",
+    ("HEADLINE (unbounded forest) - random_pair + uniform: full random forest vs degree-only",
+     at("random_pair", "uniform", RF_FULL), at("random_pair", "uniform", DEG), True),
+    ("HEADLINE (unbounded forest) - drug + degree_matched: full random forest vs degree-only",
+     at("drug", "degree_matched", RF_FULL), at("drug", "degree_matched", DEG), True),
+    ("DEPTH CAP COST - random_pair + uniform: unbounded vs depth-30 forest",
+     at("random_pair", "uniform", RF_FULL), at("random_pair", "uniform", RF), True),
+    ("DEPTH CAP COST - drug + degree_matched: unbounded vs depth-30 forest",
+     at("drug", "degree_matched", RF_FULL), at("drug", "degree_matched", RF), True),
+    ("HEADLINE (depth-capped forest) - random_pair + uniform: random forest vs degree-only",
      at("random_pair", "uniform", RF), at("random_pair", "uniform", DEG), True),
     ("random_pair + uniform: logistic regression vs degree-only",
      at("random_pair", "uniform", LR), at("random_pair", "uniform", DEG), True),
@@ -114,6 +123,17 @@ def main() -> int:
     if not results_path.exists():
         raise SystemExit(f"No results at {results_path}")
     results = pd.read_csv(results_path)
+
+    # Fold in the unbounded-forest runs so the headline can be re-tested against
+    # a forest that is not handicapped by the depth cap. Without this the
+    # comparison rests on a model we deliberately weakened for tractability,
+    # which is the first thing an examiner would push on.
+    full_rf_path = REPORTS / "phase_a_full_rf.csv"
+    if full_rf_path.exists():
+        full_rf = pd.read_csv(full_rf_path)
+        full_rf["model"] = "random_forest_full"
+        results = pd.concat([results, full_rf], ignore_index=True)
+        print(f"Loaded {len(full_rf)} unbounded random-forest runs\n")
 
     comparisons: list[tuple[str, PairedComparison]] = []
     for label, sel_a, sel_b, use_tost in COMPARISONS:

@@ -1,0 +1,52 @@
+[
+  {
+    "name_a": "unbounded @ random_pair/uniform",
+    "name_b": "depth-30 @ random_pair/uniform",
+    "metric": "auprc",
+    "n_pairs": 5,
+    "mean_a": 0.9150410972189456,
+    "mean_b": 0.8729649257093325,
+    "mean_difference": 0.04207617150961303,
+    "ci_low": 0.04115323593454729,
+    "ci_high": 0.042999107084678766,
+    "t_statistic": 126.57674445478753,
+    "t_p_value": 2.3364413026191575e-08,
+    "wilcoxon_p_value": 0.0625,
+    "wilcoxon_min_attainable_p": 0.0625,
+    "per_seed_differences": [
+      0.04162597533732504,
+      0.04225701939894999,
+      0.04323893619188346,
+      0.04196376188701223,
+      0.04129516473289441
+    ],
+    "equivalence_margin": null,
+    "tost_p_value": null,
+    "equivalent": null
+  },
+  {
+    "name_a": "unbounded @ drug/degree_matched",
+    "name_b": "depth-30 @ drug/degree_matched",
+    "metric": "auprc",
+    "n_pairs": 5,
+    "mean_a": 0.7630424686652384,
+    "mean_b": 0.7379670905209214,
+    "mean_difference": 0.025075378144316995,
+    "ci_low": 0.017178955637277567,
+    "ci_high": 0.03297180065135642,
+    "t_statistic": 8.816702861037149,
+    "t_p_value": 0.00091320637213325,
+    "wilcoxon_p_value": 0.0625,
+    "wilcoxon_min_attainable_p": 0.0625,
+    "per_seed_differences": [
+      0.026471696731739325,
+      0.023194354715959653,
+      0.022673116495033896,
+      0.017964642294495015,
+      0.03507308048435709
+    ],
+    "equivalence_margin": null,
+    "tost_p_value": null,
+    "equivalent": null
+  }
+]
