@@ -73,5 +73,50 @@
     "threshold": 0.37500953674316406,
     "val_auprc": 0.6503478804502003,
     "val_auc_roc": 0.6560789042163664
+  },
+  {
+    "scheme": "drug",
+    "negatives": "degree_matched",
+    "architecture": "dual",
+    "lr": 0.0003,
+    "dropout": 0.3,
+    "init_seed": 0,
+    "epochs_run": 150,
+    "best_epoch": 147,
+    "stopped_by": "epoch_limit",
+    "wall_time_s": 427.1,
+    "threshold": 0.4305209219455719,
+    "val_auprc": 0.61893823198118,
+    "val_auc_roc": 0.6319867251593237
+  },
+  {
+    "scheme": "drug",
+    "negatives": "degree_matched",
+    "architecture": "dual",
+    "lr": 0.001,
+    "dropout": 0.1,
+    "init_seed": 0,
+    "epochs_run": 150,
+    "best_epoch": 137,
+    "stopped_by": "epoch_limit",
+    "wall_time_s": 357.9,
+    "threshold": 0.22332122921943665,
+    "val_auprc": 0.6788567244936274,
+    "val_auc_roc": 0.665666291837316
+  },
+  {
+    "scheme": "drug",
+    "negatives": "degree_matched",
+    "architecture": "dual",
+    "lr": 0.001,
+    "dropout": 0.3,
+    "init_seed": 0,
+    "epochs_run": 150,
+    "best_epoch": 139,
+    "stopped_by": "epoch_limit",
+    "wall_time_s": 398.2,
+    "threshold": 0.2597440779209137,
+    "val_auprc": 0.6815577448216507,
+    "val_auc_roc": 0.669502243458482
   }
 ]
