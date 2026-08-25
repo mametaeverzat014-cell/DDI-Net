@@ -151,12 +151,22 @@ def run_one(
     patience: int,
     score_test: bool,
     save_predictions: Path | None = None,
+    curve_key: str | None = None,
 ) -> dict:
     """Train one model and score it. `score_test=False` never touches test.
 
     Returns a flat record plus, when asked, the raw validation and test
     predictions - needed later for the deep ensemble, which averages member
     probabilities and so cannot be assembled from summary metrics.
+
+    When `curve_key` is given, the per-epoch validation curve is appended to
+    `reports/phase_a2_curves.json`. That curve is the only way to tell a model
+    that converged from one that ran out of budget. The stop reason alone
+    cannot: the LR schedule is cosine annealing with T_max = max_epochs, so the
+    learning rate reaches ~0 exactly at the cap and the best epoch lands near
+    the end almost by construction. Reading "stopped by epoch limit" as
+    "truncated while improving" would therefore overstate the limitation, and
+    reading it as "converged" would understate it. The curve settles it.
     """
     model = build_model(bundle, architecture, hp)
     trainer = Trainer(model, bundle, dataset, TrainConfig(
@@ -192,6 +202,9 @@ def run_one(
         "val_auprc": float(val_metrics.auprc),
         "val_auc_roc": float(val_metrics.auc_roc),
     }
+    if curve_key is not None:
+        _append_curve(curve_key, history)
+
     if not score_test:
         return record
 
@@ -213,6 +226,23 @@ def run_one(
 
     record["test_rows"] = test_rows
     return record
+
+
+def _append_curve(key: str, history) -> None:
+    """Store one run's validation curve, keyed by run identity.
+
+    Written as a whole file each time rather than appended to, so an
+    interrupted run leaves valid JSON instead of a truncated line.
+    """
+    path = REPORTS / "phase_a2_curves.json"
+    curves = json.loads(path.read_text()) if path.exists() else {}
+    curves[key] = {
+        "val_auprc_by_epoch": [round(float(v), 6) for v in history.val_scores],
+        "train_loss_by_epoch": [round(float(v), 6) for v in history.train_loss],
+        "best_epoch": history.best_epoch,
+        "stopped_by": history.stopped_by,
+    }
+    path.write_text(json.dumps(curves, indent=1))
 
 
 def _test_views(frame: pd.DataFrame | None):
@@ -264,7 +294,8 @@ def stage_tune(args, drugs, pairs, drug_names, positive_keys) -> int:
         t0 = time.time()
         record = run_one(bundle, dataset, architecture, hp,
                          init_seed=args.tune_seed, max_epochs=args.max_epochs,
-                         patience=args.patience, score_test=False)
+                         patience=args.patience, score_test=False,
+                         curve_key=f"tune|{architecture}|lr{hp['lr']}|do{hp['dropout']}")
         log.append({"scheme": scheme, "negatives": strategy, **record})
         out.write_text(json.dumps(log, indent=2, default=str))
         print(f"[{i}/{total}] {architecture:5s} lr={hp['lr']:<7g} drop={hp['dropout']} "
@@ -348,7 +379,8 @@ def stage_grid(args, drugs, pairs, drug_names, positive_keys) -> int:
                 record = run_one(bundle, dataset, architecture,
                                  hyper[architecture], init_seed=seed,
                                  max_epochs=args.max_epochs, patience=args.patience,
-                                 score_test=True)
+                                 score_test=True,
+                                 curve_key=f"grid|{scheme}|{strategy}|{architecture}|{seed}")
                 base = {"scheme": scheme, "seed": seed, "negatives": strategy,
                         "test_S1_fraction": leak.test_s1_fraction,
                         "n_train": int((dataset["bucket"].str.startswith("train")).sum())}
@@ -412,6 +444,7 @@ def stage_ensemble(args, drugs, pairs, drug_names, positive_keys) -> int:
             init_seed=member_seed, max_epochs=args.max_epochs,
             patience=args.patience, score_test=True,
             save_predictions=PREDICTIONS / f"{architecture}_member{member_seed}.npz",
+            curve_key=f"ensemble|{architecture}|{member_seed}",
         )
         base = {"scheme": scheme, "negatives": strategy,
                 "split_seed": args.ensemble_split_seed, "member_seed": member_seed,
