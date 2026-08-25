@@ -30,7 +30,14 @@ reports/*.json
 !reports/phase_a_statistics.json
 !reports/phase_a_tuning.json
 !reports/phase_a_full_rf.json
+!reports/phase_a2_tuning.json
+!reports/phase_a2_hyperparameters.json
 !reports/.gitkeep
+
+# Console logs of long runs. The substantive record is the JSON/CSV the run
+# writes, which is committed; the log is the same information with timestamps
+# and progress bars around it, and it grows every time a run is resumed.
+reports/*.log
 
 # ---- Python -----------------------------------------------------------
 __pycache__/
