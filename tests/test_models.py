@@ -214,3 +214,143 @@ def test_training_is_deterministic_under_a_fixed_seed(setup):
         _, s = trainer.predict_bucket("val_S2")
         scores.append(s)
     assert np.allclose(scores[0], scores[1], atol=1e-5)
+
+
+# -- Phase A-2: the isolated-node question ----------------------------------
+
+def test_isolated_node_falls_back_to_self_features(setup):
+    """A drug with no edges in the training graph is the central case of A-2.
+
+    Under a drug-level split every test drug has zero edges in the training
+    interaction graph, so the network encoder can receive no messages for it.
+    The protocol predicts it does not break or emit zeros: with self-loops the
+    encoder degenerates into a per-node transform of the drug's own features.
+
+    This pins that behaviour. If a future change makes an isolated node produce
+    a constant or a zero vector instead, the dual model would silently stop
+    distinguishing unseen drugs from each other and the A-2 comparison would
+    become meaningless.
+    """
+    import torch as t
+    from ddinet.models.encoders import DDIGraphEncoder
+
+    bundle, _, _ = setup
+    graph = bundle.graph
+    n_nodes = graph.node_features.shape[0]
+
+    isolated = [i for i in range(n_nodes)
+                if not bool((graph.edge_index[0] == i).any())]
+    assert isolated, "expected at least one node with no edges in the training graph"
+
+    t.manual_seed(0)
+    encoder = DDIGraphEncoder(graph.node_features.shape[1], hidden_dim=32,
+                              n_layers=2, architecture="gat").eval()
+    with t.no_grad():
+        out = encoder(graph.node_features, graph.edge_index, graph.edge_type)
+
+    a, b = isolated[0], isolated[-1]
+    assert not t.allclose(out[a], t.zeros_like(out[a])), "isolated node collapsed to zero"
+    if a != b and not t.allclose(graph.node_features[a], graph.node_features[b]):
+        assert not t.allclose(out[a], out[b]), (
+            "two isolated nodes with different features produced identical "
+            "embeddings - the encoder is ignoring node features"
+        )
+
+
+def test_sum_pooling_is_the_default_and_scales_with_molecule_size():
+    """Sum is the GIN-family standard: injective over multisets, unlike mean."""
+    import torch as t
+    from torch_geometric.loader import DataLoader
+
+    from ddinet.features.molgraph import smiles_to_graph
+    from ddinet.models.encoders import MolecularEncoder
+
+    small, large = smiles_to_graph("CCO"), smiles_to_graph("CC(C)Cc1ccc(C(C)C(=O)O)cc1")
+    batch = next(iter(DataLoader([small.data, large.data], batch_size=2)))
+    t.manual_seed(0)
+    encoder = MolecularEncoder(ATOM_FEATURE_DIM, BOND_FEATURE_DIM, hidden_dim=32,
+                               n_layers=3).eval()
+    assert encoder.pooling == "sum"
+    with t.no_grad():
+        pooled, _ = encoder(batch.x, batch.edge_index, batch.edge_attr, batch.batch)
+    assert pooled.norm(dim=1)[1] > pooled.norm(dim=1)[0], (
+        "sum pooling should scale with molecule size"
+    )
+
+
+def test_atom_importance_refuses_when_there_is_no_gate():
+    """Returning a uniform vector would be mistaken for a saliency map."""
+    import pytest as pt
+    import torch as t
+    from torch_geometric.loader import DataLoader
+
+    from ddinet.features.molgraph import smiles_to_graph
+    from ddinet.models.encoders import MolecularEncoder
+
+    batch = next(iter(DataLoader([smiles_to_graph("CCO").data], batch_size=1)))
+    encoder = MolecularEncoder(ATOM_FEATURE_DIM, BOND_FEATURE_DIM, hidden_dim=32,
+                               pooling="sum")
+    _, atoms = encoder(batch.x, batch.edge_index, batch.edge_attr, batch.batch)
+    with pt.raises(ValueError, match="requires pooling='attention'"):
+        encoder.atom_importance(atoms, batch.batch)
+
+
+# -- Phase A-2: run bookkeeping that the reported numbers depend on ---------
+
+def test_epochs_run_counts_the_epoch_that_triggered_early_stopping(setup):
+    """An early-stopped run must report the epoch it actually reached.
+
+    Recording the count after the break undercounts every early-stopped run by
+    one. That number is what separates "converged" from "ran out of budget" in
+    the Phase A-2 report (protocol, Addendum 2), so an off-by-one there is an
+    off-by-one in a stated limitation.
+    """
+    bundle, _, dataset = setup
+    torch.manual_seed(0)
+    trainer = Trainer(make_model(bundle), bundle, dataset,
+                      TrainConfig(epochs=12, patience=1, seed=0, verbose=False))
+    history = trainer.fit()
+    assert history.epochs_run >= 1
+    assert history.epochs_run >= history.best_epoch
+
+
+def test_stop_reason_distinguishes_patience_from_the_epoch_limit(setup):
+    """A run capped by ``epochs`` is a lower bound, not a converged result.
+
+    Phase A-2 reports the fraction of runs in each state, so the two must be
+    distinguishable from the history object alone rather than inferred by
+    comparing counts to the configuration.
+    """
+    bundle, _, dataset = setup
+    torch.manual_seed(0)
+    capped = Trainer(make_model(bundle), bundle, dataset,
+                     TrainConfig(epochs=2, patience=50, seed=0, verbose=False)).fit()
+    assert capped.stopped_by == "epoch_limit"
+    assert capped.epochs_run == 2
+
+    torch.manual_seed(0)
+    stopped = Trainer(make_model(bundle), bundle, dataset,
+                      TrainConfig(epochs=100, patience=1, seed=0, verbose=False)).fit()
+    assert stopped.stopped_by == "patience"
+    assert stopped.epochs_run < 100
+
+
+def test_bucket_frame_is_row_aligned_with_predictions(setup):
+    """The frame used to mask predictions must be the frame they came from.
+
+    Per-setting metrics (S1/S2/S3) are computed by masking the prediction
+    vector. If the mask were built by re-filtering the original dataset, bucket
+    grouping and dropped pairs could reorder the rows, and every per-setting
+    number would be wrong while looking entirely plausible.
+    """
+    bundle, _, dataset = setup
+    torch.manual_seed(0)
+    trainer = Trainer(make_model(bundle), bundle, dataset,
+                      TrainConfig(epochs=1, seed=0, verbose=False))
+    y, scores = trainer.predict_bucket("test")
+    frame = trainer.bucket_frame("test")
+    assert frame is not None
+    assert len(frame) == len(y) == len(scores)
+    # Labels are carried in both places, so equality is a real alignment check
+    # rather than a length coincidence.
+    assert np.array_equal(frame["label"].to_numpy(), y)

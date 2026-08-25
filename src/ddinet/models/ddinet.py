@@ -68,6 +68,9 @@ class DDINetConfig:
     heads: int = 4
     dropout: float = 0.2
     architecture: str = "gat"
+    #: Molecular readout. Sum is the GIN-family standard and the Phase A-2
+    #: default; see MolecularEncoder for why injectivity over multisets matters.
+    pooling: str = "sum"
     use_molecular_branch: bool = True
     use_graph_branch: bool = True
 
@@ -113,6 +116,7 @@ class DDINet(nn.Module):
             hidden_dim=h,
             n_layers=config.mol_layers,
             dropout=config.dropout,
+            pooling=config.pooling,
         )
         self.graph_encoder = DDIGraphEncoder(
             in_dim=config.node_feature_dim,

@@ -66,6 +66,7 @@ from torch_geometric.nn import (
     GINEConv,
     SAGEConv,
 )
+from torch_geometric.nn import global_add_pool, global_mean_pool
 from torch_geometric.nn.aggr import AttentionalAggregation
 from torch_geometric.utils import to_dense_batch
 
@@ -83,10 +84,24 @@ class MolecularEncoder(nn.Module):
     encoder that returned only the pooled vector would make the project's
     interpretability claim impossible.
 
-    Attention pooling (rather than mean or sum) is used deliberately: it emits a
-    scalar importance weight per atom, which is a per-molecule saliency map for
-    free. Mean pooling would give every atom equal say, which is both less
-    expressive and uninterpretable.
+    POOLING: SUM BY DEFAULT
+    -----------------------
+    Sum pooling is the standard readout for GIN-family encoders and is what the
+    original paper uses, for a specific reason: it is the only one of the three
+    common readouts that is *injective* over multisets of node features. Mean and
+    max both discard multiplicity - a molecule with two carboxyl groups and one
+    with three pool to the same mean - so they throw away exactly the size and
+    composition information that distinguishes a small fragment from a large one.
+
+    The cost is that sum scales with molecule size, so a 60-atom drug produces a
+    larger-norm embedding than a 15-atom one. The LayerNorm in the fusion head
+    absorbs that.
+
+    ``pooling="attention"`` is retained because it emits a scalar weight per
+    atom, which is a per-molecule saliency map for free. It is not the Phase A-2
+    default: the protocol calls for a standard architecture with no invented
+    components, and attention pooling is the thin end of the interpretability
+    work that belongs to Phase B.
     """
 
     def __init__(
@@ -96,6 +111,7 @@ class MolecularEncoder(nn.Module):
         hidden_dim: int = 128,
         n_layers: int = 3,
         dropout: float = 0.2,
+        pooling: str = "sum",
     ) -> None:
         super().__init__()
         self.hidden_dim = hidden_dim
@@ -120,13 +136,19 @@ class MolecularEncoder(nn.Module):
             self.norms.append(nn.LayerNorm(hidden_dim))
 
         self.dropout = nn.Dropout(dropout)
-        self.pool = AttentionalAggregation(
-            gate_nn=nn.Sequential(
-                nn.Linear(hidden_dim, hidden_dim // 2),
-                nn.ReLU(),
-                nn.Linear(hidden_dim // 2, 1),
+        self.pooling = pooling
+        if pooling == "attention":
+            self.pool = AttentionalAggregation(
+                gate_nn=nn.Sequential(
+                    nn.Linear(hidden_dim, hidden_dim // 2),
+                    nn.ReLU(),
+                    nn.Linear(hidden_dim // 2, 1),
+                )
             )
-        )
+        elif pooling in ("sum", "mean"):
+            self.pool = None
+        else:
+            raise ValueError(f"Unknown pooling {pooling!r}")
 
     def forward(
         self, x: torch.Tensor, edge_index: torch.Tensor,
@@ -147,7 +169,12 @@ class MolecularEncoder(nn.Module):
             # vector - which destroys per-atom attribution.
             h = h + h_new
 
-        pooled = self.pool(h, batch)
+        if self.pooling == "sum":
+            pooled = global_add_pool(h, batch)
+        elif self.pooling == "mean":
+            pooled = global_mean_pool(h, batch)
+        else:
+            pooled = self.pool(h, batch)
         return pooled, h
 
     def atom_importance(
@@ -155,9 +182,16 @@ class MolecularEncoder(nn.Module):
     ) -> torch.Tensor:
         """Per-atom pooling-gate weights, softmax-normalised within a molecule.
 
-        This is the intra-molecular saliency used in Step 5: "which atoms did
-        the encoder consider important when summarising this molecule?"
+        Only meaningful with ``pooling="attention"``; sum pooling has no gate to
+        read, so this raises rather than returning a uniform vector that would
+        look like a saliency map while carrying no information.
         """
+        if self.pooling != "attention":
+            raise ValueError(
+                f"atom_importance requires pooling='attention', not {self.pooling!r}. "
+                f"Sum pooling has no per-atom gate; a uniform vector would be "
+                f"mistaken for a saliency map."
+            )
         logits = self.pool.gate_nn(atom_embeddings).squeeze(-1)
         dense, mask = to_dense_batch(logits.unsqueeze(-1), batch, fill_value=-1e9)
         weights = torch.softmax(dense.squeeze(-1), dim=1)

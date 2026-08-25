@@ -51,7 +51,11 @@ class TrainConfig:
     epochs: int = 300
     lr: float = 1e-3
     weight_decay: float = 1e-4
-    batch_size: int = 256
+    #: None = full batch. The cost of a step is dominated by encoding all
+    #: molecules, not by the pair count, so minibatching pairs multiplies epoch
+    #: cost roughly twentyfold at this scale while buying nothing. See
+    #: docs/PHASE_A2_PROTOCOL.md section 9.
+    batch_size: int | None = None
     patience: int = 40
     seed: int = 0
     device: str = "cpu"
@@ -60,7 +64,10 @@ class TrainConfig:
     #: model predicts "interaction" for everything - the mirror image of the
     #: majority-class failure it was meant to fix.
     max_pos_weight: float = 10.0
-    selection_bucket: str = "val_S2"
+    #: Prefix, not an exact name: bucket naming differs between split
+    #: schemes ("val" vs "val_S2"/"val_S3"), and exact matching would
+    #: silently select on an empty set for two of the three schemes.
+    selection_bucket: str = "val"
     selection_metric: str = "auprc"
     verbose: bool = True
 
@@ -73,14 +80,23 @@ class TrainHistory:
     best_score: float = -np.inf
     train_loss: list[float] = field(default_factory=list)
     val_scores: list[float] = field(default_factory=list)
-    selection_bucket: str = "val_S2"
+    #: Prefix, not an exact name: bucket naming differs between split
+    #: schemes ("val" vs "val_S2"/"val_S3"), and exact matching would
+    #: silently select on an empty set for two of the three schemes.
+    selection_bucket: str = "val"
+    #: "patience" or "epoch_limit". Which one ended the run matters for
+    #: interpretation: a run stopped by the epoch limit was possibly still
+    #: improving, so its score is a lower bound rather than a converged
+    #: result. Phase A-2 reports the fraction of runs in each state alongside
+    #: the metrics (docs/PHASE_A2_PROTOCOL.md, Addendum 2).
+    stopped_by: str = "epoch_limit"
     wall_time_s: float = 0.0
 
     def summary(self) -> str:
         return (
             f"trained {self.epochs_run} epochs in {self.wall_time_s:.1f}s | "
             f"best {self.selection_bucket} {self.config.get('selection_metric','auprc')}"
-            f"={self.best_score:.4f} @ epoch {self.best_epoch}"
+            f"={self.best_score:.4f} @ epoch {self.best_epoch} ({self.stopped_by})"
         )
 
 
@@ -126,9 +142,9 @@ class Trainer:
             for name, group in dataset.groupby("bucket", sort=True)
         }
 
-        train = self.buckets.get("train")
+        train = self._pooled("train")
         if train is None:
-            raise ValueError("Dataset has no 'train' bucket")
+            raise ValueError("Dataset has no bucket whose name starts with 'train'")
         n_pos = int(train["labels"].sum())
         n_neg = len(train["labels"]) - n_pos
         raw = (n_neg / max(n_pos, 1))
@@ -163,6 +179,28 @@ class Trainer:
             "frame": group.reset_index(drop=True),
         }
 
+    def _pooled(self, prefix: str) -> dict | None:
+        """Concatenate every bucket whose name starts with ``prefix``.
+
+        Split schemes name buckets differently - the drug-level scheme emits
+        ``test_S2``/``test_S3`` while the random-pair scheme emits a flat
+        ``test`` - so matching by prefix is what keeps the trainer
+        scheme-agnostic. Exact matching would silently train or evaluate on an
+        empty set for two of the three schemes and report it as success.
+        """
+        parts = [data for name, data in self.buckets.items() if name.startswith(prefix)]
+        parts = [d for d in parts if len(d["labels"])]
+        if not parts:
+            return None
+        if len(parts) == 1:
+            return parts[0]
+        return {
+            "idx_a": torch.cat([d["idx_a"] for d in parts]),
+            "idx_b": torch.cat([d["idx_b"] for d in parts]),
+            "labels": torch.cat([d["labels"] for d in parts]),
+            "frame": pd.concat([d["frame"] for d in parts], ignore_index=True),
+        }
+
     # -- forward helpers ---------------------------------------------------
     def _encode(self, *, return_attention: bool = False):
         return self.model.encode(
@@ -173,13 +211,14 @@ class Trainer:
     # -- training ----------------------------------------------------------
     def _train_epoch(self) -> float:
         self.model.train()
-        train = self.buckets["train"]
+        train = self._pooled("train")
         n = len(train["labels"])
+        batch_size = self.cfg.batch_size or n
         perm = torch.randperm(n, device=self.device)
         total, n_batches = 0.0, 0
 
-        for start in range(0, n, self.cfg.batch_size):
-            sel = perm[start : start + self.cfg.batch_size]
+        for start in range(0, n, batch_size):
+            sel = perm[start : start + batch_size]
             self.optimizer.zero_grad()
 
             # Re-encode every step: the graph encoder's parameters change, so
@@ -201,7 +240,7 @@ class Trainer:
     @torch.no_grad()
     def predict_bucket(self, bucket: str) -> tuple[np.ndarray, np.ndarray]:
         """Returns ``(y_true, interaction_prob)``."""
-        data = self.buckets.get(bucket)
+        data = self._pooled(bucket)
         if data is None or len(data["labels"]) == 0:
             return np.array([]), np.array([])
         self.model.eval()
@@ -212,23 +251,24 @@ class Trainer:
             pred.interaction_prob().cpu().numpy(),
         )
 
+    def bucket_frame(self, prefix: str) -> pd.DataFrame | None:
+        """The frame behind :meth:`predict_bucket`, row-for-row aligned with it.
+
+        Callers that want per-setting breakdowns need to mask the prediction
+        vector, and the only safe mask is one built from the same frame the
+        predictions came from. Reconstructing it outside by filtering the
+        original dataset looks equivalent but is not: pooling groups buckets by
+        name, and unfeaturisable pairs are dropped, so the two row orders can
+        differ and every per-setting number would then be silently wrong.
+        """
+        data = self._pooled(prefix)
+        return None if data is None else data["frame"]
+
     def _selection_score(self) -> tuple[float, str]:
         bucket = self.cfg.selection_bucket
-        if bucket not in self.buckets or len(self.buckets[bucket]["labels"]) == 0:
-            # Fall back to pooled validation, and be explicit about it.
-            available = [b for b in ("val_S2", "val_S3") if b in self.buckets]
-            if not available:
-                return float("nan"), "none"
-            y_all, s_all = [], []
-            for b in available:
-                y, s = self.predict_bucket(b)
-                y_all.append(y)
-                s_all.append(s)
-            y, s = np.concatenate(y_all), np.concatenate(s_all)
-            bucket = "val_pooled"
-        else:
-            y, s = self.predict_bucket(bucket)
-
+        y, s = self.predict_bucket(bucket)
+        if len(y) == 0:
+            return float("nan"), "none"
         if len(np.unique(y)) < 2:
             return float("nan"), bucket
         m = compute_binary_metrics(y, s)
@@ -265,13 +305,17 @@ class Trainer:
                       f"{used_bucket} {self.cfg.selection_metric} {score:.4f}"
                       f"{'  *' if improved else ''}")
 
+            # Recorded before the break, not after: assigning it at the end of
+            # the body undercounts every early-stopped run by one epoch, and
+            # that count is what tells "converged" from "ran out of budget".
+            history.epochs_run = epoch
+
             if epochs_without_improvement >= self.cfg.patience:
+                history.stopped_by = "patience"
                 if self.cfg.verbose:
                     print(f"  early stop at epoch {epoch} "
                           f"(no improvement for {self.cfg.patience} epochs)")
                 break
-
-            history.epochs_run = epoch
 
         # Restore the best checkpoint. Using the final weights would report a
         # model that early stopping already judged worse.
