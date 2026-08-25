@@ -61,7 +61,7 @@ from ddinet.eval.metrics import best_threshold, compute_binary_metrics
 from ddinet.features.build import FeatureConfig, build_feature_bundle
 from ddinet.features.molgraph import ATOM_FEATURE_DIM, BOND_FEATURE_DIM
 from ddinet.models.ddinet import DDINet, DDINetConfig
-from ddinet.models.train import TrainConfig, Trainer
+from ddinet.models.train import TrainConfig, Trainer, set_seed
 
 ROOT = Path(__file__).resolve().parents[1]
 REPORTS = ROOT / "reports"
@@ -168,6 +168,13 @@ def run_one(
     "truncated while improving" would therefore overstate the limitation, and
     reading it as "converged" would understate it. The curve settles it.
     """
+    # Seed BEFORE constructing the model, not after. Trainer.__init__ calls
+    # set_seed, but by then the weights already exist, so their values came
+    # from whatever RNG state the previous runs in this process left behind -
+    # making a run's result depend on its position in the grid rather than on
+    # its seed. The Phase A-2 grid and ensemble were produced before this fix;
+    # see LIMITATIONS.md section 6b.
+    set_seed(init_seed)
     model = build_model(bundle, architecture, hp)
     trainer = Trainer(model, bundle, dataset, TrainConfig(
         epochs=max_epochs,

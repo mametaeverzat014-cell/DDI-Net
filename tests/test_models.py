@@ -17,7 +17,7 @@ from ddinet.data import assemble, synthetic_fixture, split as split_mod
 from ddinet.features.build import FeatureConfig, build_feature_bundle
 from ddinet.features.molgraph import ATOM_FEATURE_DIM, BOND_FEATURE_DIM
 from ddinet.models.ddinet import DDINet, DDINetConfig, compute_loss
-from ddinet.models.train import Trainer, TrainConfig
+from ddinet.models.train import Trainer, TrainConfig, set_seed
 
 
 @pytest.fixture(scope="module")
@@ -354,3 +354,26 @@ def test_bucket_frame_is_row_aligned_with_predictions(setup):
     # Labels are carried in both places, so equality is a real alignment check
     # rather than a length coincidence.
     assert np.array_equal(frame["label"].to_numpy(), y)
+
+
+def test_seeding_precedes_model_construction(setup):
+    """A run's weights must depend on its seed, not on its position in a batch.
+
+    Trainer.__init__ calls set_seed, but a caller that builds the model first
+    has already drawn its weights from whatever RNG state earlier runs left
+    behind. The result is a grid where the same nominal seed gives different
+    numbers depending on how many models were constructed before it - which
+    breaks per-cell reproducibility while looking entirely normal.
+
+    This pins the property the runner must preserve: seed, then construct.
+    """
+    bundle, _, _ = setup
+
+    def weights_after(preceding_builds: int) -> torch.Tensor:
+        set_seed(999)                       # arbitrary ambient state
+        for _ in range(preceding_builds):   # other runs earlier in the process
+            make_model(bundle)
+        set_seed(0)                         # the run's own seed, then build
+        return next(make_model(bundle).parameters()).flatten()[:8].detach().clone()
+
+    assert torch.equal(weights_after(0), weights_after(3))
