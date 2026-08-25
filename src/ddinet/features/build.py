@@ -199,10 +199,18 @@ def build_feature_bundle(
     )
 
     # Verify the invariant rather than trusting the call above.
-    for bucket in ("val_S2", "val_S3", "test_S2", "test_S3"):
-        pairs = split.buckets.get(bucket)
-        if pairs is not None and len(pairs):
-            assert_no_evaluation_edges(graph, pairs)
+    #
+    # Matched by PREFIX, not by an explicit list of names. The list used to be
+    # ("val_S2", "val_S3", "test_S2", "test_S3"), which is the drug-level
+    # scheme's naming; the random-pair scheme names its buckets "val" and
+    # "test", so the check silently did nothing for exactly the scheme where a
+    # graph leak would inflate results most - the one this project exists to
+    # measure. A verification that quietly covers two of three schemes is worse
+    # than none, because it reads like coverage.
+    for name, pairs in split.buckets.items():
+        if name.startswith("train") or pairs is None or not len(pairs):
+            continue
+        assert_no_evaluation_edges(graph, pairs)
 
     mol_graphs = build_mol_graphs(names, list(drugs["smiles"]))
 

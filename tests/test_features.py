@@ -223,3 +223,34 @@ def test_bundle_feature_names_match_matrix_width(bundle):
 
 def test_every_drug_has_a_molecular_graph(bundle):
     assert set(bundle.mol_graphs) == set(bundle.drugs["name"])
+
+
+def test_evaluation_edges_are_checked_under_every_bucket_naming():
+    """The graph guard must cover schemes that name their buckets differently.
+
+    The drug-level scheme emits val_S2/val_S3/test_S2/test_S3; the random-pair
+    scheme emits a flat val/test. An explicit list of the former names checks
+    nothing for the latter - and the random-pair scheme is precisely where an
+    evaluation edge in the message-passing graph would inflate results most.
+    This pins that the guard is reached for a flat-named bucket by handing it a
+    graph that does contain one.
+    """
+    from ddinet.data import synthetic_fixture, split as split_mod
+    from ddinet.features.ddi_graph import assert_no_evaluation_edges, build_ddi_graph
+    import numpy as np
+    import pytest
+
+    drugs = synthetic_fixture.load_drugs()
+    pairs = synthetic_fixture.load_pairs()
+    sp = split_mod.build_split(drugs, pairs, seed=7)
+    node_features = np.zeros((len(drugs), 4), dtype=np.float32)
+
+    # A graph built from ALL pairs contains the evaluation edges by definition,
+    # so the guard must reject it however the bucket happens to be named.
+    leaky = build_ddi_graph(drugs, pairs, node_features,
+                            node_feature_names=[f"f{i}" for i in range(4)],
+                            include_pathway_edges=False)
+    held_out = next(df for name, df in sp.buckets.items()
+                    if not name.startswith("train") and len(df))
+    with pytest.raises(Exception):
+        assert_no_evaluation_edges(leaky, held_out)
