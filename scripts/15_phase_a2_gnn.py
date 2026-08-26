@@ -125,6 +125,61 @@ def build_model(bundle, architecture: str, hp: dict) -> DDINet:
     ))
 
 
+class CannotFitError(RuntimeError):
+    """The model failed to memorise a small training subset."""
+
+
+def assert_can_overfit(
+    bundle, dataset: pd.DataFrame, architecture: str, hp: dict,
+    *, n_pairs: int = 2000, epochs: int = 300, threshold: float = 0.85,
+) -> float:
+    """Refuse to start a grid with a model that cannot fit a tiny training set.
+
+    This check exists because Phase A-2's first grid ran to completion, produced
+    a coherent six-cell story, and was wrong: the model could not fit its own
+    training data, so every number described our optimisation rather than the
+    task. Nothing in the run looked broken - the losses moved, the curves were
+    smooth, the seeds disagreed plausibly. Only a deliberate capacity check
+    catches that class of failure, and it has to run BEFORE the grid, not as a
+    post-mortem (docs/PHASE_A2_PROTOCOL.md, Addendum 9).
+
+    A few thousand pairs with regularisation off should be memorisable by a
+    220k-parameter network. If training AUPRC cannot clear ``threshold``, the
+    problem is the architecture or the optimiser, and any test number the grid
+    would produce is uninterpretable.
+
+    Note this trains on a subset and evaluates on that same subset ON PURPOSE:
+    the question is capacity to fit, not generalisation. It never touches test.
+    """
+    train = dataset.loc[dataset["bucket"].str.startswith("train")]
+    if len(train) < n_pairs:
+        n_pairs = len(train)
+    small = train.sample(n=n_pairs, random_state=0).copy()
+    mirror = small.copy()
+    mirror["bucket"] = "val"          # the trainer needs a selection bucket
+    subset = pd.concat([small, mirror], ignore_index=True)
+
+    set_seed(0)
+    model = build_model(bundle, architecture, {**hp, "dropout": 0.0})
+    trainer = Trainer(model, bundle, subset, TrainConfig(
+        epochs=epochs, lr=hp["lr"], weight_decay=0.0, batch_size=None,
+        patience=epochs, seed=0, selection_bucket="val", verbose=False))
+    trainer.fit()
+    y, scores = trainer.predict_bucket("train")
+    auprc = float(compute_binary_metrics(y, scores).auprc)
+
+    if auprc < threshold:
+        raise CannotFitError(
+            f"{architecture} reached only {auprc:.4f} training AUPRC on "
+            f"{n_pairs} pairs with regularisation off ({epochs} full-batch "
+            f"steps); the bar is {threshold}. The model cannot fit data it is "
+            f"allowed to memorise, so grid results would describe the "
+            f"optimisation, not the task. Fix the model before running the "
+            f"grid - see docs/PHASE_A2_PROTOCOL.md, Addendum 9."
+        )
+    return auprc
+
+
 def make_bundle(scheme: str, split_seed: int, drugs, pairs):
     """Split, verify, then featurise - in that order, which is the only correct one.
 
@@ -336,6 +391,28 @@ def load_hyperparameters(args) -> dict:
 def stage_grid(args, drugs, pairs, drug_names, positive_keys) -> int:
     """2 architectures x 3 schemes x 2 negative schemes x 5 seeds. Test opens here."""
     hyper = load_hyperparameters(args)
+
+    # Capacity gate. Runs once per architecture before the grid opens test, on
+    # the honest cell. A grid whose model cannot fit its own training data
+    # produces a coherent table of meaningless numbers - which is exactly what
+    # happened the first time (Addendum 9).
+    if not args.skip_fit_check:
+        scheme, strategy = TUNING_CELL
+        _, gate_bundle, _ = make_bundle(scheme, args.tune_seed, drugs, pairs)
+        gate_ds, _ = neg.build_dataset(
+            gate_bundle.split, drug_names, positive_keys,
+            neg.NegativeSamplingConfig(strategy=strategy, ratio=args.neg_ratio,
+                                       seed=args.tune_seed))
+        gate_ds = gate_ds.loc[
+            ~gate_ds["bucket"].str.startswith("test")].reset_index(drop=True)
+        for architecture in ARCHITECTURES:
+            t0 = time.time()
+            got = assert_can_overfit(gate_bundle, gate_ds, architecture,
+                                     hyper[architecture])
+            print(f"fit check: {architecture:5s} memorised {got:.4f} training "
+                  f"AUPRC on a small subset ({time.time()-t0:.0f}s)")
+        print()
+
     results_path = REPORTS / f"{args.out_prefix}_results.csv"
     rows: list[dict] = []
     completed: set[tuple] = set()
@@ -482,6 +559,9 @@ def main() -> int:
     ap.add_argument("--threads", type=int, default=4)
     ap.add_argument("--out-prefix", default="phase_a2")
     ap.add_argument("--fresh", action="store_true")
+    ap.add_argument("--skip-fit-check", action="store_true",
+                    help="Skip the capacity gate. Only for reproducing the "
+                         "pre-Addendum-9 runs; never for new results.")
     args = ap.parse_args()
 
     torch.set_num_threads(args.threads)

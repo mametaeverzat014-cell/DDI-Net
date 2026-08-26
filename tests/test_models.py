@@ -377,3 +377,29 @@ def test_seeding_precedes_model_construction(setup):
         return next(make_model(bundle).parameters()).flatten()[:8].detach().clone()
 
     assert torch.equal(weights_after(0), weights_after(3))
+
+
+def test_capacity_gate_rejects_a_model_that_cannot_fit(setup, monkeypatch):
+    """The gate must fail loudly, not warn, when a model cannot memorise.
+
+    Phase A-2's first grid completed, produced a coherent six-cell table, and
+    was meaningless because the model never fit its training data. Nothing in
+    that run looked broken. A gate that only warns would have been ignored the
+    same way, so this pins that it raises.
+    """
+    import importlib.util
+    import pytest as pt
+    from pathlib import Path
+
+    spec = importlib.util.spec_from_file_location(
+        "phase_a2_runner",
+        Path(__file__).resolve().parents[1] / "scripts" / "15_phase_a2_gnn.py")
+    runner = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(runner)
+
+    bundle, _, dataset = setup
+    # A model that cannot learn: threshold set above what one step can reach.
+    with pt.raises(runner.CannotFitError, match="cannot fit data it is allowed"):
+        runner.assert_can_overfit(
+            bundle, dataset, "gine", {"lr": 1e-3, "dropout": 0.0},
+            n_pairs=64, epochs=1, threshold=0.999)
