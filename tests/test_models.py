@@ -257,8 +257,20 @@ def test_isolated_node_falls_back_to_self_features(setup):
         )
 
 
-def test_sum_pooling_is_the_default_and_scales_with_molecule_size():
-    """Sum is the GIN-family standard: injective over multisets, unlike mean."""
+def test_sum_pooling_is_the_default_and_is_normalised():
+    """Sum is the GIN-family default, but its magnitude must not encode size.
+
+    This test previously asserted the opposite - that a larger molecule yields a
+    larger pooled norm - and called that confirmation the pooling worked. It was
+    pinning a defect. Unnormalised sum pooling makes the embedding's magnitude a
+    near-perfect proxy for atom count (measured correlation 0.9999, norms
+    spanning 12.7 to 5800 on DrugBank), and because the pair decoder multiplies
+    two of these elementwise, the first Phase A-2 grid trained on inputs
+    spanning five orders of magnitude and never fit its own training data.
+
+    What must hold: pooling stays injective over multisets (two different
+    molecules give different vectors) while the SCALE no longer tracks size.
+    """
     import torch as t
     from torch_geometric.loader import DataLoader
 
@@ -273,8 +285,24 @@ def test_sum_pooling_is_the_default_and_scales_with_molecule_size():
     assert encoder.pooling == "sum"
     with t.no_grad():
         pooled, _ = encoder(batch.x, batch.edge_index, batch.edge_attr, batch.batch)
-    assert pooled.norm(dim=1)[1] > pooled.norm(dim=1)[0], (
-        "sum pooling should scale with molecule size"
+        raw, _ = MolecularEncoder(ATOM_FEATURE_DIM, BOND_FEATURE_DIM, hidden_dim=32,
+                                  n_layers=3, pool_norm=False).eval()(
+            batch.x, batch.edge_index, batch.edge_attr, batch.batch)
+
+    norms = pooled.norm(dim=1)
+    # Normalised: the two molecules differ in atom count by roughly 5x, and
+    # their pooled norms must no longer differ by anything like that factor.
+    assert max(norms) / min(norms) < 1.5, (
+        f"pooled norm still tracks molecule size: {norms.tolist()}"
+    )
+    # But the vectors must still be distinguishable - normalisation must not
+    # have collapsed the representation.
+    assert not t.allclose(pooled[0], pooled[1]), "pooling collapsed both molecules"
+    # And the defect is real in the unnormalised path, which is what the
+    # pool_norm=False escape hatch reproduces.
+    raw_norms = raw.norm(dim=1)
+    assert max(raw_norms) / min(raw_norms) > 2.0, (
+        "expected unnormalised sum pooling to scale with molecule size"
     )
 
 

@@ -554,8 +554,8 @@ def main() -> int:
     #: 150, not the 200 of protocol section 8 - see Addendum 2. The fraction of
     #: runs that stop on the limit rather than on patience is reported with the
     #: results, because a run that was still improving is a lower bound.
-    ap.add_argument("--max-epochs", type=int, default=150)
-    ap.add_argument("--patience", type=int, default=20)
+    ap.add_argument("--max-epochs", type=int, default=400)
+    ap.add_argument("--patience", type=int, default=60)
     ap.add_argument("--threads", type=int, default=4)
     ap.add_argument("--out-prefix", default="phase_a2")
     ap.add_argument("--fresh", action="store_true")

@@ -112,6 +112,7 @@ class MolecularEncoder(nn.Module):
         n_layers: int = 3,
         dropout: float = 0.2,
         pooling: str = "sum",
+        pool_norm: bool = True,
     ) -> None:
         super().__init__()
         self.hidden_dim = hidden_dim
@@ -137,6 +138,21 @@ class MolecularEncoder(nn.Module):
 
         self.dropout = nn.Dropout(dropout)
         self.pooling = pooling
+
+        # Normalise the pooled vector before it leaves the encoder.
+        #
+        # Sum pooling makes the embedding's MAGNITUDE a near-perfect proxy for
+        # molecule size - measured correlation with atom count is 0.9999, and
+        # norms span 12.7 to 5800 across DrugBank. The pair decoder multiplies
+        # two of these elementwise, so the fusion MLP saw inputs spanning five
+        # orders of magnitude that encoded size rather than chemistry, and
+        # gradients were dominated by a handful of large-molecule pairs. The
+        # first Phase A-2 grid trained under exactly that and could not fit its
+        # own training data (docs/PHASE_A2_PROTOCOL.md, Addenda 9-10).
+        #
+        # On by default because the failure it prevents is silent: the run
+        # completes, the curves look smooth, and the numbers are meaningless.
+        self.pool_norm = nn.LayerNorm(hidden_dim) if pool_norm else nn.Identity()
         if pooling == "attention":
             self.pool = AttentionalAggregation(
                 gate_nn=nn.Sequential(
@@ -175,7 +191,7 @@ class MolecularEncoder(nn.Module):
             pooled = global_mean_pool(h, batch)
         else:
             pooled = self.pool(h, batch)
-        return pooled, h
+        return self.pool_norm(pooled), h
 
     def atom_importance(
         self, atom_embeddings: torch.Tensor, batch: torch.Tensor

@@ -71,6 +71,9 @@ class DDINetConfig:
     #: Molecular readout. Sum is the GIN-family standard and the Phase A-2
     #: default; see MolecularEncoder for why injectivity over multisets matters.
     pooling: str = "sum"
+    #: Normalise the pooled molecular vector. See MolecularEncoder for why the
+    #: default is True and what happens without it.
+    pool_norm: bool = True
     use_molecular_branch: bool = True
     use_graph_branch: bool = True
 
@@ -117,6 +120,7 @@ class DDINet(nn.Module):
             n_layers=config.mol_layers,
             dropout=config.dropout,
             pooling=config.pooling,
+            pool_norm=config.pool_norm,
         )
         self.graph_encoder = DDIGraphEncoder(
             in_dim=config.node_feature_dim,
