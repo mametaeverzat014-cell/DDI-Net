@@ -1,0 +1,7 @@
+full scale: 187260 train pairs, 600 full-batch steps
+sum      600st           TRAIN 0.8034  VAL 0.6984  gap +0.1050  loss->0.5625  (1282s)
+sum+norm 600st           TRAIN 0.8796  VAL 0.7384  gap +0.1412  loss->0.4767  (1202s)
+mean      600st          TRAIN 0.8685  VAL 0.7325  gap +0.1360  loss->0.4929  (1174s)
+mean+norm 600st          TRAIN 0.8779  VAL 0.7321  gap +0.1458  loss->0.4770  (1071s)
+attention      600st     TRAIN 0.8807  VAL 0.7309  gap +0.1498  loss->0.4762  (962s)
+attention+norm 600st     TRAIN 0.8933  VAL 0.7440  gap +0.1493  loss->0.4554  (918s)

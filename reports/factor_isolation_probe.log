@@ -1,0 +1,5 @@
+--- 5k subset, one factor at a time (all with pool norm) ---
+5k  300ep dropout0.0   [reference]           TRAIN AUPRC 0.9229  loss->0.3419  steps   300  (252s)
+5k  150ep dropout0.0   [halve steps]         TRAIN AUPRC 0.7960  loss->0.5564  steps   150  (116s)
+5k  300ep dropout0.1   [add dropout]         TRAIN AUPRC 0.9093  loss->0.4555  steps   300  (263s)
+5k  600ep dropout0.0   [double steps]        TRAIN AUPRC 0.9941  loss->0.0391  steps   600  (396s)

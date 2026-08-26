@@ -1,0 +1,5 @@
+gine  ran 589 steps, stopped by patience, best step 529, best val 0.7504 (1133s)
+      best-so-far by step: {100: 0.6555, 200: 0.6898, 300: 0.7213, 400: 0.7397}
+dual  ran 218 steps, stopped by patience, best step 158, best val 0.7204 (562s)
+      best-so-far by step: {100: 0.7188, 200: 0.7204}
+wrote reports/steps_ladder_curves.json

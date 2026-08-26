@@ -1,0 +1,4 @@
+baseline               train AUPRC 0.6332  val AUPRC 0.6299  train_loss 0.7177->0.6677  (317s)
+A_norm_after_pool      train AUPRC 0.6823  val AUPRC 0.6535  train_loss 0.7078->0.6414  (316s)
+B_mean_pool            train AUPRC 0.6574  val AUPRC 0.6401  train_loss 0.7192->0.6560  (297s)
+C_norm_fusion_input    train AUPRC 0.6109  val AUPRC 0.6199  train_loss 0.7069->0.6755  (305s)

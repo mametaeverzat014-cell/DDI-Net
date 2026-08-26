@@ -32,12 +32,26 @@ reports/*.json
 !reports/phase_a_full_rf.json
 !reports/phase_a2_tuning.json
 !reports/phase_a2_hyperparameters.json
+# Per-epoch validation curves. These are the evidence base for every claim
+# about training budget - "the last 20 epochs gained +0.0007", "the best epoch
+# was 529 of 800" - and none of it is checkable without them.
+!reports/phase_a2_curves.json
+!reports/steps_ladder_curves.json
 !reports/.gitkeep
 
 # Console logs of long runs. The substantive record is the JSON/CSV the run
 # writes, which is committed; the log is the same information with timestamps
 # and progress bars around it, and it grows every time a run is resumed.
 reports/*.log
+# Exception: the diagnostic probes print their results to stdout and write no
+# CSV, so for them the log IS the substantive record rather than progress noise
+# around it. The rule above assumes a run also writes structured output; these
+# do not.
+!reports/pooling_variants_probe.log
+!reports/overfit_capacity_probe.log
+!reports/factor_isolation_probe.log
+!reports/pooling_fullscale_probe.log
+!reports/steps_ladder_probe.log
 
 # ---- Python -----------------------------------------------------------
 __pycache__/

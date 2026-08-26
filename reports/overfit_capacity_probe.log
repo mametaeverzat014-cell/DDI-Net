@@ -1,0 +1,4 @@
+subset: 5000 train pairs, prevalence 0.495
+as-shipped h64             TRAIN AUPRC 0.7718  loss 0.7251->0.5806  params 0.22M  (202s)
+h64 + pool norm            TRAIN AUPRC 0.9308  loss 0.7134->0.3334  params 0.22M  (208s)
+h256 + pool norm           TRAIN AUPRC 0.9320  loss 0.7089->0.3188  params 1.83M  (1649s)
