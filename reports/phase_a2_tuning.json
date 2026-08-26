@@ -43,5 +43,20 @@
     "threshold": 0.22157403826713562,
     "val_auprc": 0.7074457590208221,
     "val_auc_roc": 0.7110501252215022
+  },
+  {
+    "scheme": "drug",
+    "negatives": "degree_matched",
+    "architecture": "gine",
+    "lr": 0.001,
+    "dropout": 0.3,
+    "init_seed": 0,
+    "epochs_run": 395,
+    "best_epoch": 335,
+    "stopped_by": "patience",
+    "wall_time_s": 763.3,
+    "threshold": 0.2938283085823059,
+    "val_auprc": 0.7027976721253304,
+    "val_auc_roc": 0.70775268466002
   }
 ]
