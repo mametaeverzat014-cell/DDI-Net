@@ -53,6 +53,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch_geometric.utils import to_dense_batch
 
+from .adversarial import AdversaryOutput, DegreeAdversary, dann_lambda
 from .encoders import DDIGraphEncoder, MolecularEncoder
 
 
@@ -88,6 +89,26 @@ class DDINetConfig:
     use_molecular_branch: bool = True
     use_graph_branch: bool = True
 
+    #: Adversarially suppress the training-graph degree in the network branch's
+    #: embedding. This is the project's own architectural proposal, not a
+    #: baseline - see models/adversarial.py for the full rationale and for the
+    #: failure mode (encoder collapse) that must be reported alongside it.
+    #:
+    #: OFF BY DEFAULT AND CONSTRUCTED ONLY WHEN ON. The adversary's parameters
+    #: are created inside `if config.adversarial_degree:` rather than
+    #: unconditionally, because constructing an unused module would still draw
+    #: from the ambient RNG and shift every other weight in the model. A run
+    #: with this flag off must be bit-identical to one from before the flag
+    #: existed - otherwise the Phase A-2 grid could not be resumed from its
+    #: checkpoint without silently mixing two code versions.
+    adversarial_degree: bool = False
+    #: Asymptotic reversal strength. 0 disables the pressure while still
+    #: building the head, which is the honest ablation control: same parameter
+    #: count, same optimiser state, no adversarial gradient.
+    adv_lambda_max: float = 1.0
+    #: Steepness of the DANN ramp.
+    adv_gamma: float = 10.0
+
     def ablation_name(self) -> str:
         parts = [self.architecture]
         if self.use_degree_feature:
@@ -96,6 +117,8 @@ class DDINetConfig:
             parts.append("no-mol")
         if not self.use_graph_branch:
             parts.append("no-graph")
+        if self.adversarial_degree:
+            parts.append(f"adv{self.adv_lambda_max:g}")
         return "+".join(parts)
 
 
@@ -177,6 +200,17 @@ class DDINet(nn.Module):
         # the evaluation edges this project exists to keep out.
         self.register_buffer("node_degree", torch.zeros(1), persistent=False)
 
+        # Constructed ONLY when enabled - see DDINetConfig.adversarial_degree
+        # for why an unconditional construction would change every other run.
+        self.degree_adversary: DegreeAdversary | None = None
+        if config.adversarial_degree:
+            if not config.use_graph_branch:
+                raise ValueError(
+                    "adversarial_degree targets the network branch's embedding, "
+                    "but use_graph_branch is False - there is nothing to debias"
+                )
+            self.degree_adversary = DegreeAdversary(h)
+
     def set_node_degree(self, degree: torch.Tensor) -> None:
         """Install per-drug TRAINING degrees, ordered like the graph's nodes.
 
@@ -243,6 +277,43 @@ class DDINet(nn.Module):
 
         fused = self.fusion(torch.cat(parts, dim=-1))
         return PairPrediction(self.interaction_head(fused).squeeze(-1))
+
+    # -- adversarial debiasing --------------------------------------------
+    def adversarial_loss(
+        self,
+        enc: DrugEncodings,
+        node_idx: torch.Tensor,
+        progress: float,
+    ) -> AdversaryOutput:
+        """Degree-adversary loss on the network embedding of ``node_idx``.
+
+        :param node_idx: indices of TRAINING drugs only. Held-out drugs have a
+            training-graph degree of zero by construction of the split, so
+            including them would teach the adversary an artefact of the split
+            rather than a property of the drug - and would make the debiasing
+            look stronger than it is.
+        :param progress: fraction of the step budget consumed, for the ramp.
+            Training is full-batch, so this is steps taken over steps budgeted.
+
+        The returned loss is ADDED to the interaction loss by the caller. The
+        sign flip lives in the reversal layer, not here, so the total is a
+        plain sum and the optimiser needs no special handling.
+        """
+        if self.degree_adversary is None:
+            raise RuntimeError(
+                "adversarial_loss() called but adversarial_degree is off; "
+                "the adversary was never constructed"
+            )
+        if self.node_degree.numel() <= 1:
+            raise RuntimeError(
+                "adversarial debiasing needs training-graph degrees; "
+                "call set_node_degree() first"
+            )
+        lambd = dann_lambda(
+            progress, gamma=self.config.adv_gamma, max_lambda=self.config.adv_lambda_max
+        )
+        log_degree = torch.log1p(self.node_degree[node_idx])
+        return self.degree_adversary(enc.network[node_idx], log_degree, lambd)
 
     def forward(
         self, mol_batch, node_features, edge_index, edge_type, idx_a, idx_b

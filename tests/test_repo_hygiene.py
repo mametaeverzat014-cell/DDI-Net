@@ -25,8 +25,19 @@ ALLOWED_SCRIPTS = ("LATIN", "CYRILLIC", "GREEK", "DIGIT", "SPACE")
 #: punctuation. Listed explicitly so a new one is a conscious addition.
 ALLOWED_SYMBOLS = set(
     "—–…«»“”‘’·±≈≥≤→←↔°µ×÷∆Σ√∞⚠⛔✓✗№§"
-    "⇒⇏∈∉≡∩∪⊙−ᵀ"          # methodology notation
+    "⇒⇏∈∉≡≠∩∪⊙−ᵀ"          # methodology notation
     "─│┌┐└┘├┤┬┴┼►◄▲▼"      # architecture diagrams
+    "•"                    # bullet inside the DATA_PIPELINE.md flow diagram
+    "↑↓"                   # direction of exposure/effect change in
+                           # MECHANISM_ONTOLOGY.md ("серум-концентрация ↑").
+                           # Semantic, not decorative: the ontology's
+                           # `direction` field is exactly this distinction.
+    "⁰¹²³⁴⁵⁶⁷⁸⁹⁻"          # superscripts. R² appears throughout (degree-shortcut
+                           # probe, adversarial debiasing); the digits and the
+                           # superscript minus carry scientific notation for
+                           # p-values like 2.4 x 10⁻⁵⁶. The whole digit range is
+                           # allowed at once so a new exponent is not a new
+                           # test failure.
 )
 
 #: U+0301 COMBINING ACUTE ACCENT marks Russian stress, which the negative

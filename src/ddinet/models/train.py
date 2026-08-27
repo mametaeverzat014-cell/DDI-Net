@@ -91,6 +91,14 @@ class TrainHistory:
     #: the metrics (docs/PHASE_A2_PROTOCOL.md, Addendum 2).
     stopped_by: str = "epoch_limit"
     wall_time_s: float = 0.0
+    #: Per-epoch adversary diagnostics. Empty unless the model was built with
+    #: `adversarial_degree`. Recorded per epoch rather than summarised because
+    #: the reversal strength follows a ramp and early stopping can cut it short
+    #: - the lambda actually REACHED is what a result must be reported against,
+    #: not the lambda that was configured (docs/DEBIAS_PROTOCOL.md section 6.3).
+    adv_lambda: list[float] = field(default_factory=list)
+    adv_degree_mse: list[float] = field(default_factory=list)
+    adv_embedding_variance: list[float] = field(default_factory=list)
 
     def summary(self) -> str:
         return (
@@ -152,6 +160,16 @@ class Trainer:
             min(raw, self.cfg.max_pos_weight), dtype=torch.float, device=self.device
         )
 
+        # Nodes the degree adversary is allowed to see. TRAINING drugs only:
+        # a held-out drug's training-graph degree is zero by construction of the
+        # split, so including it would teach the adversary an artefact of the
+        # split rather than a property of the drug - and would make the
+        # debiasing look stronger than it is. Computed once; the training pairs
+        # do not change during a run.
+        self._train_nodes = torch.unique(
+            torch.cat([train["idx_a"], train["idx_b"]])
+        ).to(self.device)
+
         self.optimizer = torch.optim.AdamW(
             self.model.parameters(), lr=self.cfg.lr, weight_decay=self.cfg.weight_decay
         )
@@ -209,13 +227,19 @@ class Trainer:
         )
 
     # -- training ----------------------------------------------------------
-    def _train_epoch(self) -> float:
+    def _train_epoch(self, progress: float = 0.0) -> tuple[float, dict | None]:
+        """One pass. ``progress`` drives the adversarial ramp; ignored without one.
+
+        Returns the mean loss and, when an adversary is present, its
+        diagnostics for this epoch.
+        """
         self.model.train()
         train = self._pooled("train")
         n = len(train["labels"])
         batch_size = self.cfg.batch_size or n
         perm = torch.randperm(n, device=self.device)
         total, n_batches = 0.0, 0
+        adv_out = None
 
         for start in range(0, n, batch_size):
             sel = perm[start : start + batch_size]
@@ -228,14 +252,32 @@ class Trainer:
             loss, _ = compute_loss(
                 pred, train["labels"][sel], pos_weight=self.pos_weight
             )
-            loss.backward()
+
+            # The adversarial term is a plain addition: the sign flip lives in
+            # the reversal layer, so the optimiser needs no special handling.
+            # Applied to TRAINING drugs only - a held-out drug's training-graph
+            # degree is zero by construction of the split, and regressing onto
+            # that would measure the split, not the drug.
+            if self.model.degree_adversary is not None:
+                adv = self.model.adversarial_loss(enc, self._train_nodes, progress)
+                (loss + adv.loss).backward()
+                adv_out = adv
+            else:
+                loss.backward()
             if self.cfg.grad_clip:
                 torch.nn.utils.clip_grad_norm_(self.model.parameters(), self.cfg.grad_clip)
             self.optimizer.step()
             total += float(loss.detach())
             n_batches += 1
 
-        return total / max(n_batches, 1)
+        diag = None
+        if adv_out is not None:
+            diag = {
+                "lambda": adv_out.lambd,
+                "degree_mse": adv_out.degree_mse,
+                "embedding_variance": adv_out.embedding_variance,
+            }
+        return total / max(n_batches, 1), diag
 
     @torch.no_grad()
     def predict_bucket(self, bucket: str) -> tuple[np.ndarray, np.ndarray]:
@@ -284,7 +326,15 @@ class Trainer:
         start = time.time()
 
         for epoch in range(1, self.cfg.epochs + 1):
-            loss = self._train_epoch()
+            # Progress is measured in STEPS over the step budget. Training is
+            # full-batch, so one epoch is one optimiser step and the two
+            # coincide - but the ramp is defined on steps, and stating it that
+            # way keeps the schedule correct if batching is ever turned on.
+            loss, adv_diag = self._train_epoch((epoch - 1) / max(self.cfg.epochs, 1))
+            if adv_diag is not None:
+                history.adv_lambda.append(adv_diag["lambda"])
+                history.adv_degree_mse.append(adv_diag["degree_mse"])
+                history.adv_embedding_variance.append(adv_diag["embedding_variance"])
             self.scheduler.step()
             score, used_bucket = self._selection_score()
             history.selection_bucket = used_bucket
