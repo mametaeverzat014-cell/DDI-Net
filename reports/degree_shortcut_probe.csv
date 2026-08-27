@@ -1,0 +1,9 @@
+view,n,degenerate,spearman_norm_vs_degree,r2_embedding_to_degree_cv,degree_mean,degree_max,scheme,negatives,state,note
+train drugs,1195,False,0.1781,0.228,156.7,646.0,drug,degree_matched,untrained,
+held-out drugs,510,True,,,,,drug,degree_matched,untrained,degree is constant (or too few drugs) - correlation undefined
+train drugs,1195,False,-0.0012,0.8854,156.7,646.0,drug,degree_matched,trained,
+held-out drugs,510,True,,,,,drug,degree_matched,trained,degree is constant (or too few drugs) - correlation undefined
+train drugs,1691,False,0.1669,0.2537,158.5,618.0,random_pair,uniform,untrained,
+held-out drugs,14,True,,,,,random_pair,uniform,untrained,degree is constant (or too few drugs) - correlation undefined
+train drugs,1691,False,0.0118,0.9541,158.5,618.0,random_pair,uniform,trained,
+held-out drugs,14,True,,,,,random_pair,uniform,trained,degree is constant (or too few drugs) - correlation undefined
