@@ -74,11 +74,24 @@ class DDINetConfig:
     #: Normalise the pooled molecular vector. See MolecularEncoder for why the
     #: default is True and what happens without it.
     pool_norm: bool = True
+    #: Append the two drugs' TRAINING-graph degrees to the pair representation,
+    #: as log1p(min) and log1p(max) - the same two numbers Phase A's degree-only
+    #: baseline uses, and commutative like every other fusion term.
+    #:
+    #: This exists as a control, not as a proposed model. The network branch's
+    #: embedding was measured to encode degree at R^2 0.885-0.954
+    #: (scripts/23_degree_shortcut_probe.py), so the question is whether the
+    #: whole contribution of that branch is reproducible by two scalars. If
+    #: `gine` + these two numbers matches `dual`, the branch is a degree
+    #: detector rather than an integrator of topology.
+    use_degree_feature: bool = False
     use_molecular_branch: bool = True
     use_graph_branch: bool = True
 
     def ablation_name(self) -> str:
         parts = [self.architecture]
+        if self.use_degree_feature:
+            parts.append("degree")
         if not self.use_molecular_branch:
             parts.append("no-mol")
         if not self.use_graph_branch:
@@ -140,6 +153,8 @@ class DDINet(nn.Module):
             fusion_dim += 2 * h                       # g_A*g_B, |g_A-g_B|
         if config.use_graph_branch:
             fusion_dim += 2 * h                       # z_A*z_B, |z_A-z_B|
+        if config.use_degree_feature:
+            fusion_dim += 2                           # log1p(min d), log1p(max d)
         if fusion_dim == 0:
             raise ValueError("At least one branch must be enabled")
         self.fusion_dim = fusion_dim
@@ -155,6 +170,23 @@ class DDINet(nn.Module):
             nn.Dropout(config.dropout),
         )
         self.interaction_head = nn.Linear(h // 2, 1)
+
+        # Degrees live on the model as a buffer so they move with .to(device)
+        # and are saved with the state dict. They MUST be computed from
+        # training pairs only - a degree counted over the full graph would leak
+        # the evaluation edges this project exists to keep out.
+        self.register_buffer("node_degree", torch.zeros(1), persistent=False)
+
+    def set_node_degree(self, degree: torch.Tensor) -> None:
+        """Install per-drug TRAINING degrees, ordered like the graph's nodes.
+
+        Required before a forward pass when ``use_degree_feature`` is on; the
+        zero default would otherwise silently feed a constant, which looks like
+        a working model and measures nothing.
+        """
+        if degree.dim() != 1:
+            raise ValueError(f"degree must be 1-D, got shape {tuple(degree.shape)}")
+        self.node_degree = degree.to(dtype=torch.float, device=self.node_degree.device)
 
     # -- encoding ----------------------------------------------------------
     def encode(
@@ -197,6 +229,17 @@ class DDINet(nn.Module):
         if cfg.use_graph_branch:
             z_a, z_b = enc.network[idx_a], enc.network[idx_b]
             parts += [z_a * z_b, (z_a - z_b).abs()]          # both commutative
+
+        if cfg.use_degree_feature:
+            if self.node_degree.numel() <= 1:
+                raise RuntimeError(
+                    "use_degree_feature is on but node degrees were never set; "
+                    "call set_node_degree() with training-graph degrees first."
+                )
+            d_a, d_b = self.node_degree[idx_a], self.node_degree[idx_b]
+            lo = torch.log1p(torch.minimum(d_a, d_b)).unsqueeze(-1)
+            hi = torch.log1p(torch.maximum(d_a, d_b)).unsqueeze(-1)
+            parts += [lo, hi]                                # min/max: commutative
 
         fused = self.fusion(torch.cat(parts, dim=-1))
         return PairPrediction(self.interaction_head(fused).squeeze(-1))

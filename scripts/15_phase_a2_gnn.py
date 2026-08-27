@@ -70,6 +70,27 @@ PREDICTIONS = REPORTS / "phase_a2_predictions"
 SCHEMES = ("random_pair", "drug", "scaffold")
 NEGATIVE_STRATEGIES = ("uniform", "degree_matched")
 ARCHITECTURES = ("gine", "dual")
+#: A control, run only on the honest cell. The network branch's embedding was
+#: measured to encode training-graph degree at R^2 0.885-0.954, so this asks
+#: whether two scalars reproduce the whole of what that branch contributes.
+#: Restricted to TUNING_CELL because that is where the claim is made; running it
+#: everywhere would cost seven hours to answer a question nobody asked.
+CONTROL_ARCHITECTURE = "gine_degree"
+CONTROL_ARCHITECTURES = ARCHITECTURES + (CONTROL_ARCHITECTURE,)
+
+#: Where the control runs. Both cells are needed, for opposite reasons.
+#:
+#: On drug + degree_matched every TEST drug has training degree zero by
+#: construction, so the degree feature is a constant there and gine_degree is
+#: gine. That is not useless - dual's network branch degenerates identically,
+#: so matching scores are consistent with "dual is a degree detector" - but it
+#: cannot DISTINGUISH that from any other explanation, because both quantities
+#: vanish together.
+#:
+#: random_pair + uniform is where the test has teeth: held-out drugs keep their
+#: training edges, so degree is live at test time and so is the network branch.
+#: If gine_degree matches dual there, two scalars reproduce the branch.
+CONTROL_CELLS = (("drug", "degree_matched"), ("random_pair", "uniform"))
 METRICS = ("auc_roc", "auprc", "f1", "brier", "prevalence")
 
 #: Fixed without tuning - protocol section 8. Tuning these too would multiply
@@ -109,6 +130,7 @@ def build_model(bundle, architecture: str, hp: dict) -> DDINet:
     the same name, and the ablation comparison would be unfair.
     """
     return DDINet(DDINetConfig(
+        use_degree_feature=(architecture == CONTROL_ARCHITECTURE),
         atom_dim=ATOM_FEATURE_DIM,
         bond_dim=BOND_FEATURE_DIM,
         node_feature_dim=bundle.node_features.shape[1],
@@ -123,6 +145,21 @@ def build_model(bundle, architecture: str, hp: dict) -> DDINet:
         use_molecular_branch=True,
         use_graph_branch=(architecture == "dual"),
     ))
+
+
+def training_degrees(split, drug_names: list[str]) -> torch.Tensor:
+    """Per-drug degree over TRAINING pairs only, ordered like the graph's nodes.
+
+    Counted from the training buckets rather than from the full pair table: a
+    degree over all pairs would carry the evaluation edges straight into the
+    features, which is the leak this whole project is built to exclude.
+    """
+    train = pd.concat(
+        [df for name, df in split.buckets.items() if name.startswith("train")],
+        ignore_index=True)
+    counts = pd.concat([train["drug_a"], train["drug_b"]]).value_counts()
+    return torch.tensor([float(counts.get(n, 0)) for n in drug_names],
+                        dtype=torch.float)
 
 
 class CannotFitError(RuntimeError):
@@ -161,6 +198,9 @@ def assert_can_overfit(
 
     set_seed(0)
     model = build_model(bundle, architecture, {**hp, "dropout": 0.0})
+    if architecture == CONTROL_ARCHITECTURE:
+        model.set_node_degree(
+            training_degrees(bundle.split, list(bundle.drugs["name"])))
     trainer = Trainer(model, bundle, subset, TrainConfig(
         epochs=epochs, lr=hp["lr"], weight_decay=0.0, batch_size=None,
         patience=epochs, seed=0, selection_bucket="val", verbose=False))
@@ -231,6 +271,9 @@ def run_one(
     # see LIMITATIONS.md section 6b.
     set_seed(init_seed)
     model = build_model(bundle, architecture, hp)
+    if architecture == CONTROL_ARCHITECTURE:
+        model.set_node_degree(
+            training_degrees(bundle.split, list(bundle.drugs["name"])))
     trainer = Trainer(model, bundle, dataset, TrainConfig(
         epochs=max_epochs,
         lr=hp["lr"],
@@ -348,8 +391,9 @@ def stage_tune(args, drugs, pairs, drug_names, positive_keys) -> int:
     # Test is not pooled, not indexed, not passed anywhere in this stage.
     dataset = dataset.loc[~dataset["bucket"].str.startswith("test")].reset_index(drop=True)
 
-    total = len(ARCHITECTURES) * len(TUNING_GRID)
-    for i, (architecture, hp) in enumerate(product(ARCHITECTURES, TUNING_GRID), 1):
+    total = len(CONTROL_ARCHITECTURES) * len(TUNING_GRID)
+    for i, (architecture, hp) in enumerate(
+            product(CONTROL_ARCHITECTURES, TUNING_GRID), 1):
         if (architecture, hp["lr"], hp["dropout"]) in done:
             print(f"[{i}/{total}] {architecture} {hp} - already done")
             continue
@@ -365,7 +409,7 @@ def stage_tune(args, drugs, pairs, drug_names, positive_keys) -> int:
               f"({record['epochs_run']} ep, {record['stopped_by']}, {time.time()-t0:.0f}s)")
 
     chosen = {}
-    for architecture in ARCHITECTURES:
+    for architecture in CONTROL_ARCHITECTURES:
         entries = [e for e in log if e["architecture"] == architecture]
         best = max(entries, key=lambda e: e["val_auprc"])
         chosen[architecture] = {"lr": best["lr"], "dropout": best["dropout"],
@@ -405,7 +449,7 @@ def stage_grid(args, drugs, pairs, drug_names, positive_keys) -> int:
                                        seed=args.tune_seed))
         gate_ds = gate_ds.loc[
             ~gate_ds["bucket"].str.startswith("test")].reset_index(drop=True)
-        for architecture in ARCHITECTURES:
+        for architecture in CONTROL_ARCHITECTURES:
             t0 = time.time()
             got = assert_can_overfit(gate_bundle, gate_ds, architecture,
                                      hyper[architecture])
@@ -425,7 +469,9 @@ def stage_grid(args, drugs, pairs, drug_names, positive_keys) -> int:
         print(f"Resuming: {len(completed)} runs done ({len(rows)} rows). "
               "Pass --fresh to start over.\n")
 
-    total = len(args.seeds) * len(SCHEMES) * len(NEGATIVE_STRATEGIES) * len(ARCHITECTURES)
+    # The control adds one run per seed, on one cell only.
+    total = (len(args.seeds) * len(SCHEMES) * len(NEGATIVE_STRATEGIES)
+             * len(ARCHITECTURES) + len(args.seeds) * len(CONTROL_CELLS))
     done = 0
     t_start = time.time()
 
@@ -435,7 +481,9 @@ def stage_grid(args, drugs, pairs, drug_names, positive_keys) -> int:
     # comparison is the headline, so that axis is filled first.
     for seed, scheme in product(args.seeds, SCHEMES):
         cell = [(scheme, seed, st, a)
-                for st, a in product(NEGATIVE_STRATEGIES, ARCHITECTURES)]
+                for st in NEGATIVE_STRATEGIES
+                for a in (CONTROL_ARCHITECTURES
+                          if (scheme, st) in CONTROL_CELLS else ARCHITECTURES)]
         if all(c in completed for c in cell):
             done += len(cell)
             print(f"[{done}/{total}] {scheme} seed={seed} - already done")
@@ -453,7 +501,10 @@ def stage_grid(args, drugs, pairs, drug_names, positive_keys) -> int:
                                            seed=seed))
             neg.verify_no_negative_is_positive(dataset, positive_keys)
 
-            for architecture in ARCHITECTURES:
+            # The degree control runs only where its claim is made.
+            architectures = (CONTROL_ARCHITECTURES
+                             if (scheme, strategy) in CONTROL_CELLS else ARCHITECTURES)
+            for architecture in architectures:
                 done += 1
                 if (scheme, seed, strategy, architecture) in completed:
                     print(f"[{done}/{total}] {scheme} seed={seed} {strategy} "
