@@ -40,6 +40,13 @@ reports/*.json
 # Archived artefacts of the invalidated 150-step run. Kept deliberately: the
 # numbers must stay visible rather than disappear when they were withdrawn.
 !reports/*_BROKEN_*.json
+# Superseded tuning records, kept for the same reason. The cap-400 search is
+# what showed the chosen hyperparameters depend on the cap - dual prefers
+# dropout 0.3 at cap 400 and 0.1 at cap 800 - which is why tuning was repeated
+# rather than carried over. Without these the decision is unauditable.
+!reports/*_cap400.json
+# The probe that settled whether cap 600 was adequate for both architectures.
+!reports/cap600_adequacy_curves.json
 !reports/.gitkeep
 
 # Console logs of long runs. The substantive record is the JSON/CSV the run
