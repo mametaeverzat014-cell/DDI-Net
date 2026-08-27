@@ -1,0 +1,17 @@
+[
+  {
+    "scheme": "drug",
+    "negatives": "degree_matched",
+    "architecture": "gine",
+    "lr": 0.0003,
+    "dropout": 0.1,
+    "init_seed": 0,
+    "epochs_run": 800,
+    "best_epoch": 760,
+    "stopped_by": "epoch_limit",
+    "wall_time_s": 1591.0,
+    "threshold": 0.24067522585391998,
+    "val_auprc": 0.7279547840722502,
+    "val_auc_roc": 0.7292586486964643
+  }
+]
