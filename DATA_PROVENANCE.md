@@ -226,3 +226,45 @@ Kuhn M, et al. Nucleic Acids Res. 2016;44(D1):D1075-D1079.
 Tatonetti NP, Ye PP, Daneshjou R, Altman RB. Data-driven prediction of drug effects and interactions. Sci Transl Med. 2012;4(125):125ra31.  
 <https://nsides.io/>
 
+
+---
+
+## SIDER 4.1 — получено 2026-08-27
+
+Передано пользователем вручную (сетевой доступ к `sideeffects.embl.de` из среды
+разработки заблокирован политикой, HTTP 403).
+
+**Лицензия: CC BY-NC-SA 4.0. Редистрибуция запрещена** — файлы лежат в
+`data/raw/sider/`, покрытом `.gitignore`, и в репозиторий не коммитятся.
+
+| Файл | Строк | sha256 (первые 16) |
+|---|---|---|
+| `drug_names.tsv` | 1 430 | `6427a3e3202c71a8` |
+| `drug_atc.tsv` | 1 560 | `b457e124cc13c482` |
+| `meddra.tsv.gz` | 95 912 | `8be5a752dae41ded` |
+| `meddra_all_se.tsv.gz` | 309 849 | `119b2f5319a9398d` |
+| `meddra_freq.tsv.gz` | 291 632 | `fcdfbf479c6b568d` |
+
+Содержимое: 1 430 препаратов, 6 123 уникальных побочных эффекта по MedDRA.
+
+**Цитирование:** Kuhn M, Letunic I, Jensen LJ, Bork P. The SIDER database of
+drugs and side effects. Nucleic Acids Res. 2016;44(D1):D1075-D1079.
+
+### Статус: НЕ ПОДКЛЮЧЁН — нет ключа связывания
+
+SIDER использует STITCH CID; наши данные используют DrugBank ID и InChIKey.
+Общего идентификатора нет. Колонка `name` в TDC-таблице является копией
+`drugbank_id`, то есть настоящих названий препаратов у нас тоже нет, и связывание
+по названию невозможно.
+
+Требуется **DrugBank vocabulary** (CC0, без аккаунта):
+`DrugBank ID` → `Common name` + `Synonyms` + `Standard InChI Key`.
+После этого SIDER связывается по названию с использованием синонимов.
+
+Альтернатива — PubChem PUG-REST (InChIKey → CID) — недоступна: хост заблокирован.
+
+### Ограничение, обязательное к упоминанию
+
+SIDER получен из **этикеток лекарств**, то есть отражает то, что регуляторы
+задокументировали, а не то, что биологически истинно. Отсутствие побочного
+эффекта в SIDER не означает его отсутствия в реальности.
