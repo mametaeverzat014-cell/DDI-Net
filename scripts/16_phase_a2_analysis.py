@@ -47,6 +47,15 @@ PREDICTIONS = REPORTS / "phase_a2_predictions"
 SCHEMES = ("random_pair", "drug", "scaffold")
 NEGATIVES = ("uniform", "degree_matched")
 ARCHITECTURES = ("gine", "dual")
+
+#: The degree control. `gine` plus two scalars (log1p min/max training degree).
+#: Added after the protocol's Addendum 13; the analysis below treats it as a
+#: control, never as a proposed model.
+CONTROL_ARCHITECTURE = "gine_degree"
+
+#: Cells the control was run on. Only the first has power for the shortcut
+#: question - see degree_control_table and Addendum 16.
+CONTROL_CELLS = (("random_pair", "uniform"), ("drug", "degree_matched"))
 HONEST_CELL = ("drug", "degree_matched")
 
 #: Equivalence margin for TOST, as in Phase A: 0.02 AUPRC. Chosen as the
@@ -150,6 +159,134 @@ def network_level_table(results: pd.DataFrame, out: list[str]) -> None:
     out.append(f"\nМаржа эквивалентности {EQUIVALENCE_MARGIN} AUPRC, зафиксирована "
                "до сравнения. При n=5 минимально достижимое p критерия Уилкоксона "
                "равно 0.0625, поэтому основной тест - парный t.")
+
+
+def degree_control_table(results: pd.DataFrame, out: list[str]) -> None:
+    """Comparison 3 of Addendum 13: is the network branch just a degree detector?
+
+    `gine_degree` is `gine` plus two scalars - log1p of the pair's minimum and
+    maximum degree in the TRAINING graph. If that reproduces what `dual` gets
+    from its whole message-passing branch, the branch is a degree detector.
+
+    WHICH CELL DECIDES, AND WHY ONLY ONE
+    -------------------------------------
+    Only `random_pair` + uniform has power here: it is the one cell where
+    held-out drugs still have edges in the training graph, so the degree
+    feature is informative at test time.
+
+    On `drug` + degree_matched the feature is constant at test - but NOT during
+    training, and Addendum 16 records that this makes `gine_degree` markedly
+    WORSE than `gine` rather than identical to it (a train/eval distribution
+    shift, not an equivalence). That cell is reported here because that failure
+    is itself a result, but it does not test the shortcut hypothesis.
+    """
+    out.append("\n\n## 2a. Сводится ли вклад сетевой ветви к детектору степени\n")
+    out.append("`gine_degree` = `gine` плюс два скаляра: log1p минимальной и "
+               "максимальной степени пары в ОБУЧАЮЩЕМ графе. Сравнение 3 "
+               "дополнения 13.\n")
+    out.append("| Сплит | Негативы | dual - gine_degree | 95% ДИ | p (парный t) | "
+               "Эквивалентность |")
+    out.append("|---|---|---|---|---|---|")
+    for scheme, negatives in CONTROL_CELLS:
+        a = cell_series(results, scheme, negatives, "dual")
+        b = cell_series(results, scheme, negatives, CONTROL_ARCHITECTURE)
+        seeds = sorted(set(a.index) & set(b.index))
+        if len(seeds) < 2:
+            continue
+        cmp = paired_compare(a.loc[seeds].to_numpy(), b.loc[seeds].to_numpy(),
+                             name_a="dual", name_b=CONTROL_ARCHITECTURE,
+                             equivalence_margin=EQUIVALENCE_MARGIN)
+        verdict = ("эквивалентны" if cmp.equivalent else
+                   "не доказана" if cmp.tost_p_value is not None else "-")
+        out.append(f"| {scheme} | {negatives} | {cmp.mean_difference:+.4f} | "
+                   f"[{cmp.ci_low:+.4f}, {cmp.ci_high:+.4f}] | "
+                   f"{cmp.t_p_value:.4f} | {verdict} | ")
+
+    out.append("\nЧитать по пререгистрированной таблице исходов "
+               "(дополнение 13): различий нет и TOST подтверждает - сетевой "
+               "уровень эквивалентен детектору степени; `dual` значимо выше - "
+               "ветвь несёт нечто сверх степени, гипотеза о shortcut в этой "
+               "части опровергнута.")
+    out.append("\n**Силу имеет только ячейка random_pair + uniform.** Там у "
+               "отложенных препаратов есть рёбра в обучающем графе и признак "
+               "степени при тесте информативен. На drug + degree_matched он "
+               "константен при оценке, но НЕ в обучении, и дополнение 16 "
+               "фиксирует, что из-за этого `gine_degree` там заметно ХУЖЕ "
+               "`gine`, а не тождественен ему. Эта строка приводится потому, "
+               "что сам отказ - результат, но гипотезу о shortcut она не "
+               "проверяет.")
+
+    # The degradation Addendum 16 describes, stated with numbers.
+    out.append("\n### Насколько явная подача степени вредит на честной ячейке\n")
+    out.append("| Сплит | Негативы | gine | gine_degree | разница |")
+    out.append("|---|---|---|---|---|")
+    for scheme, negatives in CONTROL_CELLS:
+        g = cell_series(results, scheme, negatives, "gine")
+        c = cell_series(results, scheme, negatives, CONTROL_ARCHITECTURE)
+        seeds = sorted(set(g.index) & set(c.index))
+        if not seeds:
+            continue
+        gm, cm = g.loc[seeds].mean(), c.loc[seeds].mean()
+        out.append(f"| {scheme} | {negatives} | {gm:.4f} | {cm:.4f} | "
+                   f"{cm - gm:+.4f} |")
+
+
+def s3_hypotheses(results: pd.DataFrame, out: list[str]) -> None:
+    """H-S3-1 and H-S3-2 from Addendum 14, registered on seed 0 of five.
+
+    H-S3-1  `dual` loses more than `gine` on S3, because on S3 neither drug has
+            edges in the training graph and the network branch sees an isolated
+            node.
+    H-S3-2  the S2 - S3 gap narrows under degree_matched negatives, because part
+            of the S2 advantage is degree rather than chemistry.
+    """
+    out.append("\n\n## 2b. Гипотезы про S3 (пререгистрированы в дополнении 14)\n")
+
+    def view(scheme, negatives, architecture, test_view):
+        sub = results[(results["scheme"] == scheme)
+                      & (results["negatives"] == negatives)
+                      & (results["architecture"] == architecture)
+                      & (results["test_view"] == test_view)]
+        return sub.set_index("seed")["auprc"].sort_index()
+
+    out.append("### H-S3-1: `dual` теряет на S3 больше, чем `gine`\n")
+    out.append("| Сплит | Негативы | dual-gine на S2 | dual-gine на S3 | "
+               "разность разностей | p (парный t) |")
+    out.append("|---|---|---|---|---|---|")
+    for scheme in ("drug", "scaffold"):
+        for negatives in NEGATIVES:
+            d2, g2 = view(scheme, negatives, "dual", "S2"), view(scheme, negatives, "gine", "S2")
+            d3, g3 = view(scheme, negatives, "dual", "S3"), view(scheme, negatives, "gine", "S3")
+            seeds = sorted(set(d2.index) & set(g2.index) & set(d3.index) & set(g3.index))
+            if len(seeds) < 2:
+                continue
+            diff2 = (d2.loc[seeds] - g2.loc[seeds]).to_numpy()
+            diff3 = (d3.loc[seeds] - g3.loc[seeds]).to_numpy()
+            cmp = paired_compare(diff3, diff2, name_a="S3", name_b="S2")
+            out.append(f"| {scheme} | {negatives} | {diff2.mean():+.4f} | "
+                       f"{diff3.mean():+.4f} | {cmp.mean_difference:+.4f} | "
+                       f"{cmp.t_p_value:.4f} |")
+    out.append("\nОтрицательная разность разностей означает, что на S3 "
+               "сетевая ветвь проигрывает сильнее, чем на S2 - то есть "
+               "подтверждает H-S3-1.")
+
+    out.append("\n### H-S3-2: разрыв S2 - S3 сужается при degree_matched\n")
+    out.append("| Сплит | Архитектура | разрыв S2-S3 при uniform | "
+               "при degree_matched | сужение |")
+    out.append("|---|---|---|---|---|")
+    for scheme in ("drug", "scaffold"):
+        for architecture in ARCHITECTURES:
+            gaps = {}
+            for negatives in NEGATIVES:
+                s2 = view(scheme, negatives, architecture, "S2")
+                s3 = view(scheme, negatives, architecture, "S3")
+                seeds = sorted(set(s2.index) & set(s3.index))
+                gaps[negatives] = (s2.loc[seeds] - s3.loc[seeds]).mean() if seeds else float("nan")
+            out.append(f"| {scheme} | {architecture} | {gaps['uniform']:+.4f} | "
+                       f"{gaps['degree_matched']:+.4f} | "
+                       f"{gaps['uniform'] - gaps['degree_matched']:+.4f} |")
+    out.append("\nПоложительное сужение подтверждает H-S3-2: часть "
+               "преимущества S2 над S3 создаётся степенью, а не химией.")
 
 
 def ablation_table(results: pd.DataFrame, out: list[str]) -> None:
@@ -327,6 +464,8 @@ def main() -> int:
 
     main_table(results, out)
     network_level_table(results, out)
+    degree_control_table(results, out)
+    s3_hypotheses(results, out)
     ablation_table(results, out)
     ensemble_section(out)
     budget_section(results, out)
