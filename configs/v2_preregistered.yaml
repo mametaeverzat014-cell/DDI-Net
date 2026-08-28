@@ -1,0 +1,368 @@
+# V2 Preregistered Configuration
+# FROZEN — do not modify after experiments begin
+# See docs/V2_PREREGISTRATION.md for rationale and docs/V2_ARCHITECTURE_PLAN.md for design.
+
+meta:
+  dataset_version: DDI_MECH_1705_V1
+  config_version: V2-PREREG-1
+  registered: "2026-08-29"
+  status: LOCKED
+  companion_docs:
+    - docs/V2_ARCHITECTURE_PLAN.md
+    - docs/V2_PREREGISTRATION.md
+
+# ── Dataset ───────────────────────────────────────────────────────────────
+dataset:
+  path: data/mechanism_v1/
+  n_drugs: 1705
+  n_positive_pairs: 191392
+  excluded_drug: DB11630
+  files:
+    drugs: drugs.parquet
+    drug_protein_edges: drug_protein_edges.parquet
+    proteins: proteins.parquet
+    protein_pathway_edges: protein_pathway_edges.parquet
+    pathways: pathways.parquet
+    protein_protein_edges: protein_protein_edges.parquet  # not used in M4 (no GNN)
+    drug_adverse_event_edges: drug_adverse_event_edges.parquet  # M5 optional
+    ddi_positive_labels: ddi_positive_labels.parquet
+    split_assignments: split_assignments.csv
+    split_assignments_random_pair: split_assignments_random_pair.csv.gz
+
+# ── Splits ────────────────────────────────────────────────────────────────
+splits:
+  schemes:
+    - random_pair
+    - drug
+    - scaffold
+  seeds: [0, 1, 2, 3, 4]
+  primary_evaluation:
+    scheme: drug          # drug-disjoint is the primary evaluation
+    metric: AUPRC
+  hyperparameter_selection:
+    scheme: drug
+    partition: validation
+    metric: AUPRC
+    seeds_for_grid: [0, 1, 2]   # 3-seed sweep for grid
+    seeds_for_final: [0, 1, 2, 3, 4]  # 5-seed final evaluation
+  bootstrap_ci:
+    run_for_hypotheses: [H-V2-1, H-V2-3]
+    seed: 0               # selected before observing results
+    n_samples: 1000
+
+# ── Negative sampling ─────────────────────────────────────────────────────
+negative_sampling:
+  primary: degree_matched
+  secondary: uniform
+  primary_conclusion_from: degree_matched
+  # If degree_matched and uniform give contradictory conclusions:
+  # primary conclusion uses degree_matched; discrepancy is reported
+
+# ── Metrics ───────────────────────────────────────────────────────────────
+metrics:
+  primary: AUPRC
+  secondary:
+    - AUROC
+    - F1_at_val_threshold
+    - ECE_15bin
+    - Brier
+  calibration:
+    method: temperature_scaling
+    fit_on: validation  # NEVER on test
+    partition: drug_disjoint_validation
+
+# ── Model architecture ────────────────────────────────────────────────────
+model:
+  name: BIO-GINE
+  primary_ablation: M4
+
+  molecular_encoder:
+    type: GINE
+    n_layers: 4
+    hidden_dim: 128
+    output_dim: 128       # mol_dim — frozen from Phase A-2
+    residual: true
+    readout: mean
+    initialization: random  # do NOT transfer Phase A-2 weights
+
+  biological_encoder:
+    type: DeepSets
+    levels:
+      protein:
+        embed_dim: 64           # protein ID embedding vocabulary: 2778
+        vocab_size: 2778        # number of unique UniProt IDs in feature graph
+        rel_type_embed_dim: 16  # target / enzyme / transporter / carrier
+        ev_type_embed_dim: 16   # DOCUMENTED_DATABASE_RELATION / CURATED_MOA / EXPERIMENTAL_BIOACTIVITY
+        phi_mlp:
+          input_dim: 96         # 64 + 16 + 16
+          hidden_dim: 128
+          output_dim: 64
+          activation: ReLU
+          dropout: 0.0          # no dropout inside phi
+        aggregation: mean       # CRITICAL: mean not sum — shortcut control
+        rho_mlp:
+          input_dim: 64
+          hidden_dim: 128
+          output_dim: 64
+          activation: ReLU
+          dropout: dropout_bio  # from hparam grid
+        missing_token: learned  # MISSING_PROT, shape [64], trained parameter
+      pathway:
+        embed_dim: 64           # pathway ID embedding vocabulary: 1969
+        vocab_size: 1969        # number of unique Reactome pathway IDs
+        phi_mlp:
+          input_dim: 64
+          hidden_dim: 128
+          output_dim: 64
+          activation: ReLU
+          dropout: 0.0
+        aggregation: mean       # CRITICAL: mean not sum
+        rho_mlp:
+          input_dim: 64
+          hidden_dim: 128
+          output_dim: 64
+          activation: ReLU
+          dropout: dropout_bio
+        missing_token: learned  # MISSING_PATH, shape [64], trained parameter
+    output_dim: 128             # concat([bio_prot, bio_path])
+    modality_mask: true         # pass has_protein, has_pathway flags to decoder
+
+  fusion:
+    type: concat_linear
+    input_dim: 256              # mol_dim (128) + bio_dim (128)
+    output_dim: 128
+    norm: LayerNorm
+    bias: true
+
+  pair_decoder:
+    symmetric: true             # guaranteed by construction
+    operations:
+      - sum                     # h_A + h_B
+      - abs_diff                # |h_A - h_B|
+      - elem_product            # h_A * h_B
+    input_dim: 388              # 3*128 + 4 (mask_A, mask_B each 2-dim)
+    hidden_dims: [256, 128]
+    output_dim: 1
+    activation: ReLU
+    dropout: dropout_pair       # from hparam grid
+    output_activation: sigmoid
+
+# ── Evidence sources per ablation ─────────────────────────────────────────
+ablations:
+  M0:
+    description: "Structure only (GINE baseline — Phase A-2 result, reused)"
+    bio_sources: []
+    note: "Do not retrain. Use Phase A-2 GINE result."
+  M1:
+    description: "Structure + DrugBank protein relations"
+    bio_sources:
+      - evidence_type: DOCUMENTED_DATABASE_RELATION
+        evidence_source: DrugBank_v5.1
+  M2:
+    description: "M1 + ChEMBL curated mechanism of action"
+    bio_sources:
+      - evidence_type: DOCUMENTED_DATABASE_RELATION
+        evidence_source: DrugBank_v5.1
+      - evidence_type: CURATED_MOA
+        evidence_source: ChEMBL_36_drug_mechanism
+  M3:
+    description: "M2 + ChEMBL experimental bioactivity"
+    bio_sources:
+      - evidence_type: DOCUMENTED_DATABASE_RELATION
+        evidence_source: DrugBank_v5.1
+      - evidence_type: CURATED_MOA
+        evidence_source: ChEMBL_36_drug_mechanism
+      - evidence_type: EXPERIMENTAL_BIOACTIVITY
+        evidence_source: ChEMBL_36_activities
+  M4:
+    description: "M3 + Reactome pathways (PRIMARY V2 MODEL)"
+    bio_sources:
+      - evidence_type: DOCUMENTED_DATABASE_RELATION
+        evidence_source: DrugBank_v5.1
+      - evidence_type: CURATED_MOA
+        evidence_source: ChEMBL_36_drug_mechanism
+      - evidence_type: EXPERIMENTAL_BIOACTIVITY
+        evidence_source: ChEMBL_36_activities
+    pathway_sources:
+      - protein_pathway_edges.parquet  # Reactome
+  M5:
+    description: "M4 + SIDER adverse events (optional)"
+    condition: "Run only if M4 significantly improves over M3 on drug-disjoint val AUPRC"
+    bio_sources: "(same as M4)"
+    additional_level:
+      type: adverse_event
+      file: drug_adverse_event_edges.parquet
+      embed_dim: 32
+      vocab_size: ~5650          # unique adverse event IDs in drug_adverse_event_edges
+
+# ── Shortcut controls ─────────────────────────────────────────────────────
+controls:
+  A:
+    name: biological_degree_only_RF
+    description: "RF with scalar biological counts only — null model for popularity"
+    model: RandomForest
+    n_estimators: 500
+    features_per_drug:
+      - n_targets
+      - n_enzymes
+      - n_transporters
+      - n_carriers
+      - n_proteins
+      - n_pathways
+      - n_adverse_events
+      - n_chembl_proteins
+    pair_features:
+      - abs_diff
+      - elem_product
+      - sum
+
+  C:
+    name: V2_SUM_aggregation
+    description: "Same as M4 but SUM instead of MEAN aggregation"
+    aggregation: sum
+    all_other_params: identical_to_M4
+    purpose: "If SUM >> MEAN, degree drives performance"
+
+  E:
+    name: linear_probe_bio_to_ddi_degree
+    description: "Post-hoc linear regression: bio_emb(d) -> DDI_degree(d)"
+    type: post_hoc_diagnostic
+    input: bio_emb          # from trained V2 M4 checkpoint
+    target: ddi_degree      # number of DDI partners in training set
+    model: LinearRegression
+    report: [R_squared, pearson_r, scatter_plot]
+    action_threshold: 0.4   # report if R^2 > 0.4 as elevated concern
+    falsification_threshold: 0.6  # part of F4 falsification criterion
+
+  F:
+    name: degree_preserving_biology_shuffle
+    description: "Train V2 M4 on shuffled protein assignments, preserving per-drug protein count"
+    shuffle_procedure: |
+      For each drug d:
+        Draw |P(d)| proteins uniformly without replacement from global protein pool
+        preserving the degree distribution across all drugs.
+      Pathways Q(d) are then derived from shuffled P(d) using protein_pathway_edges.parquet.
+      Do NOT independently shuffle pathway assignments.
+    shuffled_file: data/mechanism_v1/drug_protein_edges_shuffled.parquet
+    freeze_before_training: true
+    train_from_scratch: true
+    hyperparameters: identical_to_M4
+    purpose: "If AUPRC(true) ~= AUPRC(shuffled), model uses degree not identity"
+
+# ── Hyperparameter search grid (preregistered) ────────────────────────────
+hparam_search:
+  grid:
+    bio_dim:      [64, 128]
+    dropout_bio:  [0.1, 0.3]
+    dropout_pair: [0.1, 0.2]
+    lr:           [1.0e-3, 3.0e-4]
+    batch_size:   [256, 512]
+  n_configurations: 32    # full factorial grid
+  selection_metric: drug_disjoint_validation_AUPRC
+  selection_seeds:  [0, 1, 2]
+  final_seeds:      [0, 1, 2, 3, 4]
+  fixed:
+    mol_dim:       128    # frozen from Phase A-2
+    max_epochs:    400
+    patience:      30
+    optimizer:     AdamW
+    weight_decay:  1.0e-4
+  never_tune_on: test_AUPRC
+
+# ── Statistical plan ──────────────────────────────────────────────────────
+statistics:
+  primary_test: paired_two_sided_t_test
+  df: 4                          # five seeds
+  alpha: 0.05
+  effect_size_metric: cohens_d
+  effect_size_threshold_positive: 0.5   # for H-V2-1 and H-V2-3
+  bootstrap_n_samples: 1000
+  multiple_comparisons: holm_bonferroni
+  report_per_seed: true          # always report per-seed AUPRC in appendix
+  never_select_best_seed: true
+
+# ── Hypotheses ────────────────────────────────────────────────────────────
+hypotheses:
+  H-V2-1:
+    claim: "V2 M4 mean AUPRC > GINE mean AUPRC, drug-disjoint degree-matched"
+    test: paired_t_test
+    statistic: mean(AUPRC_V2_M4 - AUPRC_GINE)
+    alpha: 0.05
+    min_effect_size_d: 0.5
+    requires_both: true   # p < 0.05 AND d > 0.5
+    bootstrap_ci: true
+
+  H-V2-2:
+    claim: "V2 M4 mean AUPRC > Dual mean AUPRC, S3 degree-matched"
+    test: paired_t_test
+    statistic: mean(AUPRC_V2_M4_S3 - AUPRC_Dual_S3)
+    alpha: 0.05
+    min_effect_size_d: null   # no minimum effect size for S3
+
+  H-V2-3:
+    claim: "V2 M4 true biology AUPRC > V2 shuffled biology AUPRC, drug-disjoint degree-matched"
+    test: paired_t_test
+    statistic: mean(AUPRC_true - AUPRC_shuffled)
+    alpha: 0.05
+    min_effect_size_d: 0.5
+    requires_both: true
+    bootstrap_ci: true
+    note: "Shuffled model trained from scratch on degree-preserving shuffle"
+
+  H-V2-4:
+    claim: "V2 M4 mean AUPRC > biological-degree-only RF, drug-disjoint degree-matched"
+    test: paired_t_test
+    statistic: mean(AUPRC_V2_M4 - AUPRC_biodegree_RF)
+    alpha: 0.05
+    min_effect_size_d: null
+
+  H-V2-5:
+    claim: "AUPRC gain (V2 M4 - GINE) is larger for pathway-covered than pathway-uncovered pairs"
+    type: exploratory
+    statistic: delta_covered > delta_uncovered (directional)
+    alpha: exploratory
+    note: "No strict significance threshold. Labelled EXPLORATORY in all reports."
+
+# ── Falsification criteria ────────────────────────────────────────────────
+falsification:
+  F1:
+    condition: "H-V2-1 fails (V2 M4 does not improve over GINE on drug-disjoint)"
+    conclusion: "Biological context provides no reliable benefit for unseen drugs"
+  F2:
+    condition: "H-V2-3 fails (shuffled biology AUPRC not significantly lower than true)"
+    conclusion: "Model exploits protein count (degree), not protein identity"
+  F3:
+    condition: "H-V2-4 fails (degree-count RF matches V2 M4)"
+    conclusion: "Scalar biological count features explain the gain; encoder adds nothing"
+  F4:
+    condition: "Linear probe R^2 > 0.6 AND H-V2-1 Cohen's d < 0.2"
+    conclusion: "Biological embeddings encode DDI degree and the gain is negligible"
+  F5:
+    condition: "V2 M4 improves on random_pair but NOT on drug-disjoint or scaffold-disjoint"
+    conclusion: "Model learns DDI topology via biological proxy, not transferable drug biology"
+  joint:
+    condition: "F1 AND F2 both hold"
+    conclusion: |
+      The biological-transfer hypothesis is not supported at this dataset scale.
+      The model exploits biological annotation popularity rather than mechanism.
+      Recommend: larger and more curated dataset, or structure-only model.
+
+# ── Interpretability ──────────────────────────────────────────────────────
+interpretability:
+  methods:
+    - name: leave_one_protein_out
+      run_on: top_20_predicted_pairs_by_confidence
+      seed: 0
+      split: drug_disjoint_test
+    - name: leave_one_pathway_out
+      run_on: top_20_predicted_pairs_by_confidence
+      seed: 0
+      split: drug_disjoint_test
+    - name: modality_contribution
+      run_on: all_drug_disjoint_test_pairs
+      seed: 0
+    - name: linear_probe
+      target: ddi_degree
+      split: train_and_test
+  label_all_as: model_reliance
+  not_causal_mechanism: true
