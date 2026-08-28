@@ -1,0 +1,115 @@
+{
+  "dataset_version": "DDI_MECH_1705_V1",
+  "created_utc": "2026-08-28T19:14:13.585457+00:00",
+  "data_bridge_verified": true,
+  "project_drugs": 1705,
+  "positive_ddi_pairs": 191392,
+  "drugbank_mapped": {
+    "count": 1705,
+    "total": 1705,
+    "pct": 100.0
+  },
+  "chembl_mapped": {
+    "count": 1608,
+    "pct": 94.31
+  },
+  "protein_coverage_db": {
+    "count": 1620,
+    "pct": 95.01
+  },
+  "protein_coverage_any": {
+    "count": 1638,
+    "pct": 96.07
+  },
+  "uniprot_coverage": {
+    "count": 1638,
+    "pct": 96.07
+  },
+  "reactome_coverage": {
+    "count": 1552,
+    "pct": 91.03
+  },
+  "sider_coverage": {
+    "count": 915,
+    "pct": 53.67
+  },
+  "target_coverage_pct": 93.26,
+  "enzyme_coverage_pct": 64.11,
+  "transporter_coverage_pct": 41.29,
+  "carrier_coverage_pct": 24.75,
+  "pair_both_structure_pct": 100.0,
+  "pair_both_db_protein_pct": 96.55,
+  "pair_both_any_protein_pct": 96.92,
+  "pair_both_pathway_pct": 94.7,
+  "pair_shared_protein_pct": 83.17,
+  "pair_shared_pathway_pct": 77.59,
+  "drug_disjoint_test_cov": {
+    "n_drugs": 255,
+    "structure_pct": 100.0,
+    "db_protein_pct": 93.73,
+    "any_protein_pct": 94.9,
+    "uniprot_pct": 94.9,
+    "reactome_pct": 90.59,
+    "chembl_pct": 97.65
+  },
+  "scaffold_disjoint_test_cov": {
+    "n_drugs": 224,
+    "structure_pct": 100.0,
+    "db_protein_pct": 94.64,
+    "any_protein_pct": 95.54,
+    "uniprot_pct": 95.54,
+    "reactome_pct": 90.62,
+    "chembl_pct": 95.09
+  },
+  "s3_coverage": {
+    "n_pairs": 3879,
+    "scheme": "drug",
+    "seed": 0,
+    "both_struct_pct": 100.0,
+    "both_any_prot_pct": 94.84,
+    "both_pathway_pct": 92.34
+  },
+  "chembl_incremental": {
+    "drugs_drugbank_biology_only": 266,
+    "drugs_chembl_biology_only": 32,
+    "drugs_both_sources": 1340,
+    "drugs_neither": 67,
+    "drugs_rescued_by_chembl_moa": 2,
+    "drugs_rescued_by_chembl_activities": 32,
+    "drugs_rescued_by_any_chembl": 32,
+    "unique_proteins_added_by_chembl": 1013,
+    "curated_moa_edges": 2255,
+    "curated_moa_drugs": 587,
+    "curated_moa_proteins": 518,
+    "experimental_bioactivity_edges": 131338,
+    "experimental_bioactivity_drugs": 1329,
+    "experimental_bioactivity_proteins": 1652
+  },
+  "bio_graph_nodes": 10357,
+  "bio_graph_edges": 406526,
+  "interacts_with_in_bio": 0,
+  "shortcut_risk": "HIGH",
+  "shortcut_max_spearman": 0.4433,
+  "mechanism_status": "QUARANTINED",
+  "total_export_size_mb": 6.16,
+  "validation_passed": 16,
+  "validation_failed": 0,
+  "validation_overall": "PASS",
+  "ready_to_transfer": true,
+  "transfer_files": [
+    "MECHANISM_LABEL_LIMITATIONS.md",
+    "biological_edges.parquet",
+    "ddi_positive_labels.parquet",
+    "drug_adverse_event_edges.parquet",
+    "drug_protein_edges.parquet",
+    "drugs.parquet",
+    "pathways.parquet",
+    "protein_pathway_edges.parquet",
+    "protein_protein_edges.parquet",
+    "proteins.parquet",
+    "split_assignments.csv",
+    "split_assignments_random_pair.csv.gz"
+  ],
+  "biggest_limitation": "94.21% DDI pairs have UNKNOWN mechanism (keyword-derived, not validated). SIDER covers 53.67% of model drugs. 67 drugs have no protein data from any source. 5 project drugs absent from local DrugBank extract: ['DB09162', 'DB09323', 'DB09396', 'DB11106', 'DB13450'].",
+  "recommended_next_step": "Inspect coverage + shortcut audit. Once architecture is decided, implement biological encoder using biological_edges.parquet as feature graph and ddi_positive_labels.parquet as label set."
+}

@@ -1,0 +1,374 @@
+{
+  "dataset_version": "DDI_MECH_1705_V1",
+  "created_utc": "2026-08-28T19:14:13.585457+00:00",
+  "generator": "scripts/build_model_ready_export_fix.py",
+  "authoritative_universe": {
+    "n_drugs": 1705,
+    "n_positive_pairs": 191392,
+    "canonical_id": "drugbank_id",
+    "excluded_drug": "DB11630",
+    "excluded_pairs": 10,
+    "platinum_no_inchikey": [
+      "DB00515",
+      "DB00526",
+      "DB00958",
+      "DB13145"
+    ],
+    "missing_from_local_drugbank_parquet": [
+      "DB09162",
+      "DB09323",
+      "DB09396",
+      "DB11106",
+      "DB13450"
+    ]
+  },
+  "bridge_verification": {
+    "hash_results": {
+      "DATA_BRIDGE_README.md": "PASS",
+      "project_drugs.csv": "PASS",
+      "split_assignments.csv": "PASS",
+      "split_assignments_random_pair.csv.gz": "PASS"
+    },
+    "all_pass": true
+  },
+  "positive_pairs_source": "Reconstructed from split_assignments_random_pair.csv.gz (seed 0, all buckets). NOT derived from local drug_interactions.parquet — TDC filtering applies.",
+  "source_datasets": {
+    "DrugBank": {
+      "version": "5.1",
+      "exported": "2025-01-02",
+      "sha256": "37569dd923d30236880e982ed40c3422d9f67fc7b9864e42b1390edc15284b6c"
+    },
+    "ChEMBL": {
+      "version": "36",
+      "activities_evidence_type_in_source_file": "EXPERIMENTAL",
+      "relabeled_to": "EXPERIMENTAL_BIOACTIVITY"
+    },
+    "UniProt_SwissProt": {
+      "modified": "2026-06-10"
+    },
+    "Reactome": {
+      "source": "UniProt2Reactome (via chembl_uniprot_mapping.txt)"
+    },
+    "SIDER": {
+      "version": "4.1"
+    },
+    "FAERS": {
+      "policy": "EXCLUDED from biological_edges — validation only"
+    }
+  },
+  "chembl_incremental": {
+    "drugs_drugbank_biology_only": 266,
+    "drugs_chembl_biology_only": 32,
+    "drugs_both_sources": 1340,
+    "drugs_neither": 67,
+    "drugs_rescued_by_chembl_moa": 2,
+    "drugs_rescued_by_chembl_activities": 32,
+    "drugs_rescued_by_any_chembl": 32,
+    "unique_proteins_added_by_chembl": 1013,
+    "curated_moa_edges": 2255,
+    "curated_moa_drugs": 587,
+    "curated_moa_proteins": 518,
+    "experimental_bioactivity_edges": 131338,
+    "experimental_bioactivity_drugs": 1329,
+    "experimental_bioactivity_proteins": 1652
+  },
+  "drug_coverage": {
+    "valid_structure": {
+      "count": 1705,
+      "pct": 100.0
+    },
+    "has_drugbank_protein": {
+      "count": 1620,
+      "pct": 95.01
+    },
+    "has_any_protein": {
+      "count": 1638,
+      "pct": 96.07
+    },
+    "has_chembl": {
+      "count": 1608,
+      "pct": 94.31
+    },
+    "has_uniprot_any": {
+      "count": 1638,
+      "pct": 96.07
+    },
+    "has_reactome": {
+      "count": 1552,
+      "pct": 91.03
+    },
+    "has_sider": {
+      "count": 915,
+      "pct": 53.67
+    },
+    "by_relation_target": {
+      "n_drugs_covered": 1590,
+      "pct": 93.26,
+      "n_relations": 6566,
+      "n_unique_proteins": 1582
+    },
+    "by_relation_enzyme": {
+      "n_drugs_covered": 1093,
+      "pct": 64.11,
+      "n_relations": 3974,
+      "n_unique_proteins": 313
+    },
+    "by_relation_transporter": {
+      "n_drugs_covered": 704,
+      "pct": 41.29,
+      "n_relations": 2186,
+      "n_unique_proteins": 188
+    },
+    "by_relation_carrier": {
+      "n_drugs_covered": 422,
+      "pct": 24.75,
+      "n_relations": 600,
+      "n_unique_proteins": 52
+    }
+  },
+  "pair_coverage": {
+    "N": 191392,
+    "both_have_structure": {
+      "count": 191392,
+      "pct": 100.0
+    },
+    "one_has_structure": {
+      "count": 0,
+      "pct": 0.0
+    },
+    "neither_has_structure": {
+      "count": 0,
+      "pct": 0.0
+    },
+    "both_have_drugbank_protein": {
+      "count": 184790,
+      "pct": 96.55
+    },
+    "both_have_any_protein": {
+      "count": 185492,
+      "pct": 96.92
+    },
+    "both_have_pathway": {
+      "count": 181255,
+      "pct": 94.7
+    },
+    "both_have_chembl": {
+      "count": 180909,
+      "pct": 94.52
+    },
+    "both_have_sider": {
+      "count": 85037,
+      "pct": 44.43
+    },
+    "shared_protein": {
+      "count": 159186,
+      "pct": 83.17
+    },
+    "shared_pathway": {
+      "count": 148508,
+      "pct": 77.59
+    }
+  },
+  "split_coverage_summary": {
+    "drug_disjoint_test_seed0": {
+      "n_drugs": 255,
+      "structure_pct": 100.0,
+      "db_protein_pct": 93.73,
+      "any_protein_pct": 94.9,
+      "uniprot_pct": 94.9,
+      "reactome_pct": 90.59,
+      "chembl_pct": 97.65
+    },
+    "scaffold_disjoint_test_seed0": {
+      "n_drugs": 224,
+      "structure_pct": 100.0,
+      "db_protein_pct": 94.64,
+      "any_protein_pct": 95.54,
+      "uniprot_pct": 95.54,
+      "reactome_pct": 90.62,
+      "chembl_pct": 95.09
+    },
+    "s3_drug_seed0": {
+      "n_pairs": 3879,
+      "scheme": "drug",
+      "seed": 0,
+      "both_struct_pct": 100.0,
+      "both_any_prot_pct": 94.84,
+      "both_pathway_pct": 92.34
+    }
+  },
+  "shortcut_audit": {
+    "spearman_correlations_with_ddi_degree": {
+      "n_proteins": 0.4072,
+      "n_targets": 0.2532,
+      "n_enzymes": 0.4433,
+      "n_transporters": 0.1879,
+      "n_carriers": 0.2055,
+      "n_pathways": 0.4255,
+      "n_adverse_events": 0.3436,
+      "n_chembl_proteins": 0.2981
+    },
+    "max_abs_spearman": 0.4433,
+    "risk_classification": "HIGH",
+    "classification_rule": "LOW: max|r|<0.2, MEDIUM: 0.2<=max|r|<0.4, HIGH: max|r|>=0.4",
+    "note": "Informational only. Features are NOT altered."
+  },
+  "leakage_exclusions": [
+    "INTERACTS_WITH edges absent from biological_edges (count=0 verified)",
+    "DDI mechanism labels QUARANTINED (see MECHANISM_LABEL_LIMITATIONS.md)",
+    "FAERS pair signals EXCLUDED from biological_edges",
+    "DDI description text NOT in any feature file"
+  ],
+  "faers_policy": "FAERS (39M rows, 299K pair signals) excluded from biological feature graph. Use only for post-hoc validation.",
+  "ppi_selection_rule": "Induced subgraph on 2,778 proteins reachable from 1,705 model drugs. Source: Reactome_Homo_sapiens_interactions.",
+  "validation": {
+    "n_passed": 16,
+    "n_failed": 0,
+    "tests": [
+      {
+        "name": "T01_drugs_exactly_1705",
+        "passed": true,
+        "msg": "1705"
+      },
+      {
+        "name": "T02_positive_pairs_exactly_191392",
+        "passed": true,
+        "msg": "191,392"
+      },
+      {
+        "name": "T03_DB11630_absent_from_labels",
+        "passed": true,
+        "msg": ""
+      },
+      {
+        "name": "T04_all_1705_in_drugs_parquet",
+        "passed": true,
+        "msg": ""
+      },
+      {
+        "name": "T05_platinum_drugs_present",
+        "passed": true,
+        "msg": ""
+      },
+      {
+        "name": "T06_no_INTERACTS_WITH_in_bio_edges",
+        "passed": true,
+        "msg": "count=0"
+      },
+      {
+        "name": "T07_no_DDI_source_in_bio",
+        "passed": true,
+        "msg": ""
+      },
+      {
+        "name": "T08_no_mechanism_labels_in_bio",
+        "passed": true,
+        "msg": ""
+      },
+      {
+        "name": "T09_no_FAERS_in_bio",
+        "passed": true,
+        "msg": ""
+      },
+      {
+        "name": "T10_bio_drug_nodes_in_universe",
+        "passed": true,
+        "msg": "outsiders: 0"
+      },
+      {
+        "name": "T11_evidence_types_known",
+        "passed": true,
+        "msg": "types={'EXPERIMENTAL', 'CURATED', 'PHARMACOVIGILANCE', 'DOCUMENTED_DATABASE_RELATION', 'EXPERIMENTAL_BIOACTIVITY', 'CURATED_MOA'}"
+      },
+      {
+        "name": "T12_pathway_fks_resolve",
+        "passed": true,
+        "msg": "unresolved=0"
+      },
+      {
+        "name": "T13_label_drugs_in_universe",
+        "passed": true,
+        "msg": "outsiders: 0"
+      },
+      {
+        "name": "T14_split_assignments_correct",
+        "passed": true,
+        "msg": ""
+      },
+      {
+        "name": "T15_no_negative_biological_relation",
+        "passed": true,
+        "msg": ""
+      },
+      {
+        "name": "T16_DB11630_absent_from_drugs",
+        "passed": true,
+        "msg": ""
+      }
+    ]
+  },
+  "output_files": {
+    "biological_edges.parquet": {
+      "bytes": 1139970,
+      "kb": 1113.3,
+      "sha256": "eb999331e901b5041ad138391b691159eb3bee9ab24a68817275b241fa9e858e"
+    },
+    "ddi_positive_labels.parquet": {
+      "bytes": 291076,
+      "kb": 284.3,
+      "sha256": "0ad3d5cf3fec8488fc2b27569268ff0ab4d05354e5883b9cdfd8504caef0c698"
+    },
+    "drug_adverse_event_edges.parquet": {
+      "bytes": 584655,
+      "kb": 571.0,
+      "sha256": "242710b51b63c4f271df13dd2140fc73f5ff5b43b0c65d5f149ca072d4e540a5"
+    },
+    "drug_protein_edges.parquet": {
+      "bytes": 385971,
+      "kb": 376.9,
+      "sha256": "e8ef9cc5a6e8c7ca927d18ec227d6838a9cef75a82fd92f9daefabd530c161e2"
+    },
+    "drugs.parquet": {
+      "bytes": 212654,
+      "kb": 207.7,
+      "sha256": "d7cb2032e94f6465de43b44f3083ee4fa62a798322f9975425bc6acba3a49c06"
+    },
+    "MECHANISM_LABEL_LIMITATIONS.md": {
+      "bytes": 1679,
+      "kb": 1.6,
+      "sha256": "a8d83d0b599695b2ea93c1a7f9c08f1cbce87e4ca56a90c2dd0f896b1c09863e"
+    },
+    "pathways.parquet": {
+      "bytes": 66152,
+      "kb": 64.6,
+      "sha256": "8aa9209f74d025f2cefd057ffbb29e0aae01c31fdef8c147597ee418f7fa8500"
+    },
+    "protein_pathway_edges.parquet": {
+      "bytes": 125245,
+      "kb": 122.3,
+      "sha256": "ff3949e13c4f56bda4f2dde5257c31e02e53c48982501c3a56f40cd5b3111983"
+    },
+    "protein_protein_edges.parquet": {
+      "bytes": 185925,
+      "kb": 181.6,
+      "sha256": "96ca19218806fdd2230f7df571659ebd44e2b7a3d32a399b08bea8ba14342815"
+    },
+    "proteins.parquet": {
+      "bytes": 105018,
+      "kb": 102.6,
+      "sha256": "3fbf129c0afa6c08e7ff2e1332bbd0381584ac73409fac9d6e621dd1a9e75520"
+    },
+    "split_assignments.csv": {
+      "bytes": 384302,
+      "kb": 375.3,
+      "sha256": "2ac3e435bf29dc5091dcee064c032a97bb3fcea6b70a722ac0a6055a5e9c8acc"
+    },
+    "split_assignments_random_pair.csv.gz": {
+      "bytes": 2972741,
+      "kb": 2903.1,
+      "sha256": "d7fd9bb728d4029eaa605e99759cb056995a98c3ce3158d00c77ab7daaadb4f8"
+    }
+  },
+  "total_export_size_kb": 6304.3,
+  "total_export_size_mb": 6.16
+}
