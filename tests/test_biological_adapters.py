@@ -144,3 +144,46 @@ def test_only_human_targets_by_default():
     edges = dc.load_target_interactions()
     assert set(edges["organism"]) == {dc.HUMAN}
     assert len(dc.load_target_interactions(organism=None)) > len(edges)
+
+
+# --------------------------------------------------------------------------
+# Schema parity between match modes (regression)
+# --------------------------------------------------------------------------
+
+def test_both_match_modes_produce_the_same_columns():
+    """Regression for a real defect found 2026-08-28.
+
+    In "exact" mode both the corpus frame and the DrugCentral frame carried a
+    column named `inchikey`, so the merge suffixed them to inchikey_x/_y and
+    the column filter silently dropped both. The output schema therefore
+    DIFFERED between match modes: code reading `inchikey` worked on skeleton
+    and raised AttributeError on exact - the worse way round, because exact is
+    the default and the failure surfaced only in a downstream consumer.
+    """
+    drugs = pd.DataFrame({
+        "drugbank_id": ["DB00001"],
+        "inchikey": ["BSYNRYMUTXBXSQ-UHFFFAOYSA-N"],
+    })
+    structures = pd.DataFrame({
+        "struct_id": ["1"], "inchikey": ["BSYNRYMUTXBXSQ-UHFFFAOYSA-N"],
+        "inn": ["aspirin"], "cas_rn": ["50-78-2"],
+        "inchikey_skeleton": ["BSYNRYMUTXBXSQ"],
+    })
+    targets = pd.DataFrame({
+        "assertion_id": [0], "struct_id": ["1"], "drug_name": ["aspirin"],
+        "gene": ["PTGS1"], "uniprot_id": ["P23219"], "target_name": ["COX-1"],
+        "target_class": ["Enzyme"], "action_type": ["INHIBITOR"],
+        "is_moa": [True], "organism": [dc.HUMAN],
+    })
+
+    import unittest.mock as mock
+    with mock.patch.object(dc, "load_structures", return_value=structures), \
+         mock.patch.object(dc, "load_target_interactions", return_value=targets):
+        exact = dc.build_drug_target_table(drugs, match="exact")
+        skeleton = dc.build_drug_target_table(drugs, match="skeleton")
+
+    assert list(exact.edges.columns) == list(skeleton.edges.columns)
+    assert "drug_inchikey" in exact.edges.columns, (
+        "the corpus InChIKey must survive the merge under a stable name"
+    )
+    assert exact.edges["drug_inchikey"].iloc[0] == "BSYNRYMUTXBXSQ-UHFFFAOYSA-N"

@@ -1,0 +1,191 @@
+{
+  "corpus": {
+    "n_records": 1705,
+    "duplicate_structures": {
+      "count": 0,
+      "examples": []
+    },
+    "missing_inchikey": {
+      "count": 4,
+      "examples": [
+        "DB00515",
+        "DB00526",
+        "DB00958",
+        "DB13145"
+      ]
+    },
+    "malformed_inchikey": {
+      "count": 0,
+      "examples": []
+    },
+    "missing_smiles": {
+      "count": 0,
+      "examples": []
+    },
+    "invalid_smiles": {
+      "count": 0,
+      "checked": true,
+      "examples": []
+    }
+  },
+  "store": {
+    "duplicate_assertions": {
+      "count": 4534,
+      "examples": [
+        "protein_interacts_with_protein PRO:P12004->PRO:P35244 from reactome_uniprot#R-HSA-6790530 x2",
+        "protein_interacts_with_protein PRO:P12004->PRO:P15927 from reactome_uniprot#R-HSA-6790530 x2",
+        "protein_interacts_with_protein PRO:P12004->PRO:P27694 from reactome_uniprot#R-HSA-6790530 x2",
+        "protein_interacts_with_protein PRO:P00736->PRO:P09871 from reactome_uniprot#R-HSA-173614 x4",
+        "protein_interacts_with_protein PRO:P00736->PRO:P09871 from reactome_uniprot#R-HSA-173613 x2"
+      ]
+    },
+    "self_interactions": {
+      "count": 0,
+      "examples": []
+    },
+    "orphan_edges": {
+      "count": 0,
+      "examples": []
+    },
+    "orphan_nodes": {
+      "count": 0,
+      "examples": []
+    },
+    "impossible_relations": {
+      "count": 0,
+      "examples": []
+    },
+    "identifier_wrong_space": {
+      "count": 0,
+      "examples": []
+    },
+    "malformed_identifiers": {
+      "count": 0,
+      "examples": []
+    },
+    "assertions_without_source": {
+      "count": 0
+    },
+    "conflicting_signs": {
+      "count": 0,
+      "examples": []
+    },
+    "summary": {
+      "n_entities": 10777,
+      "n_assertions": 79214,
+      "n_distinct_relations": 57253,
+      "n_relations_with_multiple_sources": 0,
+      "entities_by_type": {
+        "Drug": 1228,
+        "Enzyme": 798,
+        "Gene": 6234,
+        "Protein": 2446,
+        "Transporter": 71
+      },
+      "assertions_by_source": {
+        "drugcentral": 12619,
+        "reactome_uniprot": 28759,
+        "reactome_fi": 37836
+      },
+      "assertions_by_evidence_type": {
+        "curated": 70246,
+        "bioactivity": 8968
+      },
+      "assertions_by_predicate": {
+        "gene_encodes_protein": 1303,
+        "drug_inhibits_protein": 1853,
+        "drug_targets_protein": 8479,
+        "drug_activates_protein": 984,
+        "protein_interacts_with_protein": 56896,
+        "protein_activates_protein": 6710,
+        "protein_inhibits_protein": 2989
+      }
+    }
+  },
+  "identifier_map": {
+    "conflicting_mappings": {
+      "count": 0,
+      "examples": []
+    },
+    "within_space_collisions": {
+      "count": 0,
+      "examples": []
+    },
+    "summary": {
+      "n_mappings": 1701,
+      "n_source_values": 1701,
+      "n_canonical_ids": 1701,
+      "n_uncertain": 0,
+      "by_quality": {
+        "INCHIKEY_FULL": 1701
+      },
+      "by_source_space": {
+        "drugbank": 1701
+      },
+      "n_conflicts": 0,
+      "n_within_space_collisions": 0
+    }
+  },
+  "adapters": {
+    "drugcentral": {
+      "version": "2021_09_01",
+      "licence": "CC BY-SA 4.0",
+      "is_placeholder": false,
+      "available": true,
+      "ran": true,
+      "assertions_added": 12619
+    },
+    "chembl": {
+      "version": "36",
+      "licence": "CC BY-SA 3.0",
+      "is_placeholder": false,
+      "available": false,
+      "ran": false,
+      "assertions_added": 0,
+      "reason": "/home/user/DDI-Net/data/processed/chembl_mechanisms.parquet not found. Run scripts/extract_chembl.py once against the SQLite database; this adapter never queries it directly."
+    },
+    "reactome_uniprot": {
+      "version": "homo_sapiens",
+      "licence": "CC0 1.0",
+      "is_placeholder": false,
+      "available": true,
+      "ran": true,
+      "assertions_added": 28759
+    },
+    "reactome_fi": {
+      "version": "04142025",
+      "licence": "CC0 1.0",
+      "is_placeholder": false,
+      "available": true,
+      "ran": true,
+      "assertions_added": 37836
+    },
+    "sider": {
+      "version": "4.1",
+      "licence": "CC BY-NC-SA 4.0",
+      "is_placeholder": false,
+      "available": true,
+      "ran": false,
+      "assertions_added": 0,
+      "reason": "SIDER is keyed by STITCH CID and the corpus by InChIKey. Pass cid_to_inchikey={pubchem_cid: inchikey} to join them. No weaker fallback exists: the corpus has no drug names (its `name` column is a copy"
+    },
+    "uniprot": {
+      "version": "",
+      "licence": "CC BY 4.0",
+      "is_placeholder": true,
+      "available": false,
+      "ran": false,
+      "assertions_added": 0,
+      "reason": "uniprot: adapter is an interface only - this source has not been obtained yet. Expected files: uniprot/human_reviewed_idmapping.tsv. Download: https://www.uniprot.org/uniprotkb?query=reviewed:true+AND"
+    },
+    "faers": {
+      "version": "",
+      "licence": "public domain (US FDA)",
+      "is_placeholder": true,
+      "available": false,
+      "ran": false,
+      "assertions_added": 0,
+      "reason": "faers: adapter is an interface only - this source has not been obtained yet. Expected files: openfda_faers/signal_pairs.parquet. Download: https://open.fda.gov/data/downloads/"
+    }
+  }
+}

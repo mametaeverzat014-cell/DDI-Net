@@ -196,6 +196,13 @@ def build_drug_target_table(
         left["_key"] = left["inchikey"].str.split("-").str[0]
         right_key = "inchikey_skeleton"
 
+    # Rename before the merge. In "exact" mode both frames carry a column named
+    # `inchikey`, so pandas would suffix them to inchikey_x/inchikey_y and the
+    # `keep` filter below would silently drop both - leaving the output schema
+    # DIFFERENT between the two match modes. A caller that read `inchikey` would
+    # work on skeleton and fail on exact, which is the worse way round.
+    left = left.rename(columns={"inchikey": "drug_inchikey"})
+
     matched = left.merge(
         structures[["struct_id", right_key, "inn"]],
         left_on="_key", right_on=right_key, how="inner",
@@ -205,7 +212,7 @@ def build_drug_target_table(
         columns={"drugbank_id": "drug_id"}
     )
     keep = [
-        "drug_id", "inchikey", "struct_id", "inn", "assertion_id",
+        "drug_id", "drug_inchikey", "struct_id", "inn", "assertion_id",
         "gene", "uniprot_id", "target_name", "target_class",
         "action_type", "is_moa", "organism",
     ]
