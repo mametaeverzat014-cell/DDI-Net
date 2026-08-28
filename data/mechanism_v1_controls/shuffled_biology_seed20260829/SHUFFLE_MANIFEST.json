@@ -1,0 +1,538 @@
+{
+  "control": "F",
+  "purpose": "test whether the model benefits from biological IDENTITY rather than biological degree or annotation density",
+  "created_utc": "2026-08-28T23:28:58+00:00",
+  "generator": "scripts/31_freeze_control_f.py",
+  "algorithm": "stratified degree-preserving bipartite double-edge swap",
+  "shuffle_seed": 20260829,
+  "swaps_per_edge": 150,
+  "stratification": "stratum profile of the (drug, protein) pair, where the profile is the sorted set of relation_type|evidence_type combinations that pair appears in; 25 classes",
+  "unit_of_shuffling": "(drug, protein) pair, not the assertion row",
+  "why_pair_level": "4,381 pairs (4.92%) appear in more than one stratum. Shuffling strata independently sent them to different proteins, raising distinct-protein count for 63.6% of drugs (median +2, max +29) - systematically upward and visible to the model. Pair-level shuffling makes drug and protein distinct degree exactly preserved.",
+  "edge_key": "uniprot_id",
+  "edge_key_rationale": "protein_id is null in 91% of rows - it exists only for DrugBank-sourced edges - so keying on it would silently exclude 133,593 rows",
+  "preregistration_deviation": {
+    "preregistered": "uniform resampling of |P(d)| proteins per drug (docs/V2_ARCHITECTURE_PLAN.md, CONTROL F)",
+    "implemented": "stratified degree-preserving double-edge swap",
+    "reason": "resampling preserves drug degree but destroys protein degree and ignores evidence strata, leaving the control distinguishable from true biology by statistics other than identity. The swap preserves both degree sequences and the stratum, making the control STRICTER.",
+    "direction": "stricter than preregistered"
+  },
+  "pathways": "protein->pathway edges are NOT shuffled; drug->pathway context changes only through the randomised proteins",
+  "labels_read": "none - ddi_positive_labels.parquet is never opened",
+  "swap_report": {
+    "n_edges": 89049,
+    "attempted_swaps": 13357200,
+    "successful_swaps": 2487716,
+    "acceptance_rate": 0.1862,
+    "edges_retained": 2255,
+    "retained_fraction": 0.025323,
+    "changed_fraction": 0.974677,
+    "by_stratum": {
+      "carrier|DOCUMENTED_DATABASE_RELATION": {
+        "n_edges": 549,
+        "n_distinct_left": 397,
+        "n_distinct_right": 44,
+        "attempted_swaps": 82350,
+        "successful_swaps": 17405,
+        "acceptance_rate": 0.2114,
+        "edges_retained": 253,
+        "retained_fraction": 0.460838
+      },
+      "carrier|DOCUMENTED_DATABASE_RELATION+target|DOCUMENTED_DATABASE_RELATION": {
+        "n_edges": 10,
+        "n_distinct_left": 8,
+        "n_distinct_right": 6,
+        "attempted_swaps": 1500,
+        "successful_swaps": 672,
+        "acceptance_rate": 0.448,
+        "edges_retained": 3,
+        "retained_fraction": 0.3
+      },
+      "carrier|DOCUMENTED_DATABASE_RELATION+target|EXPERIMENTAL_BIOACTIVITY": {
+        "n_edges": 38,
+        "n_distinct_left": 35,
+        "n_distinct_right": 7,
+        "attempted_swaps": 5700,
+        "successful_swaps": 1585,
+        "acceptance_rate": 0.2781,
+        "edges_retained": 22,
+        "retained_fraction": 0.578947
+      },
+      "carrier|DOCUMENTED_DATABASE_RELATION+transporter|DOCUMENTED_DATABASE_RELATION": {
+        "n_edges": 1,
+        "n_distinct_left": 1,
+        "n_distinct_right": 1,
+        "attempted_swaps": 0,
+        "successful_swaps": 0,
+        "acceptance_rate": 0.0,
+        "edges_retained": 1,
+        "retained_fraction": 1.0
+      },
+      "enzyme|DOCUMENTED_DATABASE_RELATION": {
+        "n_edges": 2693,
+        "n_distinct_left": 933,
+        "n_distinct_right": 288,
+        "attempted_swaps": 403950,
+        "successful_swaps": 176564,
+        "acceptance_rate": 0.4371,
+        "edges_retained": 197,
+        "retained_fraction": 0.073153
+      },
+      "enzyme|DOCUMENTED_DATABASE_RELATION+target|CURATED_MOA": {
+        "n_edges": 3,
+        "n_distinct_left": 3,
+        "n_distinct_right": 3,
+        "attempted_swaps": 450,
+        "successful_swaps": 311,
+        "acceptance_rate": 0.6911,
+        "edges_retained": 1,
+        "retained_fraction": 0.333333
+      },
+      "enzyme|DOCUMENTED_DATABASE_RELATION+target|CURATED_MOA+target|DOCUMENTED_DATABASE_RELATION": {
+        "n_edges": 2,
+        "n_distinct_left": 1,
+        "n_distinct_right": 2,
+        "attempted_swaps": 300,
+        "successful_swaps": 0,
+        "acceptance_rate": 0.0,
+        "edges_retained": 2,
+        "retained_fraction": 1.0
+      },
+      "enzyme|DOCUMENTED_DATABASE_RELATION+target|CURATED_MOA+target|DOCUMENTED_DATABASE_RELATION+target|EXPERIMENTAL_BIOACTIVITY": {
+        "n_edges": 13,
+        "n_distinct_left": 12,
+        "n_distinct_right": 10,
+        "attempted_swaps": 1950,
+        "successful_swaps": 469,
+        "acceptance_rate": 0.2405,
+        "edges_retained": 3,
+        "retained_fraction": 0.230769
+      },
+      "enzyme|DOCUMENTED_DATABASE_RELATION+target|CURATED_MOA+target|EXPERIMENTAL_BIOACTIVITY": {
+        "n_edges": 2,
+        "n_distinct_left": 1,
+        "n_distinct_right": 2,
+        "attempted_swaps": 300,
+        "successful_swaps": 0,
+        "acceptance_rate": 0.0,
+        "edges_retained": 2,
+        "retained_fraction": 1.0
+      },
+      "enzyme|DOCUMENTED_DATABASE_RELATION+target|DOCUMENTED_DATABASE_RELATION": {
+        "n_edges": 33,
+        "n_distinct_left": 28,
+        "n_distinct_right": 31,
+        "attempted_swaps": 4950,
+        "successful_swaps": 3989,
+        "acceptance_rate": 0.8059,
+        "edges_retained": 0,
+        "retained_fraction": 0.0
+      },
+      "enzyme|DOCUMENTED_DATABASE_RELATION+target|DOCUMENTED_DATABASE_RELATION+target|EXPERIMENTAL_BIOACTIVITY": {
+        "n_edges": 18,
+        "n_distinct_left": 14,
+        "n_distinct_right": 16,
+        "attempted_swaps": 2700,
+        "successful_swaps": 517,
+        "acceptance_rate": 0.1915,
+        "edges_retained": 8,
+        "retained_fraction": 0.444444
+      },
+      "enzyme|DOCUMENTED_DATABASE_RELATION+target|EXPERIMENTAL_BIOACTIVITY": {
+        "n_edges": 1188,
+        "n_distinct_left": 454,
+        "n_distinct_right": 38,
+        "attempted_swaps": 178200,
+        "successful_swaps": 1587,
+        "acceptance_rate": 0.0089,
+        "edges_retained": 898,
+        "retained_fraction": 0.755892
+      },
+      "enzyme|DOCUMENTED_DATABASE_RELATION+transporter|DOCUMENTED_DATABASE_RELATION": {
+        "n_edges": 2,
+        "n_distinct_left": 2,
+        "n_distinct_right": 2,
+        "attempted_swaps": 300,
+        "successful_swaps": 160,
+        "acceptance_rate": 0.5333,
+        "edges_retained": 2,
+        "retained_fraction": 1.0
+      },
+      "target|CURATED_MOA": {
+        "n_edges": 1095,
+        "n_distinct_left": 154,
+        "n_distinct_right": 248,
+        "attempted_swaps": 164250,
+        "successful_swaps": 98180,
+        "acceptance_rate": 0.5977,
+        "edges_retained": 16,
+        "retained_fraction": 0.014612
+      },
+      "target|CURATED_MOA+target|DOCUMENTED_DATABASE_RELATION": {
+        "n_edges": 417,
+        "n_distinct_left": 248,
+        "n_distinct_right": 178,
+        "attempted_swaps": 62550,
+        "successful_swaps": 48291,
+        "acceptance_rate": 0.772,
+        "edges_retained": 14,
+        "retained_fraction": 0.033573
+      },
+      "target|CURATED_MOA+target|DOCUMENTED_DATABASE_RELATION+target|EXPERIMENTAL_BIOACTIVITY": {
+        "n_edges": 579,
+        "n_distinct_left": 344,
+        "n_distinct_right": 221,
+        "attempted_swaps": 86850,
+        "successful_swaps": 49230,
+        "acceptance_rate": 0.5668,
+        "edges_retained": 19,
+        "retained_fraction": 0.032815
+      },
+      "target|CURATED_MOA+target|DOCUMENTED_DATABASE_RELATION+target|EXPERIMENTAL_BIOACTIVITY+transporter|DOCUMENTED_DATABASE_RELATION": {
+        "n_edges": 4,
+        "n_distinct_left": 2,
+        "n_distinct_right": 4,
+        "attempted_swaps": 600,
+        "successful_swaps": 0,
+        "acceptance_rate": 0.0,
+        "edges_retained": 4,
+        "retained_fraction": 1.0
+      },
+      "target|CURATED_MOA+target|EXPERIMENTAL_BIOACTIVITY": {
+        "n_edges": 133,
+        "n_distinct_left": 48,
+        "n_distinct_right": 90,
+        "attempted_swaps": 19950,
+        "successful_swaps": 12658,
+        "acceptance_rate": 0.6345,
+        "edges_retained": 2,
+        "retained_fraction": 0.015038
+      },
+      "target|DOCUMENTED_DATABASE_RELATION": {
+        "n_edges": 3752,
+        "n_distinct_left": 1130,
+        "n_distinct_right": 1352,
+        "attempted_swaps": 562800,
+        "successful_swaps": 460695,
+        "acceptance_rate": 0.8186,
+        "edges_retained": 14,
+        "retained_fraction": 0.003731
+      },
+      "target|DOCUMENTED_DATABASE_RELATION+target|EXPERIMENTAL_BIOACTIVITY": {
+        "n_edges": 1426,
+        "n_distinct_left": 498,
+        "n_distinct_right": 324,
+        "attempted_swaps": 213900,
+        "successful_swaps": 67169,
+        "acceptance_rate": 0.314,
+        "edges_retained": 67,
+        "retained_fraction": 0.046985
+      },
+      "target|DOCUMENTED_DATABASE_RELATION+target|EXPERIMENTAL_BIOACTIVITY+transporter|DOCUMENTED_DATABASE_RELATION": {
+        "n_edges": 23,
+        "n_distinct_left": 16,
+        "n_distinct_right": 16,
+        "attempted_swaps": 3450,
+        "successful_swaps": 1202,
+        "acceptance_rate": 0.3484,
+        "edges_retained": 1,
+        "retained_fraction": 0.043478
+      },
+      "target|DOCUMENTED_DATABASE_RELATION+transporter|DOCUMENTED_DATABASE_RELATION": {
+        "n_edges": 29,
+        "n_distinct_left": 15,
+        "n_distinct_right": 22,
+        "attempted_swaps": 4350,
+        "successful_swaps": 2671,
+        "acceptance_rate": 0.614,
+        "edges_retained": 3,
+        "retained_fraction": 0.103448
+      },
+      "target|EXPERIMENTAL_BIOACTIVITY": {
+        "n_edges": 74913,
+        "n_distinct_left": 1313,
+        "n_distinct_right": 1552,
+        "attempted_swaps": 11236950,
+        "successful_swaps": 1387086,
+        "acceptance_rate": 0.1234,
+        "edges_retained": 544,
+        "retained_fraction": 0.007262
+      },
+      "target|EXPERIMENTAL_BIOACTIVITY+transporter|DOCUMENTED_DATABASE_RELATION": {
+        "n_edges": 460,
+        "n_distinct_left": 228,
+        "n_distinct_right": 42,
+        "attempted_swaps": 69000,
+        "successful_swaps": 20880,
+        "acceptance_rate": 0.3026,
+        "edges_retained": 77,
+        "retained_fraction": 0.167391
+      },
+      "transporter|DOCUMENTED_DATABASE_RELATION": {
+        "n_edges": 1666,
+        "n_distinct_left": 618,
+        "n_distinct_right": 171,
+        "attempted_swaps": 249900,
+        "successful_swaps": 136395,
+        "acceptance_rate": 0.5458,
+        "edges_retained": 102,
+        "retained_fraction": 0.061224
+      }
+    }
+  },
+  "pair_set_overlap": 0.5742,
+  "pair_set_overlap_note": "fraction of TRUE (drug, protein) pairs still present after the shuffle. This - not the swap report's slot retention - is the measure of how much biological identity survives: a protein can leave one slot of a drug and return to another.",
+  "mixing_curve": [
+    {
+      "swaps_per_edge": 1,
+      "successful_swaps": 20768,
+      "slot_retention": 0.6783,
+      "pair_set_overlap": 0.7114
+    },
+    {
+      "swaps_per_edge": 3,
+      "successful_swaps": 54835,
+      "slot_retention": 0.4696,
+      "pair_set_overlap": 0.6074
+    },
+    {
+      "swaps_per_edge": 10,
+      "successful_swaps": 170477,
+      "slot_retention": 0.2048,
+      "pair_set_overlap": 0.5764
+    },
+    {
+      "swaps_per_edge": 20,
+      "successful_swaps": 335973,
+      "slot_retention": 0.0876,
+      "pair_set_overlap": 0.5732
+    },
+    {
+      "swaps_per_edge": 150,
+      "successful_swaps": 2487716,
+      "slot_retention": 0.0253,
+      "pair_set_overlap": 0.5742
+    }
+  ],
+  "mixing_curve_note": "pair-set overlap as a function of swap budget. A flat tail means the chain has converged and the residual overlap is the stationary value forced by the degree sequence, not under-mixing.",
+  "validation": {
+    "drug_level": [
+      {
+        "metric": "n_proteins_per_drug",
+        "identical": true,
+        "spearman": 1.0,
+        "max_abs_diff": 0
+      },
+      {
+        "metric": "n_assertion_rows_per_drug",
+        "identical": true,
+        "spearman": 1.0,
+        "max_abs_diff": 0
+      },
+      {
+        "metric": "n_carrier_per_drug",
+        "identical": true,
+        "spearman": 1.0,
+        "max_abs_diff": 0
+      },
+      {
+        "metric": "n_enzyme_per_drug",
+        "identical": true,
+        "spearman": 1.0,
+        "max_abs_diff": 0
+      },
+      {
+        "metric": "n_target_per_drug",
+        "identical": true,
+        "spearman": 1.0,
+        "max_abs_diff": 0
+      },
+      {
+        "metric": "n_transporter_per_drug",
+        "identical": true,
+        "spearman": 1.0,
+        "max_abs_diff": 0
+      },
+      {
+        "metric": "n_edges_ChEMBL_36_activities_per_drug",
+        "identical": true,
+        "spearman": 1.0,
+        "max_abs_diff": 0
+      },
+      {
+        "metric": "n_edges_ChEMBL_36_drug_mechanism_per_drug",
+        "identical": true,
+        "spearman": 1.0,
+        "max_abs_diff": 0
+      },
+      {
+        "metric": "n_edges_DrugBank_v5.1_per_drug",
+        "identical": true,
+        "spearman": 1.0,
+        "max_abs_diff": 0
+      }
+    ],
+    "protein_level": [
+      {
+        "metric": "n_drugs_per_protein",
+        "identical": true,
+        "spearman": 1.0,
+        "max_abs_diff": 0
+      },
+      {
+        "metric": "n_assertion_rows_per_protein",
+        "identical": false,
+        "spearman": 0.9814,
+        "max_abs_diff": 442
+      }
+    ],
+    "pathway_level": [
+      {
+        "metric": "n_pathways_per_drug",
+        "identical": false,
+        "spearman": 0.9316,
+        "max_abs_diff": 304
+      },
+      {
+        "metric": "n_pathways_per_drug_distribution",
+        "true_mean": 173.506,
+        "shuffled_mean": 199.96,
+        "true_median": 57.0,
+        "shuffled_median": 96.0,
+        "spearman": 0.9316
+      }
+    ],
+    "coverage": {
+      "drugs_with_ge1_protein_true": 1638,
+      "drugs_with_ge1_protein_shuffled": 1638,
+      "drugs_with_ge1_pathway_true": 1614,
+      "drugs_with_ge1_pathway_shuffled": 1631,
+      "proteins_used_true": 2893,
+      "proteins_used_shuffled": 2893
+    },
+    "strata": {
+      "relation_type": {
+        "true": {
+          "target": 139988,
+          "enzyme": 3972,
+          "transporter": 2185,
+          "carrier": 598
+        },
+        "shuffled": {
+          "target": 139988,
+          "enzyme": 3972,
+          "transporter": 2185,
+          "carrier": 598
+        },
+        "identical": true
+      },
+      "evidence_source": {
+        "true": {
+          "ChEMBL_36_activities": 131338,
+          "DrugBank_v5.1": 13150,
+          "ChEMBL_36_drug_mechanism": 2255
+        },
+        "shuffled": {
+          "ChEMBL_36_activities": 131338,
+          "DrugBank_v5.1": 13150,
+          "ChEMBL_36_drug_mechanism": 2255
+        },
+        "identical": true
+      },
+      "evidence_type": {
+        "true": {
+          "EXPERIMENTAL_BIOACTIVITY": 131338,
+          "DOCUMENTED_DATABASE_RELATION": 13150,
+          "CURATED_MOA": 2255
+        },
+        "shuffled": {
+          "EXPERIMENTAL_BIOACTIVITY": 131338,
+          "DOCUMENTED_DATABASE_RELATION": 13150,
+          "CURATED_MOA": 2255
+        },
+        "identical": true
+      }
+    }
+  },
+  "input_files": {
+    "biological_edges.parquet": {
+      "sha256": "eb999331e901b5041ad138391b691159eb3bee9ab24a68817275b241fa9e858e",
+      "bytes": 1139970
+    },
+    "ddi_positive_labels.parquet": {
+      "sha256": "0ad3d5cf3fec8488fc2b27569268ff0ab4d05354e5883b9cdfd8504caef0c698",
+      "bytes": 291076
+    },
+    "drug_adverse_event_edges.parquet": {
+      "sha256": "242710b51b63c4f271df13dd2140fc73f5ff5b43b0c65d5f149ca072d4e540a5",
+      "bytes": 584655
+    },
+    "drug_protein_edges.parquet": {
+      "sha256": "e8ef9cc5a6e8c7ca927d18ec227d6838a9cef75a82fd92f9daefabd530c161e2",
+      "bytes": 385971
+    },
+    "drugs.parquet": {
+      "sha256": "d7cb2032e94f6465de43b44f3083ee4fa62a798322f9975425bc6acba3a49c06",
+      "bytes": 212654
+    },
+    "pathways.parquet": {
+      "sha256": "8aa9209f74d025f2cefd057ffbb29e0aae01c31fdef8c147597ee418f7fa8500",
+      "bytes": 66152
+    },
+    "protein_pathway_edges.parquet": {
+      "sha256": "ff3949e13c4f56bda4f2dde5257c31e02e53c48982501c3a56f40cd5b3111983",
+      "bytes": 125245
+    },
+    "protein_protein_edges.parquet": {
+      "sha256": "96ca19218806fdd2230f7df571659ebd44e2b7a3d32a399b08bea8ba14342815",
+      "bytes": 185925
+    },
+    "proteins.parquet": {
+      "sha256": "3fbf129c0afa6c08e7ff2e1332bbd0381584ac73409fac9d6e621dd1a9e75520",
+      "bytes": 105018
+    }
+  },
+  "output_files": {
+    "biological_edges_shuffled.parquet": {
+      "sha256": "6521c4920fd48a0ba4405fd69d3362e61c9f49c24def82fe04836f79d539707f",
+      "bytes": 1109030,
+      "rows": 406526,
+      "columns": [
+        "source_node",
+        "target_node",
+        "relation_type",
+        "action",
+        "evidence_source",
+        "evidence_type",
+        "confidence",
+        "source_type",
+        "target_type",
+        "pathway_name",
+        "organism",
+        "reactome_reaction_id",
+        "pubmed_ids",
+        "adverse_event_term",
+        "source",
+        "mapping_method"
+      ]
+    },
+    "drug_protein_edges_shuffled.parquet": {
+      "sha256": "0af5d48eaef040b98b27ad3997dcca9983b32559321bc3d584fe4817c1b15c7f",
+      "bytes": 594080,
+      "rows": 146743,
+      "columns": [
+        "drugbank_id",
+        "uniprot_id",
+        "protein_id",
+        "relation_type",
+        "action",
+        "known_action",
+        "pmids",
+        "organism",
+        "evidence_source",
+        "evidence_type",
+        "confidence"
+      ]
+    }
+  }
+}
