@@ -1,0 +1,314 @@
+{
+  "created_utc": "2026-08-28T18:10:10+00:00",
+  "generator": "scripts/30_data_bridge_export.py",
+  "export_only": true,
+  "source_entry_point": "ddinet.data.tdc_drugbank.load_modelling_data",
+  "n_drugs": 1705,
+  "n_positive_pairs": 191392,
+  "canonical_identifier": "drugbank_id",
+  "identifier_coverage": {
+    "drugbank_id": 1705,
+    "inchikey": 1701,
+    "smiles": 1705,
+    "canonical_smiles": 1705,
+    "name": 1705
+  },
+  "drugs_without_inchikey": [
+    "DB00515",
+    "DB00526",
+    "DB00958",
+    "DB13145"
+  ],
+  "drugs_without_inchikey_note": "platinum coordination complexes; standard InChI is undefined for dative bonds, so these cannot be joined on InChIKey",
+  "schemes": [
+    "random_pair",
+    "drug",
+    "scaffold"
+  ],
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "split_statistics": [
+    {
+      "scheme": "random_pair",
+      "seed": 0,
+      "n_train_drugs": 1691,
+      "n_val_drugs": 1567,
+      "n_test_drugs": 1574,
+      "buckets": {
+        "test": 28709,
+        "train": 133974,
+        "val": 28709
+      },
+      "n_discarded_pairs": 0
+    },
+    {
+      "scheme": "random_pair",
+      "seed": 1,
+      "n_train_drugs": 1685,
+      "n_val_drugs": 1567,
+      "n_test_drugs": 1567,
+      "buckets": {
+        "test": 28709,
+        "train": 133974,
+        "val": 28709
+      },
+      "n_discarded_pairs": 0
+    },
+    {
+      "scheme": "random_pair",
+      "seed": 2,
+      "n_train_drugs": 1675,
+      "n_val_drugs": 1580,
+      "n_test_drugs": 1585,
+      "buckets": {
+        "test": 28709,
+        "train": 133974,
+        "val": 28709
+      },
+      "n_discarded_pairs": 0
+    },
+    {
+      "scheme": "random_pair",
+      "seed": 3,
+      "n_train_drugs": 1680,
+      "n_val_drugs": 1592,
+      "n_test_drugs": 1567,
+      "buckets": {
+        "test": 28709,
+        "train": 133974,
+        "val": 28709
+      },
+      "n_discarded_pairs": 0
+    },
+    {
+      "scheme": "random_pair",
+      "seed": 4,
+      "n_train_drugs": 1681,
+      "n_val_drugs": 1575,
+      "n_test_drugs": 1581,
+      "buckets": {
+        "test": 28709,
+        "train": 133974,
+        "val": 28709
+      },
+      "n_discarded_pairs": 0
+    },
+    {
+      "scheme": "drug",
+      "seed": 0,
+      "n_train_drugs": 1195,
+      "n_val_drugs": 255,
+      "n_test_drugs": 255,
+      "buckets": {
+        "test_S2": 38466,
+        "test_S3": 3879,
+        "train": 93630,
+        "val_S2": 42076,
+        "val_S3": 4729
+      },
+      "n_discarded_pairs": 8612
+    },
+    {
+      "scheme": "drug",
+      "seed": 1,
+      "n_train_drugs": 1195,
+      "n_val_drugs": 255,
+      "n_test_drugs": 255,
+      "buckets": {
+        "test_S2": 37722,
+        "test_S3": 3591,
+        "train": 96175,
+        "val_S2": 41520,
+        "val_S3": 4354
+      },
+      "n_discarded_pairs": 8030
+    },
+    {
+      "scheme": "drug",
+      "seed": 2,
+      "n_train_drugs": 1195,
+      "n_val_drugs": 255,
+      "n_test_drugs": 255,
+      "buckets": {
+        "test_S2": 42363,
+        "test_S3": 4868,
+        "train": 89259,
+        "val_S2": 40733,
+        "val_S3": 4551
+      },
+      "n_discarded_pairs": 9618
+    },
+    {
+      "scheme": "drug",
+      "seed": 3,
+      "n_train_drugs": 1195,
+      "n_val_drugs": 255,
+      "n_test_drugs": 255,
+      "buckets": {
+        "test_S2": 39804,
+        "test_S3": 4251,
+        "train": 91806,
+        "val_S2": 41734,
+        "val_S3": 4726
+      },
+      "n_discarded_pairs": 9071
+    },
+    {
+      "scheme": "drug",
+      "seed": 4,
+      "n_train_drugs": 1195,
+      "n_val_drugs": 255,
+      "n_test_drugs": 255,
+      "buckets": {
+        "test_S2": 38755,
+        "test_S3": 3829,
+        "train": 97584,
+        "val_S2": 39324,
+        "val_S3": 3909
+      },
+      "n_discarded_pairs": 7991
+    },
+    {
+      "scheme": "scaffold",
+      "seed": 0,
+      "n_train_drugs": 1205,
+      "n_val_drugs": 276,
+      "n_test_drugs": 224,
+      "buckets": {
+        "test_S2": 35996,
+        "test_S3": 3396,
+        "train": 94196,
+        "val_S2": 44409,
+        "val_S3": 5184
+      },
+      "n_discarded_pairs": 8211
+    },
+    {
+      "scheme": "scaffold",
+      "seed": 1,
+      "n_train_drugs": 1071,
+      "n_val_drugs": 390,
+      "n_test_drugs": 244,
+      "buckets": {
+        "test_S2": 30362,
+        "test_S3": 2958,
+        "train": 77620,
+        "val_S2": 57761,
+        "val_S3": 11189
+      },
+      "n_discarded_pairs": 11502
+    },
+    {
+      "scheme": "scaffold",
+      "seed": 2,
+      "n_train_drugs": 1247,
+      "n_val_drugs": 236,
+      "n_test_drugs": 222,
+      "buckets": {
+        "test_S2": 34899,
+        "test_S3": 2961,
+        "train": 102016,
+        "val_S2": 40587,
+        "val_S3": 4117
+      },
+      "n_discarded_pairs": 6812
+    },
+    {
+      "scheme": "scaffold",
+      "seed": 3,
+      "n_train_drugs": 1247,
+      "n_val_drugs": 223,
+      "n_test_drugs": 235,
+      "buckets": {
+        "test_S2": 38485,
+        "test_S3": 3683,
+        "train": 104474,
+        "val_S2": 35298,
+        "val_S3": 2957
+      },
+      "n_discarded_pairs": 6495
+    },
+    {
+      "scheme": "scaffold",
+      "seed": 4,
+      "n_train_drugs": 1086,
+      "n_val_drugs": 268,
+      "n_test_drugs": 351,
+      "buckets": {
+        "test_S2": 48002,
+        "test_S3": 8712,
+        "train": 70565,
+        "val_S2": 42913,
+        "val_S3": 6465
+      },
+      "n_discarded_pairs": 14735
+    }
+  ],
+  "verification_against_grid_results": {
+    "checked": true,
+    "cells_checked": 15,
+    "mismatches": [],
+    "agrees": true
+  },
+  "excluded_by_load_modelling_data": {
+    "drugs": [
+      "DB11630"
+    ],
+    "n_pairs_removed": 10
+  },
+  "files": [
+    {
+      "file": "DATA_BRIDGE_README.md",
+      "bytes": 14016,
+      "sha256": "eed63d40a2d2d4c86dc32bcd0d28fd3022a83232df65f01d6ba7af8afeccd988"
+    },
+    {
+      "file": "project_drugs.csv",
+      "bytes": 345989,
+      "sha256": "950e641930508fad2517f00442a22f9546b66eb3149aa2f73146450b984a81be",
+      "rows": 1705,
+      "columns": [
+        "project_drug_id",
+        "drugbank_id",
+        "name",
+        "smiles",
+        "canonical_smiles",
+        "inchikey",
+        "formula",
+        "mol_weight",
+        "n_heavy_atoms",
+        "rdkit_parseable"
+      ]
+    },
+    {
+      "file": "split_assignments.csv",
+      "bytes": 384302,
+      "sha256": "2ac3e435bf29dc5091dcee064c032a97bb3fcea6b70a722ac0a6055a5e9c8acc",
+      "rows": 17050,
+      "columns": [
+        "scheme",
+        "seed",
+        "project_drug_id",
+        "assignment"
+      ]
+    },
+    {
+      "file": "split_assignments_random_pair.csv.gz",
+      "bytes": 2972741,
+      "sha256": "d7fd9bb728d4029eaa605e99759cb056995a98c3ce3158d00c77ab7daaadb4f8",
+      "rows": 956960,
+      "columns": [
+        "scheme",
+        "seed",
+        "drug_a",
+        "drug_b",
+        "bucket"
+      ]
+    }
+  ]
+}
