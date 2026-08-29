@@ -210,6 +210,10 @@ class V2History:
     wall_time_s: float = 0.0
     train_loss: list[float] = field(default_factory=list)
     val_auprc: list[float] = field(default_factory=list)
+    #: Epochs since validation last improved. Carried across a resume so that
+    #: an interrupted run does not get a fresh patience budget and train past
+    #: where early stopping would have ended it.
+    epochs_since_improvement: int = 0
 
     def summary(self) -> str:
         return (
@@ -591,17 +595,35 @@ class V2Trainer:
         }
 
     # -- training loop -----------------------------------------------------
-    def fit(self, max_epochs: int | None = None, verbose: bool = False) -> V2History:
+    def fit(
+        self,
+        max_epochs: int | None = None,
+        verbose: bool = False,
+        *,
+        checkpoint_path: Path | None = None,
+        checkpoint_every: int = 10,
+    ) -> V2History:
         """Train with early stopping on VALIDATION AUPRC. Never on test.
 
         Selection on validation AUPRC is the preregistered rule
         (docs/V2_PREREGISTRATION.md section 10.1). Not loss - its scale moves
         with the class weighting - and not accuracy, which is uninformative at
         this prevalence.
+
+        ``checkpoint_path`` turns on PERIODIC checkpointing: state is written
+        every ``checkpoint_every`` epochs and whenever validation improves.
+        Without it a checkpoint appears only when the run finishes, which is
+        useless for the failure this project keeps hitting - a container restart
+        killed the Phase A-2 grid twice and the debias runner once, at 24 of 30.
+        A 400-epoch run that dies at epoch 300 must not start over.
+
+        ``bad`` (epochs since the last improvement) is carried in the history so
+        that a resumed run does not silently get its patience counter reset and
+        train past the point early stopping would have stopped it.
         """
         budget = max_epochs if max_epochs is not None else self.spec.max_epochs
         started = time.time()
-        bad = 0
+        bad = self.history.epochs_since_improvement
         for epoch in range(self._start_epoch, budget):
             loss = self._train_epoch()
             self.scheduler.step()
@@ -610,7 +632,8 @@ class V2Trainer:
             self.history.val_auprc.append(score)
             self.history.epochs_run = epoch + 1
 
-            if score > self.history.best_val_auprc:
+            improved = score > self.history.best_val_auprc
+            if improved:
                 self.history.best_val_auprc = score
                 self.history.best_epoch = epoch + 1
                 self._best_state = {
@@ -620,8 +643,17 @@ class V2Trainer:
                 bad = 0
             else:
                 bad += 1
+            self.history.epochs_since_improvement = bad
             if verbose:
                 print(f"  epoch {epoch+1:4d} loss {loss:.4f} val_auprc {score:.4f}")
+
+            if checkpoint_path is not None and (
+                improved or (epoch + 1) % checkpoint_every == 0
+            ):
+                self.history.wall_time_s += time.time() - started
+                started = time.time()
+                self.save_checkpoint(checkpoint_path)
+
             if bad >= self.spec.patience:
                 self.history.stopped_by = "patience"
                 break
@@ -643,11 +675,20 @@ class V2Trainer:
         """
         path = Path(path)
         path.parent.mkdir(parents=True, exist_ok=True)
+        # BOTH states are stored. `best_state` is what the run reports and what
+        # a final evaluation must load; `current_state` is where training was
+        # when it stopped. Resuming from the best weights instead would silently
+        # rewind the optimiser to an earlier point on every restart, so a run
+        # interrupted repeatedly during a plateau could never leave it.
         torch.save(
             {
                 "run_id": self.spec.run_id(),
                 "spec": self.spec.to_dict(),
                 "model_state": self._best_state or self.model.state_dict(),
+                "current_state": {
+                    k: v.detach().cpu().clone()
+                    for k, v in self.model.state_dict().items()
+                },
                 "optimizer_state": self.optimizer.state_dict(),
                 "scheduler_state": self.scheduler.state_dict(),
                 "history": asdict(self.history),
@@ -671,7 +712,9 @@ class V2Trainer:
                 f"checkpoint belongs to run {blob.get('run_id')}, not "
                 f"{self.spec.run_id()}; refusing to resume a different configuration"
             )
-        self.model.load_state_dict(blob["model_state"])
+        # Continue from where training was, not from the best epoch; keep the
+        # best weights separately so the run still reports and saves them.
+        self.model.load_state_dict(blob.get("current_state") or blob["model_state"])
         self.optimizer.load_state_dict(blob["optimizer_state"])
         self.scheduler.load_state_dict(blob["scheduler_state"])
         self._best_state = {k: v.clone() for k, v in blob["model_state"].items()}

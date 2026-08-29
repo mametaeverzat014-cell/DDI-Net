@@ -63,6 +63,36 @@ RESULT_COLUMNS: tuple[str, ...] = (
 )
 
 
+def describe_sibling_checkpoints(spec, checkpoint_dir: Path) -> list[str]:
+    """Checkpoints whose spec differs from this one in only a field or two.
+
+    Exists so that "--resume found nothing" comes with the reason. Comparing
+    identity dictionaries rather than guessing from filenames: the filename is a
+    hash and carries no information about what changed.
+    """
+    notes: list[str] = []
+    if not checkpoint_dir.exists():
+        return notes
+    mine = spec.identity()
+    for manifest_path in sorted(checkpoint_dir.glob("*.manifest.json")):
+        try:
+            other = json.loads(manifest_path.read_text()).get("hyperparameters", {})
+        except (OSError, json.JSONDecodeError):
+            continue
+        differing = {
+            k: (other.get(k), v) for k, v in mine.items()
+            if k in other and other[k] != v
+        }
+        if differing and len(differing) <= 2:
+            shown = ", ".join(f"{k}: {was!r} -> {now!r}"
+                              for k, (was, now) in sorted(differing.items()))
+            notes.append(
+                f"{manifest_path.stem.replace('.manifest', '')} is the same run "
+                f"except {shown}"
+            )
+    return notes
+
+
 def build_spec(args) -> V2RunSpec:
     return V2RunSpec(
         ablation=args.ablation,
@@ -158,6 +188,9 @@ def main() -> int:
                     help="with_test is for the single final evaluation only")
     ap.add_argument("--results", default=str(REPORTS / "v2_validation_grid.csv"))
     ap.add_argument("--checkpoint-dir", default=str(CHECKPOINTS))
+    ap.add_argument("--checkpoint-every", type=int, default=10,
+                    help="epochs between periodic checkpoints; a run killed "
+                         "mid-training must not start over")
     ap.add_argument("--resume", action="store_true",
                     help="continue from this run id's checkpoint if it exists")
     ap.add_argument("--tag", default="",
@@ -195,12 +228,25 @@ def main() -> int:
           f"val {len(trainer._val['labels']):,}")
 
     ckpt_path = Path(args.checkpoint_dir) / f"{spec.run_id()}.pt"
-    if args.resume and ckpt_path.exists():
-        trainer.load_checkpoint(ckpt_path)
-        print(f"resumed  from epoch {trainer._start_epoch} "
-              f"(best val AUPRC {trainer.history.best_val_auprc:.4f})")
+    if args.resume:
+        if ckpt_path.exists():
+            trainer.load_checkpoint(ckpt_path)
+            print(f"resumed  from epoch {trainer._start_epoch} "
+                  f"(best val AUPRC {trainer.history.best_val_auprc:.4f})")
+        else:
+            # Never resume silently-not-resuming. --resume was asked for, so a
+            # fresh start is a surprise and has to say so. The common cause is
+            # a changed identity field: max_epochs in particular looks like a
+            # budget knob but sets T_max of the cosine schedule, so a run with
+            # a different cap follows a different learning-rate trajectory and
+            # is genuinely a different run, not a longer one.
+            print(f"resume   NO checkpoint for run_id {spec.run_id()} - "
+                  f"starting from scratch")
+            for sibling in describe_sibling_checkpoints(spec, Path(args.checkpoint_dir)):
+                print(f"         note: {sibling}")
 
-    history = trainer.fit(verbose=args.verbose)
+    history = trainer.fit(verbose=args.verbose, checkpoint_path=ckpt_path,
+                          checkpoint_every=args.checkpoint_every)
     print(f"trained  {history.summary()}")
 
     metrics = trainer.validation_metrics()
