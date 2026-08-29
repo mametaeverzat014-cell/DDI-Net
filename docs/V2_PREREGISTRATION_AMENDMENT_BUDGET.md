@@ -1,6 +1,37 @@
 # V2 Preregistration Amendment 1: training budget
 
-**Status:** AMENDMENT — the original `docs/V2_PREREGISTRATION.md` is unchanged
+**Status: FROZEN 2026-08-29.** Approved by the principal investigator and
+locked before the validation grid was launched. The complete decision history
+below is preserved and must not be rewritten.
+
+## FROZEN BUDGET
+
+| | |
+|---|---|
+| Primary training-budget unit | **optimiser steps** |
+| Maximum optimiser steps | **21,960** |
+| Validation interval | **every 366 optimiser steps** |
+| Early-stopping patience | **30 validation checks** |
+
+Applies identically to `batch_size=256` and `batch_size=512`: both take at most
+21,960 updates and receive at most 60 validation checks.
+
+**Why 21,960 and not 14,640:** 21,960 is the first budget tested that passed
+the adequacy criteria fixed in section 4 before any curve existed. 14,640 was
+rejected despite reaching the same validation AUPRC, because selecting it would
+mean choosing a budget from the curve — which section 4 forbids in those words.
+The choice was not made on which budget produced a preferred AUPRC.
+
+**Decision history, preserved in full:** original 400-epoch preregistration
+(section 2) → discovery of the epoch/optimiser-step mismatch (section 2) →
+adequacy protocol with the rule fixed in advance (section 4, commit 92363b4) →
+40-epoch inadequacy (section 8) → 60-epoch adequacy (section 8) → conversion to
+optimiser-step budgeting (section 7).
+
+---
+
+**Original status line, retained:** AMENDMENT — the original
+`docs/V2_PREREGISTRATION.md` is unchanged
 **Registered:** 2026-08-29
 **Amends:** section 10.2, `max_epochs` and `patience` only
 **Scope:** the training-budget ceiling. Nothing else.
@@ -347,3 +378,42 @@ computed, and no decision in this document was informed by test data. Verified
 by audit at the end of the study and by
 `tests/test_v2_runner.py` (the validation-only guard removes the test buckets
 before negatives are sampled, so no test label exists in the process).
+
+
+---
+
+## 10. Implementation consequence discovered at freeze time
+
+Freezing a **step**-denominated budget while the trainer validated once per
+**epoch** would have reintroduced the very confound the step budget removes,
+in a different place.
+
+Under a 21,960-step cap with per-epoch validation:
+
+| | steps/epoch | epochs in budget | **validation checks** |
+|---|---:|---:|---:|
+| `batch_size=512` | 366 | 60 | **60** |
+| `batch_size=256` | 732 | 30 | **30** |
+
+`batch_size=512` would get **twice as many checkpoint-selection opportunities**.
+That is not a neutral difference: the adequacy pilot measured a validation
+plateau with a standard deviation of 0.0034 and 10–12 epochs statistically tied
+with the best, so the reported maximum is partly a function of how many times
+the plateau is sampled. More checks means a higher expected maximum, for no
+modelling reason.
+
+The frozen policy already specifies validation every 366 optimiser steps; the
+implementation did not yet do that. It was changed before the grid was launched,
+not after runs began:
+
+- the training loop is step-denominated, not epoch-denominated;
+- validation runs every `validation_interval_steps` optimiser steps;
+- patience counts **validation checks**, so both batch sizes get 60 checks and
+  at most 30 checks of patience;
+- `effective_epochs` is recorded alongside `optimizer_steps` for every run, so
+  batch-size effects stay visible.
+
+The adequacy-study artefacts in `reports/v2_budget_adequacy/` were produced by
+the earlier epoch-denominated code and are left exactly as they are. They
+measured convergence for one batch size (512), where an epoch is 366 steps and
+the two schemes coincide, so the conclusion is unaffected.

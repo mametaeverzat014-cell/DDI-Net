@@ -1,0 +1,43 @@
+# V2 training budget — FROZEN
+# Approved by the principal investigator 2026-08-29, before the validation grid.
+# Rationale and full decision history: docs/V2_PREREGISTRATION_AMENDMENT_BUDGET.md
+# Adequacy rule fixed in advance: commit 92363b4
+# Adequacy study results: commit b9d7f25
+#
+# This file amends configs/v2_preregistered.yaml -> hparam_search.fixed
+# (max_epochs: 400, patience: 30). That file is NOT edited; the original
+# preregistration stays as written.
+
+status: FROZEN
+frozen_at: "2026-08-29"
+amends: configs/v2_preregistered.yaml
+amendment_doc: docs/V2_PREREGISTRATION_AMENDMENT_BUDGET.md
+superseded_at_commit: b9d7f25e0a0a7469f449a1d68579f64eda3d2530
+
+budget:
+  unit: optimizer_steps
+  max_optimizer_steps: 21960
+  validation_interval_steps: 366
+  early_stopping_patience_checks: 30
+
+# Identical for both batch sizes: 21,960 updates and 60 validation checks each.
+# An epoch-denominated cap would have given batch_size=256 twice the updates;
+# per-epoch validation would have given batch_size=512 twice the checkpoint
+# selection opportunities. Both confounds are removed by construction.
+equivalences:
+  batch_size_512:
+    steps_per_epoch: 366
+    effective_epochs: 60
+    validation_checks: 60
+  batch_size_256:
+    steps_per_epoch: 732
+    effective_epochs: 30
+    validation_checks: 60
+
+superseded:
+  max_epochs: 400
+  patience: 30
+  reason: >
+    "Epoch" meant one optimiser step in Phase A-2 (full batch) and 366-732 in
+    minibatched V2, so the 400-epoch cap was 146,400-292,800 updates and cost
+    48.7 days for 96 runs. Not a change of scientific intent.
