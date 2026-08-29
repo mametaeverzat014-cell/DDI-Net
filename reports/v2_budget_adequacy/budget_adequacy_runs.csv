@@ -1,2 +1,3 @@
 run_id,config_id,seed,split,split_seed,model,ablation,biology_source,aggregation,bio_dim,dropout_bio,dropout_pair,lr,batch_size,n_parameters,best_epoch,epochs_run,stopped_by,val_auprc,val_auroc,val_brier,val_ece,val_n,val_prevalence,runtime_s,status,tag
-2339302d73825656,b5ffedeae751c671,0,drug,0,bio_gine,M4,true,mean,64,0.3,0.2,0.0003,512,593652,27,40,epoch_limit,0.7787920313592976,0.7902607849806913,0.21634611321403657,0.1626563422928104,93610,0.5,4332.8,completed,BUDGET_ADEQUACY
+2339302d73825656,b5ffedeae751c671,0,drug,0,bio_gine,M4,True,mean,64,0.3,0.2,0.0003,512,593652,27,40,epoch_limit,0.7787920313592976,0.7902607849806913,0.2163461132140365,0.1626563422928104,93610,0.5,4332.8,completed,BUDGET_ADEQUACY
+5b8c450d0333bd01,b5ffedeae751c671,1,drug,0,bio_gine,M4,true,mean,64,0.3,0.2,0.0003,512,593652,36,40,epoch_limit,0.7832732508556981,0.7922821412953923,0.22311774604660115,0.18024471938804737,93610,0.5,4423.0,completed,BUDGET_ADEQUACY
