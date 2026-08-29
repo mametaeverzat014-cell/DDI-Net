@@ -338,6 +338,44 @@ def ablation_table(results: pd.DataFrame, out: list[str]) -> None:
                "по построению, а не потому, что модель устойчивее.")
 
 
+def _ensemble_alignment_problem(files, members, y_test) -> str | None:
+    """Why these members cannot be averaged, or None if they can.
+
+    Averaging member probabilities is only defined when row *i* is the same
+    drug pair for every member. Three things are checked, in order of how
+    silently they fail:
+
+      1. the pair identities are recorded at all - a member file written before
+         Addendum 17 cannot be verified, and unverifiable is not the same as
+         correct;
+      2. the pair sequences are equal across members;
+      3. the label vectors agree, which is implied by (2) but is cheap and
+         catches a corrupted file.
+    """
+    if any("test_pairs" not in m.files for m in members):
+        stale = [f.stem for f, m in zip(files, members) if "test_pairs" not in m.files]
+        return (
+            "файлы предсказаний не содержат идентификаторов пар "
+            f"({', '.join(stale)}) - совпадение тестовых множеств недоказуемо. "
+            "Перезапустите `--stage ensemble --fresh`."
+        )
+    reference = members[0]["test_pairs"]
+    for f, m in zip(files, members):
+        if len(m["test_pairs"]) != len(reference):
+            return f"{f.stem} оценён на {len(m['test_pairs'])} парах против {len(reference)}."
+        if not np.array_equal(m["test_pairs"], reference):
+            n_diff = int((m["test_pairs"] != reference).sum())
+            overlap = len(set(m["test_pairs"].tolist()) & set(reference.tolist()))
+            return (
+                f"{f.stem} оценён на ДРУГИХ парах: {n_diff} строк из "
+                f"{len(reference)} не совпадают, пересечение множеств "
+                f"{overlap}/{len(reference)}."
+            )
+    if not all(np.array_equal(m["y_test"], y_test) for m in members):
+        return "метки различаются между членами."
+    return None
+
+
 def ensemble_section(out: list[str]) -> None:
     """Average member probabilities, then score and calibrate the average.
 
@@ -350,12 +388,16 @@ def ensemble_section(out: list[str]) -> None:
                    "`--stage ensemble`._")
         return
 
-    out.append("Пять моделей на ОДНОМ разбиении (drug + degree_matched, split seed 0), "
-               "различаются инициализацией и выборкой негативов. Усредняются "
-               "вероятности, а не метрики: среднее пяти AUPRC - это не AUPRC "
-               "среднего предсказания, и ансамблем является только второе.\n")
-    out.append("| Модель | Test AUPRC | Test AUC-ROC | Brier |")
-    out.append("|---|---|---|---|")
+    out.append("Пять моделей на ОДНОМ разбиении (drug + degree_matched, split seed 0). "
+               "Члены различаются инициализацией и ОБУЧАЮЩИМИ негативами; "
+               "валидационные и тестовые негативы закреплены общим сидом "
+               "(`--ensemble-eval-seed`). Усредняются вероятности, а не метрики: "
+               "среднее пяти AUPRC - это не AUPRC среднего предсказания, и "
+               "ансамблем является только второе.\n")
+    out.append("Закрепление тестовых негативов - не деталь, а условие "
+               "существования ансамбля: усреднение по строке осмысленно только "
+               "если строка *i* у всех членов - одна и та же пара. Первый "
+               "прогон этого не обеспечивал, см. Addendum 17.\n")
 
     calibration_rows = []
     for architecture in ARCHITECTURES:
@@ -365,13 +407,26 @@ def ensemble_section(out: list[str]) -> None:
         members = [np.load(f) for f in files]
         y_test = members[0]["y_test"]
         y_val = members[0]["y_val"]
-        if not all(np.array_equal(m["y_test"], y_test) for m in members):
-            out.append(f"\n**{architecture}: члены оценены на РАЗНЫХ тестовых "
-                       "множествах - усреднение невозможно, ансамбль пропущен.**")
-            continue
+
+        # The guard must prove the members were scored on the SAME pairs, in
+        # the same row order. Label equality is not that proof and was the hole
+        # the first ensemble fell through: the sampler emits positives then
+        # negatives in fixed counts, so members drawing entirely different
+        # negatives still produce byte-identical label vectors. Measured on the
+        # first run: 42,345 positives shared exactly, 23.8% negative-set
+        # overlap, 0% of negative rows on the same pair. See Addendum 17.
+        problem = _ensemble_alignment_problem(files, members, y_test)
+        out.append(f"\n**{architecture}**\n")
+        if problem:
+            out.append(f"> ⛔ {problem} Усреднение невозможно, ансамбль пропущен. "
+                       "Числа членов ниже действительны каждое по себе.\n")
+        out.append("| Модель | Test AUPRC | Test AUC-ROC | Brier |")
+        out.append("|---|---|---|---|")
         for f, m in zip(files, members):
             met = compute_binary_metrics(y_test, m["s_test"], threshold=float(m["threshold"]))
             out.append(f"| {f.stem} | {met.auprc:.4f} | {met.auc_roc:.4f} | {met.brier:.4f} |")
+        if problem:
+            continue
 
         s_test = np.mean([m["s_test"] for m in members], axis=0)
         s_val = np.mean([m["s_val"] for m in members], axis=0)

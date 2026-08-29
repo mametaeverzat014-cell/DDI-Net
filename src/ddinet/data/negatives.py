@@ -57,6 +57,7 @@ schemes, whose bucket structures differ, and is covered by
 
 from __future__ import annotations
 
+import zlib
 from collections import Counter
 from dataclasses import asdict, dataclass
 from typing import Literal
@@ -77,6 +78,37 @@ class NegativeSamplingConfig:
     #: Where endpoint weights come from. "train" is the only leak-free option;
     #: exposed so that the choice is explicit in the config rather than buried.
     degree_source: Literal["train"] = "train"
+    #: Separate seed for the EVALUATION buckets (anything not starting with
+    #: "train"). None keeps the original single-stream behaviour bit for bit.
+    #:
+    #: WHY THIS EXISTS - IT FIXED A DEFECT THAT PRODUCED A NUMBER
+    #: ---------------------------------------------------------
+    #: A deep ensemble averages member probabilities row by row, which is only
+    #: meaningful if row *i* is the same drug pair for every member. The Phase
+    #: A-2 ensemble varied `seed` per member "to vary init and negatives", and
+    #: that varied the TEST negatives too: members shared their 42,345 test
+    #: positives exactly and overlapped on only 23.8% of their test negatives,
+    #: with 0% of negative rows landing on the same pair at the same index.
+    #:
+    #: The label vector was nevertheless byte-identical across members - the
+    #: sampler emits positives then negatives, in fixed counts and order - so
+    #: the analysis script's `array_equal(y_test)` guard passed and the average
+    #: was computed anyway. It inflated AUPRC from 0.7490 to 0.8628 for `gine`
+    #: and 0.7034 to 0.8233 for `dual`, because averaging five INDEPENDENT
+    #: negative-score draws shrinks the negative score distribution by 1/sqrt(5)
+    #: (measured 0.448 against a theoretical 0.447) while the positives, being
+    #: the same pairs, shrink only to 0.90. Measured mean pairwise correlation
+    #: between members: 0.765 on positives, 0.001 on negatives.
+    #:
+    #: Setting `eval_seed` pins the evaluation negatives across members while
+    #: `seed` still varies the training negatives, which is the only
+    #: arrangement in which "members differ in their negatives" and "member
+    #: predictions may be averaged" are both true.
+    #:
+    #: DEFAULT-OFF ON PURPOSE. When None the sampler follows the original code
+    #: path exactly, because turning it on changes which negatives are drawn and
+    #: the Phase A-2 grid must stay reproducible from its recorded config.
+    eval_seed: int | None = None
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -275,7 +307,20 @@ def build_dataset(
     ``drug_b``, ``label``, ``bucket``, ``setting``.
     """
     cfg = config or NegativeSamplingConfig()
-    rng = np.random.default_rng(cfg.seed)
+
+    # One shared stream when eval_seed is None - the original behaviour, kept
+    # bit-identical so every recorded Phase A-2 config still reproduces. With
+    # eval_seed set, each bucket gets its own stream keyed by the bucket name,
+    # so the evaluation buckets are independent of how many negatives the
+    # training bucket happened to draw first. crc32 rather than hash(): Python's
+    # hash is salted per process and would make the draw irreproducible.
+    shared_rng = np.random.default_rng(cfg.seed) if cfg.eval_seed is None else None
+
+    def rng_for(bucket: str) -> np.random.Generator:
+        if shared_rng is not None:
+            return shared_rng
+        base = cfg.seed if bucket.startswith("train") else cfg.eval_seed
+        return np.random.default_rng([base, zlib.crc32(bucket.encode("utf-8"))])
 
     train_pairs = pd.concat(
         [df for name, df in split.buckets.items() if name.startswith("train")],
@@ -294,7 +339,7 @@ def build_dataset(
 
         negatives, report = sample_negatives(
             split, drug_names, all_positive_keys, bucket, positives,
-            train_pairs, cfg, rng,
+            train_pairs, cfg, rng_for(bucket),
         )
         reports.append(report)
 

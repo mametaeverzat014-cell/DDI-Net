@@ -235,6 +235,18 @@ def make_bundle(scheme: str, split_seed: int, drugs, pairs):
     return split, bundle, leak
 
 
+def _pair_keys(frame: pd.DataFrame) -> np.ndarray:
+    """Order-independent "A|B" identity per row, for the ensemble's guard.
+
+    Sorted within the pair because the model is symmetric by construction, so
+    (A,B) and (B,A) are the same object and a member that happened to store the
+    reversed order is not a different test set.
+    """
+    a = frame["drug_a"].to_numpy(dtype=object)
+    b = frame["drug_b"].to_numpy(dtype=object)
+    return np.array([f"{x}|{y}" if x <= y else f"{y}|{x}" for x, y in zip(a, b)])
+
+
 def run_one(
     bundle,
     dataset: pd.DataFrame,
@@ -326,8 +338,20 @@ def run_one(
 
     if save_predictions is not None:
         save_predictions.parent.mkdir(parents=True, exist_ok=True)
-        np.savez_compressed(save_predictions, y_val=y_val, s_val=s_val,
-                            y_test=y_test, s_test=s_test, threshold=threshold)
+        # The pair identities are saved, not just the scores. Without them the
+        # ensemble's only available check is that the LABEL vectors match, and
+        # label equality is not evidence of set equality: the sampler emits
+        # positives then negatives in fixed counts, so two members drawing
+        # entirely different negatives still produce byte-identical labels.
+        # That is exactly how the first Phase A-2 ensemble averaged predictions
+        # about different drug pairs and reported AUPRC 0.8628 (Addendum 17).
+        val_frame = trainer.bucket_frame("val")
+        test_frame = trainer.bucket_frame("test")
+        np.savez_compressed(
+            save_predictions, y_val=y_val, s_val=s_val,
+            y_test=y_test, s_test=s_test, threshold=threshold,
+            val_pairs=_pair_keys(val_frame), test_pairs=_pair_keys(test_frame),
+        )
 
     record["test_rows"] = test_rows
     return record
@@ -559,7 +583,8 @@ def stage_ensemble(args, drugs, pairs, drug_names, positive_keys) -> int:
 
     _, bundle, leak = make_bundle(scheme, args.ensemble_split_seed, drugs, pairs)
     print(f"Ensemble on {scheme} + {strategy}, split seed "
-          f"{args.ensemble_split_seed} held fixed; members vary init and negatives.")
+          f"{args.ensemble_split_seed} held fixed, evaluation negatives pinned at "
+          f"seed {args.ensemble_eval_seed}; members vary init and TRAINING negatives.")
 
     total = len(ARCHITECTURES) * len(args.seeds)
     done = 0
@@ -568,10 +593,16 @@ def stage_ensemble(args, drugs, pairs, drug_names, positive_keys) -> int:
         if (architecture, member_seed) in completed:
             print(f"[{done}/{total}] {architecture} member {member_seed} - already done")
             continue
+        # eval_seed pins the validation and test negatives across all members
+        # while member_seed still varies the TRAINING negatives. Both halves
+        # matter: without the pin, members are scored on different pairs and
+        # their predictions cannot be averaged at all (Addendum 17); without
+        # the varying training seed, the ensemble covers only initialisation.
         dataset, _ = neg.build_dataset(
             bundle.split, drug_names, positive_keys,
             neg.NegativeSamplingConfig(strategy=strategy, ratio=args.neg_ratio,
-                                       seed=member_seed))
+                                       seed=member_seed,
+                                       eval_seed=args.ensemble_eval_seed))
         neg.verify_no_negative_is_positive(dataset, positive_keys)
         t1 = time.time()
         record = run_one(
@@ -601,6 +632,9 @@ def main() -> int:
     ap.add_argument("--seeds", type=int, nargs="+", default=[0, 1, 2, 3, 4])
     ap.add_argument("--tune-seed", type=int, default=0)
     ap.add_argument("--ensemble-split-seed", type=int, default=0)
+    #: Shared seed for the ensemble's validation and test negatives. Must be
+    #: the same for every member or the members are not comparable row by row.
+    ap.add_argument("--ensemble-eval-seed", type=int, default=0)
     ap.add_argument("--neg-ratio", type=float, default=1.0)
     #: 150, not the 200 of protocol section 8 - see Addendum 2. The fraction of
     #: runs that stop on the limit rather than on patience is reported with the
