@@ -214,6 +214,16 @@ class V2History:
     #: an interrupted run does not get a fresh patience budget and train past
     #: where early stopping would have ended it.
     epochs_since_improvement: int = 0
+    #: Optimiser steps taken in total. THE budget unit that means the same thing
+    #: across batch sizes: an epoch is 366 steps at batch 512 and 732 at batch
+    #: 256, so an epoch-denominated cap hands batch_size=256 twice the
+    #: optimisation and confounds batch size with training budget.
+    optimizer_steps: int = 0
+    #: One row per validation check: epoch, steps, loss and every validation
+    #: metric. This is the raw convergence curve; summaries are computed from
+    #: it rather than stored alongside it, so a summary cannot drift from the
+    #: data it claims to describe.
+    epoch_records: list = field(default_factory=list)
 
     def summary(self) -> str:
         return (
@@ -436,6 +446,7 @@ class V2Trainer:
         )
         self.history = V2History()
         self._best_state: dict | None = None
+        self._best_optimizer_step = 0
         self._start_epoch = 0
 
     # -- configuration -----------------------------------------------------
@@ -540,7 +551,8 @@ class V2Trainer:
         return self.model.score_pairs(h, mask, local_a.to(self.device),
                                       local_b.to(self.device))
 
-    def _train_epoch(self) -> float:
+    def _train_epoch(self) -> tuple[float, int]:
+        """One pass over the training pairs. Returns (mean loss, steps taken)."""
         self.model.train()
         n = len(self._train["labels"])
         batch_size = self.spec.batch_size or n
@@ -561,7 +573,8 @@ class V2Trainer:
             self.optimizer.step()
             total += float(loss.detach())
             steps += 1
-        return total / max(steps, 1)
+        self.history.optimizer_steps += steps
+        return total / max(steps, 1), steps
 
     @torch.no_grad()
     def _predict(self, data: dict | None, chunk: int = 4096):
@@ -625,17 +638,28 @@ class V2Trainer:
         started = time.time()
         bad = self.history.epochs_since_improvement
         for epoch in range(self._start_epoch, budget):
-            loss = self._train_epoch()
+            epoch_started = time.time()
+            loss, steps_this_epoch = self._train_epoch()
             self.scheduler.step()
-            score = self.validation_metrics().get("val_auprc", float("nan"))
+            metrics = self.validation_metrics()
+            score = metrics.get("val_auprc", float("nan"))
             self.history.train_loss.append(loss)
             self.history.val_auprc.append(score)
             self.history.epochs_run = epoch + 1
+            self.history.epoch_records.append({
+                "epoch": epoch + 1,
+                "optimizer_steps_this_epoch": steps_this_epoch,
+                "cumulative_optimizer_steps": self.history.optimizer_steps,
+                "train_loss": loss,
+                **metrics,
+                "epoch_runtime_s": round(time.time() - epoch_started, 2),
+            })
 
             improved = score > self.history.best_val_auprc
             if improved:
                 self.history.best_val_auprc = score
                 self.history.best_epoch = epoch + 1
+                self._best_optimizer_step = self.history.optimizer_steps
                 self._best_state = {
                     k: v.detach().cpu().clone()
                     for k, v in self.model.state_dict().items()
@@ -709,6 +733,7 @@ class V2Trainer:
                 "scheduler_state": self.scheduler.state_dict(),
                 "history": asdict(self.history),
                 "epochs_run": self.history.epochs_run,
+                "best_optimizer_step": self._best_optimizer_step,
             },
             path,
         )
@@ -736,6 +761,7 @@ class V2Trainer:
         self._best_state = {k: v.clone() for k, v in blob["model_state"].items()}
         stored = blob.get("history", {})
         self.history = V2History(**stored) if stored else V2History()
+        self._best_optimizer_step = int(blob.get("best_optimizer_step", 0))
         self._start_epoch = int(blob.get("epochs_run", 0))
 
     # -- manifest ----------------------------------------------------------
@@ -771,8 +797,10 @@ class V2Trainer:
             "n_parameters": self.model.n_parameters(),
             "parameter_table": self.model.parameter_table(),
             "best_epoch": self.history.best_epoch,
+            "best_optimizer_step": self._best_optimizer_step,
             "best_val_auprc": self.history.best_val_auprc,
             "epochs_run": self.history.epochs_run,
+            "optimizer_steps": self.history.optimizer_steps,
             "stopped_by": self.history.stopped_by,
             "wall_time_s": round(self.history.wall_time_s, 1),
             "checkpoint_sha256": checkpoint_hash,

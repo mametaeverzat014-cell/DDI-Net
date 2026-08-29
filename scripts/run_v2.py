@@ -193,6 +193,8 @@ def main() -> int:
                          "mid-training must not start over")
     ap.add_argument("--resume", action="store_true",
                     help="continue from this run id's checkpoint if it exists")
+    ap.add_argument("--curves", default="",
+                    help="CSV to append the per-epoch convergence curve to")
     ap.add_argument("--tag", default="",
                     help="free-text label, e.g. SMOKE_ONLY")
     ap.add_argument("--threads", type=int, default=4)
@@ -256,6 +258,25 @@ def main() -> int:
                                 extra={"biology": bio_provenance, "tag": args.tag})
     manifest_path = Path(args.checkpoint_dir) / f"{spec.run_id()}.manifest.json"
     manifest_path.write_text(json.dumps(manifest, indent=2, default=str))
+
+    # The raw per-epoch curve, one row per validation check. Written separately
+    # from the results row because a single best-epoch number cannot show
+    # whether a run was still improving when its budget ran out - which is the
+    # only question a budget study can answer.
+    if args.curves:
+        curve = pd.DataFrame(trainer.history.epoch_records)
+        curve.insert(0, "run_id", spec.run_id())
+        curve.insert(1, "seed", spec.seed)
+        curve.insert(2, "batch_size", spec.batch_size)
+        curve.insert(3, "lr", spec.lr)
+        curve_path = Path(args.curves)
+        curve_path.parent.mkdir(parents=True, exist_ok=True)
+        if curve_path.exists():
+            existing = pd.read_csv(curve_path)
+            existing = existing[existing["run_id"] != spec.run_id()]
+            curve = pd.concat([existing, curve], ignore_index=True)
+        curve.to_csv(curve_path, index=False)
+        print(f"         {curve_path}")
 
     row = result_row(spec, trainer, metrics, status="completed", tag=args.tag)
     upsert_row(Path(args.results), row)
