@@ -559,9 +559,14 @@ def test_result_schema_has_no_test_columns(runner):
 
 
 def test_result_schema_carries_the_identity_and_validation_metrics(runner):
+    # best_check / best_optimizer_step rather than best_epoch: under a
+    # step-denominated budget "epoch" is not the unit selection happens in, and
+    # effective_epochs carries the batch-size-visible reading.
     required = {"run_id", "config_id", "seed", "split", "model", "biology_source",
                 "bio_dim", "dropout_bio", "dropout_pair", "lr", "batch_size",
-                "best_epoch", "val_auprc", "val_auroc", "val_brier", "val_ece",
+                "best_check", "best_optimizer_step", "optimizer_steps",
+                "effective_epochs", "steps_per_epoch", "checks_run",
+                "val_auprc", "val_auroc", "val_brier", "val_ece",
                 "runtime_s", "status"}
     assert required <= set(runner.RESULT_COLUMNS)
 
@@ -767,7 +772,7 @@ def test_sibling_search_ignores_wholly_different_configurations(runner, tmp_path
 
 
 @frozen_only
-def test_a_run_that_never_selects_a_best_epoch_fails_loudly(universe, split):
+def test_a_run_that_never_selects_a_best_checkpoint_fails_loudly(universe, split):
     """A single-class validation bucket makes AUPRC NaN, no epoch improves on
     -inf, and the run would otherwise report best_epoch=0 as a success. That
     exact failure happened while this runner was being written."""
@@ -788,7 +793,7 @@ def test_a_run_that_never_selects_a_best_epoch_fails_loudly(universe, split):
     trainer = V2Trainer(V2RunSpec(max_optimizer_steps=2, validation_interval_steps=2), universe, split, bundle, graphs,
                         mode=EvaluationMode.VALIDATION_ONLY, dataset=single_class)
     assert len(np.unique(trainer._val["labels"].numpy())) == 1
-    with pytest.raises(RuntimeError, match="without ever selecting a best epoch"):
+    with pytest.raises(RuntimeError, match="without ever selecting a best checkpoint"):
         trainer.fit(max_optimizer_steps=2)
 
 
