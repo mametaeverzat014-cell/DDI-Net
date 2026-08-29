@@ -162,10 +162,28 @@ def make_plot(curves: pd.DataFrame, per_seed: list[dict], path: Path) -> None:
 
 
 def main() -> int:
+    import argparse
+
+    ap = argparse.ArgumentParser(description="Apply the preregistered rule.")
+    #: Which cap to analyse. Thresholds are NOT arguments - only the selection
+    #: of which already-recorded cap to read.
+    ap.add_argument("--cap", type=int, default=None,
+                    help="cap to analyse; default is the largest recorded")
+    ap.add_argument("--summary", default=str(SUMMARY))
+    ap.add_argument("--plot", default=str(PLOT))
+    args = ap.parse_args()
+
     if not CURVES.exists():
         print(f"No curves at {CURVES}; run the pilot first.")
         return 1
     curves = pd.read_csv(CURVES)
+    if "cap" in curves.columns:
+        chosen = args.cap if args.cap is not None else int(curves["cap"].max())
+        curves = curves[curves["cap"] == chosen]
+        if curves.empty:
+            print(f"No curves recorded at cap {chosen}; "
+                  f"have {sorted(pd.read_csv(CURVES)['cap'].unique())}")
+            return 1
     forbidden = [c for c in curves.columns if c.startswith("test_")]
     if forbidden:
         print(f"STOP: the curve file carries test columns {forbidden}.")
@@ -238,13 +256,14 @@ def main() -> int:
         "per_seed": per_seed,
         "test_metrics_present": False,
     }
-    SUMMARY.parent.mkdir(parents=True, exist_ok=True)
-    SUMMARY.write_text(json.dumps(summary, indent=2))
+    summary_path, plot_path = Path(args.summary), Path(args.plot)
+    summary_path.parent.mkdir(parents=True, exist_ok=True)
+    summary_path.write_text(json.dumps(summary, indent=2))
     try:
-        make_plot(curves, per_seed, PLOT)
-        print(f"\nwrote {SUMMARY}\n      {PLOT}")
+        make_plot(curves, per_seed, plot_path)
+        print(f"\nwrote {summary_path}\n      {plot_path}")
     except Exception as exc:                       # matplotlib is optional
-        print(f"\nwrote {SUMMARY}  (plot skipped: {exc})")
+        print(f"\nwrote {summary_path}  (plot skipped: {exc})")
     return 0
 
 

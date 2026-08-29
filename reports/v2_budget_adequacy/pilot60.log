@@ -1,0 +1,152 @@
+run_id   5113000de389877f   config_id 16f35cfc353163df
+model    BIO-GINE M4, biology=true, agg=mean
+split    drug seed 0 | negatives degree_matched (train seed 0, eval seed 0)
+mode     validation_only
+tag      BUDGET_ADEQUACY_CAP60
+params   593,652
+pairs    train 187,260 | val 93,610
+resume   NO checkpoint for run_id 5113000de389877f - starting from scratch
+         note: 2339302d73825656 is the same run except max_epochs: 40 -> 60
+         note: 5b8c450d0333bd01 is the same run except max_epochs: 40 -> 60, seed: 1 -> 0
+  epoch    1 loss 0.6594 val_auprc 0.6983
+  epoch    2 loss 0.5728 val_auprc 0.7206
+  epoch    3 loss 0.5141 val_auprc 0.7328
+  epoch    4 loss 0.4711 val_auprc 0.7403
+  epoch    5 loss 0.4362 val_auprc 0.7566
+  epoch    6 loss 0.4091 val_auprc 0.7486
+  epoch    7 loss 0.3867 val_auprc 0.7468
+  epoch    8 loss 0.3675 val_auprc 0.7645
+  epoch    9 loss 0.3496 val_auprc 0.7685
+  epoch   10 loss 0.3342 val_auprc 0.7664
+  epoch   11 loss 0.3231 val_auprc 0.7667
+  epoch   12 loss 0.3088 val_auprc 0.7643
+  epoch   13 loss 0.2965 val_auprc 0.7745
+  epoch   14 loss 0.2868 val_auprc 0.7697
+  epoch   15 loss 0.2765 val_auprc 0.7753
+  epoch   16 loss 0.2670 val_auprc 0.7759
+  epoch   17 loss 0.2589 val_auprc 0.7763
+  epoch   18 loss 0.2509 val_auprc 0.7741
+  epoch   19 loss 0.2452 val_auprc 0.7710
+  epoch   20 loss 0.2371 val_auprc 0.7807
+  epoch   21 loss 0.2296 val_auprc 0.7834
+  epoch   22 loss 0.2231 val_auprc 0.7834
+  epoch   23 loss 0.2175 val_auprc 0.7801
+  epoch   24 loss 0.2116 val_auprc 0.7810
+  epoch   25 loss 0.2060 val_auprc 0.7817
+  epoch   26 loss 0.2018 val_auprc 0.7775
+  epoch   27 loss 0.1959 val_auprc 0.7819
+  epoch   28 loss 0.1919 val_auprc 0.7831
+  epoch   29 loss 0.1866 val_auprc 0.7770
+  epoch   30 loss 0.1833 val_auprc 0.7844
+  epoch   31 loss 0.1778 val_auprc 0.7892
+  epoch   32 loss 0.1764 val_auprc 0.7818
+  epoch   33 loss 0.1718 val_auprc 0.7755
+  epoch   34 loss 0.1671 val_auprc 0.7845
+  epoch   35 loss 0.1641 val_auprc 0.7806
+  epoch   36 loss 0.1608 val_auprc 0.7805
+  epoch   37 loss 0.1582 val_auprc 0.7816
+  epoch   38 loss 0.1548 val_auprc 0.7859
+  epoch   39 loss 0.1513 val_auprc 0.7829
+  epoch   40 loss 0.1475 val_auprc 0.7869
+  epoch   41 loss 0.1453 val_auprc 0.7836
+  epoch   42 loss 0.1442 val_auprc 0.7836
+  epoch   43 loss 0.1416 val_auprc 0.7850
+  epoch   44 loss 0.1384 val_auprc 0.7843
+  epoch   45 loss 0.1373 val_auprc 0.7845
+  epoch   46 loss 0.1348 val_auprc 0.7851
+  epoch   47 loss 0.1340 val_auprc 0.7846
+  epoch   48 loss 0.1309 val_auprc 0.7860
+  epoch   49 loss 0.1298 val_auprc 0.7835
+  epoch   50 loss 0.1290 val_auprc 0.7861
+  epoch   51 loss 0.1272 val_auprc 0.7856
+  epoch   52 loss 0.1265 val_auprc 0.7861
+  epoch   53 loss 0.1256 val_auprc 0.7856
+  epoch   54 loss 0.1248 val_auprc 0.7845
+  epoch   55 loss 0.1232 val_auprc 0.7849
+  epoch   56 loss 0.1238 val_auprc 0.7852
+  epoch   57 loss 0.1229 val_auprc 0.7851
+  epoch   58 loss 0.1231 val_auprc 0.7849
+  epoch   59 loss 0.1232 val_auprc 0.7852
+  epoch   60 loss 0.1223 val_auprc 0.7852
+trained  60 epochs in 6671.8s | best val AUPRC 0.7892 @ epoch 31 (epoch_limit)
+         reports/v2_budget_adequacy/budget_adequacy_curves_cap60.csv
+validation auprc=0.7892 auroc=0.7964 brier=0.2184 ece=0.1746 val_n=93610 prevalence=0.5000
+wrote    reports/v2_budget_adequacy/budget_adequacy_runs_cap60.csv
+         /home/user/DDI-Net/reports/v2_checkpoints/5113000de389877f.manifest.json
+run_id   ddb3e02f22e9a5cd   config_id 16f35cfc353163df
+model    BIO-GINE M4, biology=true, agg=mean
+split    drug seed 0 | negatives degree_matched (train seed 1, eval seed 0)
+mode     validation_only
+tag      BUDGET_ADEQUACY_CAP60
+params   593,652
+pairs    train 187,260 | val 93,610
+resume   NO checkpoint for run_id ddb3e02f22e9a5cd - starting from scratch
+         note: 2339302d73825656 is the same run except max_epochs: 40 -> 60, seed: 0 -> 1
+         note: 5113000de389877f is the same run except seed: 0 -> 1
+         note: 5b8c450d0333bd01 is the same run except max_epochs: 40 -> 60
+  epoch    1 loss 0.6599 val_auprc 0.6930
+  epoch    2 loss 0.5802 val_auprc 0.7316
+  epoch    3 loss 0.5236 val_auprc 0.7504
+  epoch    4 loss 0.4805 val_auprc 0.7515
+  epoch    5 loss 0.4445 val_auprc 0.7545
+  epoch    6 loss 0.4144 val_auprc 0.7529
+  epoch    7 loss 0.3928 val_auprc 0.7729
+  epoch    8 loss 0.3707 val_auprc 0.7683
+  epoch    9 loss 0.3518 val_auprc 0.7749
+  epoch   10 loss 0.3391 val_auprc 0.7585
+  epoch   11 loss 0.3242 val_auprc 0.7691
+  epoch   12 loss 0.3113 val_auprc 0.7739
+  epoch   13 loss 0.2993 val_auprc 0.7707
+  epoch   14 loss 0.2882 val_auprc 0.7653
+  epoch   15 loss 0.2790 val_auprc 0.7714
+  epoch   16 loss 0.2705 val_auprc 0.7670
+  epoch   17 loss 0.2613 val_auprc 0.7646
+  epoch   18 loss 0.2539 val_auprc 0.7698
+  epoch   19 loss 0.2473 val_auprc 0.7722
+  epoch   20 loss 0.2390 val_auprc 0.7784
+  epoch   21 loss 0.2328 val_auprc 0.7826
+  epoch   22 loss 0.2253 val_auprc 0.7776
+  epoch   23 loss 0.2208 val_auprc 0.7696
+  epoch   24 loss 0.2137 val_auprc 0.7801
+  epoch   25 loss 0.2089 val_auprc 0.7782
+  epoch   26 loss 0.2022 val_auprc 0.7755
+  epoch   27 loss 0.1982 val_auprc 0.7736
+  epoch   28 loss 0.1941 val_auprc 0.7771
+  epoch   29 loss 0.1894 val_auprc 0.7790
+  epoch   30 loss 0.1851 val_auprc 0.7808
+  epoch   31 loss 0.1807 val_auprc 0.7822
+  epoch   32 loss 0.1761 val_auprc 0.7871
+  epoch   33 loss 0.1722 val_auprc 0.7830
+  epoch   34 loss 0.1683 val_auprc 0.7817
+  epoch   35 loss 0.1649 val_auprc 0.7821
+  epoch   36 loss 0.1623 val_auprc 0.7873
+  epoch   37 loss 0.1589 val_auprc 0.7866
+  epoch   38 loss 0.1573 val_auprc 0.7859
+  epoch   39 loss 0.1522 val_auprc 0.7871
+  epoch   40 loss 0.1499 val_auprc 0.7816
+  epoch   41 loss 0.1481 val_auprc 0.7843
+  epoch   42 loss 0.1458 val_auprc 0.7843
+  epoch   43 loss 0.1425 val_auprc 0.7857
+  epoch   44 loss 0.1401 val_auprc 0.7839
+  epoch   45 loss 0.1386 val_auprc 0.7871
+  epoch   46 loss 0.1358 val_auprc 0.7816
+  epoch   47 loss 0.1344 val_auprc 0.7838
+  epoch   48 loss 0.1331 val_auprc 0.7844
+  epoch   49 loss 0.1313 val_auprc 0.7856
+  epoch   50 loss 0.1303 val_auprc 0.7828
+  epoch   51 loss 0.1286 val_auprc 0.7844
+  epoch   52 loss 0.1282 val_auprc 0.7838
+  epoch   53 loss 0.1277 val_auprc 0.7859
+  epoch   54 loss 0.1258 val_auprc 0.7851
+  epoch   55 loss 0.1262 val_auprc 0.7854
+  epoch   56 loss 0.1256 val_auprc 0.7860
+  epoch   57 loss 0.1250 val_auprc 0.7860
+  epoch   58 loss 0.1238 val_auprc 0.7854
+  epoch   59 loss 0.1237 val_auprc 0.7850
+  epoch   60 loss 0.1239 val_auprc 0.7852
+trained  60 epochs in 6551.2s | best val AUPRC 0.7873 @ epoch 36 (epoch_limit)
+         reports/v2_budget_adequacy/budget_adequacy_curves_cap60.csv
+validation auprc=0.7873 auroc=0.7914 brier=0.2239 ece=0.1861 val_n=93610 prevalence=0.5000
+wrote    reports/v2_budget_adequacy/budget_adequacy_runs_cap60.csv
+         /home/user/DDI-Net/reports/v2_checkpoints/ddb3e02f22e9a5cd.manifest.json
+PILOT60 COMPLETE
