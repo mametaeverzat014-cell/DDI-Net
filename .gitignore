@@ -59,6 +59,11 @@ reports/*.json
 # writes, which is committed; the log is the same information with timestamps
 # and progress bars around it, and it grows every time a run is resumed.
 reports/*.log
+# Live training logs in report subdirectories. They change on every epoch, so
+# committing one mid-run means a commit every couple of minutes; the durable
+# artefacts are the curve CSV and the summary JSON beside them. The finished
+# log is committed once at the end with `git add -f`.
+reports/*/*.log
 # Exception: the diagnostic probes print their results to stdout and write no
 # CSV, so for them the log IS the substantive record rather than progress noise
 # around it. The rule above assumes a run also writes structured output; these

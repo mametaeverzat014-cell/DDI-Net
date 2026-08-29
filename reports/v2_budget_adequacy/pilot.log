@@ -1,8 +1,0 @@
-run_id   2339302d73825656   config_id b5ffedeae751c671
-model    BIO-GINE M4, biology=true, agg=mean
-split    drug seed 0 | negatives degree_matched (train seed 0, eval seed 0)
-mode     validation_only
-tag      BUDGET_ADEQUACY
-params   593,652
-pairs    train 187,260 | val 93,610
-resume   NO checkpoint for run_id 2339302d73825656 - starting from scratch
