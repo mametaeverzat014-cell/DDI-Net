@@ -57,7 +57,9 @@ CHECKPOINTS = ROOT / "reports" / "v2_checkpoints"
 RESULT_COLUMNS: tuple[str, ...] = (
     "run_id", "config_id", "seed", "split", "split_seed", "model", "ablation",
     "biology_source", "aggregation", "bio_dim", "dropout_bio", "dropout_pair",
-    "lr", "batch_size", "n_parameters", "best_epoch", "epochs_run", "stopped_by",
+    "lr", "batch_size", "n_parameters", "best_check", "best_optimizer_step",
+    "optimizer_steps", "effective_epochs", "steps_per_epoch", "checks_run",
+    "stopped_by",
     "val_auprc", "val_auroc", "val_brier", "val_ece", "val_n", "val_prevalence",
     "runtime_s", "status", "tag",
 )
@@ -107,8 +109,9 @@ def build_spec(args) -> V2RunSpec:
         dropout_pair=args.dropout_pair,
         lr=args.lr,
         batch_size=args.batch_size,
-        max_epochs=args.max_epochs,
-        patience=args.patience,
+        max_optimizer_steps=args.max_optimizer_steps,
+        validation_interval_steps=args.validation_interval_steps,
+        patience_checks=args.patience_checks,
         seed=args.seed,
     )
 
@@ -131,8 +134,12 @@ def result_row(spec: V2RunSpec, trainer: V2Trainer, metrics: dict,
         "lr": spec.lr,
         "batch_size": spec.batch_size,
         "n_parameters": trainer.model.n_parameters(),
-        "best_epoch": trainer.history.best_epoch,
-        "epochs_run": trainer.history.epochs_run,
+        "best_check": trainer.history.best_check,
+        "best_optimizer_step": trainer._best_optimizer_step,
+        "optimizer_steps": trainer.history.optimizer_steps,
+        "effective_epochs": round(trainer.history.effective_epochs, 3),
+        "steps_per_epoch": trainer.history.steps_per_epoch,
+        "checks_run": trainer.history.checks_run,
         "stopped_by": trainer.history.stopped_by,
         "val_auprc": metrics.get("val_auprc"),
         "val_auroc": metrics.get("val_auroc"),
@@ -180,17 +187,21 @@ def main() -> int:
     ap.add_argument("--dropout-pair", type=float, default=0.1)
     ap.add_argument("--lr", type=float, default=1.0e-3)
     ap.add_argument("--batch-size", type=int, default=256)
-    ap.add_argument("--max-epochs", type=int, default=400)
-    ap.add_argument("--patience", type=int, default=30)
+    # FROZEN budget, configs/v2_budget_frozen.yaml. Denominated in optimiser
+    # steps so batch size cannot buy extra optimisation, and validated on a step
+    # interval so it cannot buy extra checkpoint-selection opportunities either.
+    ap.add_argument("--max-optimizer-steps", type=int, default=21960)
+    ap.add_argument("--validation-interval-steps", type=int, default=366)
+    ap.add_argument("--patience-checks", type=int, default=30)
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--evaluation-mode", default="validation_only",
                     choices=["validation_only", "with_test"],
                     help="with_test is for the single final evaluation only")
     ap.add_argument("--results", default=str(REPORTS / "v2_validation_grid.csv"))
     ap.add_argument("--checkpoint-dir", default=str(CHECKPOINTS))
-    ap.add_argument("--checkpoint-every", type=int, default=10,
-                    help="epochs between periodic checkpoints; a run killed "
-                         "mid-training must not start over")
+    ap.add_argument("--checkpoint-every", type=int, default=5,
+                    help="validation checks between periodic checkpoints; a run "
+                         "killed mid-training must not start over")
     ap.add_argument("--resume", action="store_true",
                     help="continue from this run id's checkpoint if it exists")
     ap.add_argument("--curves", default="",
@@ -228,6 +239,10 @@ def main() -> int:
     print(f"params   {trainer.model.n_parameters():,}")
     print(f"pairs    train {len(trainer._train['labels']):,} | "
           f"val {len(trainer._val['labels']):,}")
+    print(f"budget   {spec.max_optimizer_steps:,} steps = "
+          f"{spec.max_optimizer_steps/trainer._steps_per_epoch:.0f} epochs at "
+          f"batch {spec.batch_size} ({trainer._steps_per_epoch} steps/epoch), "
+          f"{trainer._total_checks} validation checks")
 
     ckpt_path = Path(args.checkpoint_dir) / f"{spec.run_id()}.pt"
     if args.resume:
@@ -238,17 +253,17 @@ def main() -> int:
         else:
             # Never resume silently-not-resuming. --resume was asked for, so a
             # fresh start is a surprise and has to say so. The common cause is
-            # a changed identity field: max_epochs in particular looks like a
-            # budget knob but sets T_max of the cosine schedule, so a run with
-            # a different cap follows a different learning-rate trajectory and
-            # is genuinely a different run, not a longer one.
+            # a changed identity field: max_optimizer_steps in particular looks
+            # like a budget knob but sets T_max of the cosine schedule, so a run
+            # with a different cap follows a different learning-rate trajectory
+            # and is genuinely a different run, not a longer one.
             print(f"resume   NO checkpoint for run_id {spec.run_id()} - "
                   f"starting from scratch")
             for sibling in describe_sibling_checkpoints(spec, Path(args.checkpoint_dir)):
                 print(f"         note: {sibling}")
 
     history = trainer.fit(verbose=args.verbose, checkpoint_path=ckpt_path,
-                          checkpoint_every=args.checkpoint_every)
+                          checkpoint_every_checks=args.checkpoint_every)
     print(f"trained  {history.summary()}")
 
     metrics = trainer.validation_metrics()
@@ -269,6 +284,7 @@ def main() -> int:
         curve.insert(1, "seed", spec.seed)
         curve.insert(2, "batch_size", spec.batch_size)
         curve.insert(3, "lr", spec.lr)
+        curve.insert(4, "config_id", spec.config_id())
         curve_path = Path(args.curves)
         curve_path.parent.mkdir(parents=True, exist_ok=True)
         if curve_path.exists():

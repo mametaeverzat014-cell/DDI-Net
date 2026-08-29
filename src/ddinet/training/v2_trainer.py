@@ -133,9 +133,22 @@ class V2RunSpec:
     lr: float = 1.0e-3
     batch_size: int = 256
 
-    # -- fixed by the preregistration --------------------------------------
-    max_epochs: int = 400
-    patience: int = 30
+    # -- training budget: FROZEN 2026-08-29, configs/v2_budget_frozen.yaml --
+    #
+    # Denominated in OPTIMISER STEPS, not epochs. An epoch is 366 steps at
+    # batch 512 and 732 at batch 256, so an epoch cap would hand batch 256
+    # twice the optimisation - and batch size is one of the five searched
+    # hyperparameters, so that confounds the axis with the budget.
+    #
+    # Validation on a STEP interval for the mirror-image reason: validating
+    # once per epoch under a step cap would give batch 512 sixty checkpoint
+    # selection opportunities against batch 256's thirty. The adequacy pilot
+    # measured a validation plateau with sd 0.0034 and 10-12 epochs tied with
+    # the best, so the reported maximum rises with the number of times the
+    # plateau is sampled. See docs/V2_PREREGISTRATION_AMENDMENT_BUDGET.md.
+    max_optimizer_steps: int = 21960
+    validation_interval_steps: int = 366
+    patience_checks: int = 30
     weight_decay: float = 1.0e-4
     hidden_dim: int = 128
 
@@ -160,7 +173,8 @@ class V2RunSpec:
             "model", "ablation", "biology_source", "aggregation",
             "scheme", "split_seed", "negatives", "neg_ratio", "eval_negative_seed",
             "bio_dim", "dropout_bio", "dropout_pair", "lr", "batch_size",
-            "max_epochs", "patience", "weight_decay", "hidden_dim",
+            "max_optimizer_steps", "validation_interval_steps", "patience_checks",
+            "weight_decay", "hidden_dim",
             "mol_dim", "mol_layers", "dropout_mol", "mol_pooling", "seed",
         ),
         repr=False,
@@ -204,16 +218,19 @@ class V2History:
     """What happened during training. No test field exists on purpose."""
 
     epochs_run: int = 0
+    checks_run: int = 0
+    best_check: int = 0
     best_epoch: int = 0
     best_val_auprc: float = -np.inf
     stopped_by: str = "epoch_limit"
     wall_time_s: float = 0.0
     train_loss: list[float] = field(default_factory=list)
     val_auprc: list[float] = field(default_factory=list)
-    #: Epochs since validation last improved. Carried across a resume so that
-    #: an interrupted run does not get a fresh patience budget and train past
-    #: where early stopping would have ended it.
-    epochs_since_improvement: int = 0
+    #: Validation CHECKS since the score last improved. Checks rather than
+    #: epochs so the stopping rule means the same thing at both batch sizes,
+    #: and carried across a resume so an interrupted run does not get a fresh
+    #: patience budget and train past where stopping would have ended it.
+    checks_since_improvement: int = 0
     #: Optimiser steps taken in total. THE budget unit that means the same thing
     #: across batch sizes: an epoch is 366 steps at batch 512 and 732 at batch
     #: 256, so an epoch-denominated cap hands batch_size=256 twice the
@@ -227,10 +244,20 @@ class V2History:
 
     def summary(self) -> str:
         return (
-            f"{self.epochs_run} epochs in {self.wall_time_s:.1f}s | "
-            f"best val AUPRC {self.best_val_auprc:.4f} @ epoch {self.best_epoch} "
+            f"{self.optimizer_steps:,} steps ({self.effective_epochs:.1f} epochs, "
+            f"{self.checks_run} checks) in {self.wall_time_s:.1f}s | best val "
+            f"AUPRC {self.best_val_auprc:.4f} @ check {self.best_check} "
             f"({self.stopped_by})"
         )
+
+    #: Steps expressed as passes over the training set. Recorded so batch-size
+    #: effects stay visible: the same 21,960 steps are 60 epochs at batch 512
+    #: and 30 at batch 256, and a reader must be able to see that.
+    steps_per_epoch: int = 0
+
+    @property
+    def effective_epochs(self) -> float:
+        return self.optimizer_steps / self.steps_per_epoch if self.steps_per_epoch else 0.0
 
 
 def set_seed(seed: int) -> None:
@@ -438,16 +465,30 @@ class V2Trainer:
             min(n_neg / max(n_pos, 1), 10.0), dtype=torch.float, device=self.device
         )
 
+        n_train = len(train["labels"])
+        batch = spec.batch_size or n_train
+        #: Ceil division: the final partial batch is a real optimiser step.
+        self._steps_per_epoch = -(-n_train // batch)
+
         self.optimizer = torch.optim.AdamW(
             self.model.parameters(), lr=spec.lr, weight_decay=spec.weight_decay
         )
+        # T_max in VALIDATION CHECKS, not steps or epochs: the budget gives both
+        # batch sizes the same 60 checks, so annealing in checks makes the
+        # learning-rate curve identical across batch sizes. In steps it would be
+        # identical too, but the scheduler is stepped once per check, so checks
+        # is the unit that matches how it is driven.
+        self._total_checks = -(-spec.max_optimizer_steps //
+                               spec.validation_interval_steps)
         self.scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
-            self.optimizer, T_max=spec.max_epochs
+            self.optimizer, T_max=self._total_checks
         )
         self.history = V2History()
+        self.history.steps_per_epoch = self._steps_per_epoch
         self._best_state: dict | None = None
         self._best_optimizer_step = 0
-        self._start_epoch = 0
+        self._start_pass = 0
+        self._current_pass = 0
 
     # -- configuration -----------------------------------------------------
     def _model_config(self) -> BioGineConfig:
@@ -551,30 +592,44 @@ class V2Trainer:
         return self.model.score_pairs(h, mask, local_a.to(self.device),
                                       local_b.to(self.device))
 
-    def _train_epoch(self) -> tuple[float, int]:
-        """One pass over the training pairs. Returns (mean loss, steps taken)."""
-        self.model.train()
+    def _batch_stream(self):
+        """Endless stream of minibatch index tensors, reshuffled each pass.
+
+        A generator rather than a nested epoch loop because the budget is
+        denominated in steps: the loop has to be able to stop mid-pass, and
+        resume mid-pass, without the epoch boundary meaning anything.
+
+        The permutation for pass *k* is drawn from a generator seeded with
+        ``(seed, k)``, so the stream is a pure function of the run's seed and
+        the pass index. That is what makes a resumed run see the same batches
+        it would have seen without the interruption.
+        """
         n = len(self._train["labels"])
         batch_size = self.spec.batch_size or n
-        perm = torch.randperm(n)
-        total, steps = 0.0, 0
-        for start in range(0, n, batch_size):
-            sel = perm[start: start + batch_size]
-            self.optimizer.zero_grad()
-            pred = self._batch_forward(self._train["idx_a"][sel],
-                                       self._train["idx_b"][sel])
-            loss = F.binary_cross_entropy_with_logits(
-                pred.interaction_logit,
-                self._train["labels"][sel].float().to(self.device),
-                pos_weight=self.pos_weight,
+        pass_index = self._start_pass
+        while True:
+            g = torch.Generator().manual_seed(
+                (self.spec.seed * 1_000_003 + pass_index) % (2**31)
             )
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
-            self.optimizer.step()
-            total += float(loss.detach())
-            steps += 1
-        self.history.optimizer_steps += steps
-        return total / max(steps, 1), steps
+            perm = torch.randperm(n, generator=g)
+            for start in range(0, n, batch_size):
+                yield perm[start: start + batch_size], pass_index
+            pass_index += 1
+
+    def _train_step(self, sel: torch.Tensor) -> float:
+        self.model.train()
+        self.optimizer.zero_grad()
+        pred = self._batch_forward(self._train["idx_a"][sel],
+                                   self._train["idx_b"][sel])
+        loss = F.binary_cross_entropy_with_logits(
+            pred.interaction_logit,
+            self._train["labels"][sel].float().to(self.device),
+            pos_weight=self.pos_weight,
+        )
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.model.parameters(), 1.0)
+        self.optimizer.step()
+        return float(loss.detach())
 
     @torch.no_grad()
     def _predict(self, data: dict | None, chunk: int = 4096):
@@ -610,56 +665,80 @@ class V2Trainer:
     # -- training loop -----------------------------------------------------
     def fit(
         self,
-        max_epochs: int | None = None,
+        max_optimizer_steps: int | None = None,
         verbose: bool = False,
         *,
         checkpoint_path: Path | None = None,
-        checkpoint_every: int = 10,
+        checkpoint_every_checks: int = 5,
     ) -> V2History:
-        """Train with early stopping on VALIDATION AUPRC. Never on test.
+        """Train to a STEP budget, validating on a STEP interval.
 
-        Selection on validation AUPRC is the preregistered rule
-        (docs/V2_PREREGISTRATION.md section 10.1). Not loss - its scale moves
-        with the class weighting - and not accuracy, which is uninformative at
-        this prevalence.
+        Both denominations matter and for mirror-image reasons. A step budget
+        stops batch size from buying extra optimisation; a step validation
+        interval stops it from buying extra checkpoint-selection opportunities.
+        Either one alone reintroduces the confound the other removes. See
+        docs/V2_PREREGISTRATION_AMENDMENT_BUDGET.md sections 7 and 10.
 
-        ``checkpoint_path`` turns on PERIODIC checkpointing: state is written
-        every ``checkpoint_every`` epochs and whenever validation improves.
-        Without it a checkpoint appears only when the run finishes, which is
-        useless for the failure this project keeps hitting - a container restart
-        killed the Phase A-2 grid twice and the debias runner once, at 24 of 30.
-        A 400-epoch run that dies at epoch 300 must not start over.
+        Selection is on validation AUPRC (preregistration section 10.1). Never
+        on test - in VALIDATION_ONLY mode there is no test label in the process.
 
-        ``bad`` (epochs since the last improvement) is carried in the history so
-        that a resumed run does not silently get its patience counter reset and
-        train past the point early stopping would have stopped it.
+        ``checkpoint_every_checks`` writes state periodically so an interrupted
+        run resumes rather than restarting; this project has lost long runs to
+        container restarts three times.
         """
-        budget = max_epochs if max_epochs is not None else self.spec.max_epochs
+        budget = (max_optimizer_steps if max_optimizer_steps is not None
+                  else self.spec.max_optimizer_steps)
+        interval = self.spec.validation_interval_steps
         started = time.time()
-        bad = self.history.epochs_since_improvement
-        for epoch in range(self._start_epoch, budget):
-            epoch_started = time.time()
-            loss, steps_this_epoch = self._train_epoch()
+        bad = self.history.checks_since_improvement
+        step = self.history.optimizer_steps
+        self.history.steps_per_epoch = self._steps_per_epoch
+        stream = self._batch_stream()
+        window_loss, window_n = 0.0, 0
+        check_started = time.time()
+
+        while step < budget:
+            sel, pass_index = next(stream)
+            window_loss += self._train_step(sel)
+            window_n += 1
+            step += 1
+            self.history.optimizer_steps = step
+            self._current_pass = pass_index
+
+            reached_interval = step % interval == 0
+            if not (reached_interval or step >= budget):
+                continue
+
+            # The LR schedule advances once per validation check, not once per
+            # optimiser step: T_max is expressed in checks so the annealing
+            # curve is identical at both batch sizes. Stepping per optimiser
+            # step would anneal batch 256 twice as fast in wall-clock terms.
             self.scheduler.step()
             metrics = self.validation_metrics()
             score = metrics.get("val_auprc", float("nan"))
+            loss = window_loss / max(window_n, 1)
+            window_loss, window_n = 0.0, 0
+
+            self.history.checks_run += 1
+            self.history.epochs_run = pass_index + 1
             self.history.train_loss.append(loss)
             self.history.val_auprc.append(score)
-            self.history.epochs_run = epoch + 1
             self.history.epoch_records.append({
-                "epoch": epoch + 1,
-                "optimizer_steps_this_epoch": steps_this_epoch,
-                "cumulative_optimizer_steps": self.history.optimizer_steps,
+                "check": self.history.checks_run,
+                "cumulative_optimizer_steps": step,
+                "effective_epochs": round(step / self._steps_per_epoch, 3),
+                "steps_per_epoch": self._steps_per_epoch,
                 "train_loss": loss,
                 **metrics,
-                "epoch_runtime_s": round(time.time() - epoch_started, 2),
+                "check_runtime_s": round(time.time() - check_started, 2),
             })
+            check_started = time.time()
 
-            improved = score > self.history.best_val_auprc
-            if improved:
+            if score > self.history.best_val_auprc:
                 self.history.best_val_auprc = score
-                self.history.best_epoch = epoch + 1
-                self._best_optimizer_step = self.history.optimizer_steps
+                self.history.best_check = self.history.checks_run
+                self.history.best_epoch = pass_index + 1
+                self._best_optimizer_step = step
                 self._best_state = {
                     k: v.detach().cpu().clone()
                     for k, v in self.model.state_dict().items()
@@ -667,42 +746,36 @@ class V2Trainer:
                 bad = 0
             else:
                 bad += 1
-            self.history.epochs_since_improvement = bad
+            self.history.checks_since_improvement = bad
+
             if verbose:
-                print(f"  epoch {epoch+1:4d} loss {loss:.4f} val_auprc {score:.4f}")
+                print(f"  check {self.history.checks_run:3d}  step {step:6,}  "
+                      f"ep {step/self._steps_per_epoch:5.1f}  loss {loss:.4f}  "
+                      f"val_auprc {score:.4f}")
 
             if checkpoint_path is not None and (
-                improved or (epoch + 1) % checkpoint_every == 0
+                bad == 0 or self.history.checks_run % checkpoint_every_checks == 0
             ):
                 self.history.wall_time_s += time.time() - started
                 started = time.time()
                 self.save_checkpoint(checkpoint_path)
 
-            if bad >= self.spec.patience:
+            if bad >= self.spec.patience_checks:
                 self.history.stopped_by = "patience"
                 break
         else:
-            self.history.stopped_by = "epoch_limit"
+            self.history.stopped_by = "step_limit"
 
         self.history.wall_time_s += time.time() - started
         if self._best_state is None:
-            # Every epoch's validation score was NaN or never beat -inf, so no
-            # checkpoint was ever selected. Silently returning would report
-            # best_epoch=0 and a NaN metric as a completed run - which is how a
-            # single-class validation bucket looked like a working experiment
-            # while this runner was being written.
             raise RuntimeError(
-                f"training finished without ever selecting a best epoch "
-                f"({self.history.epochs_run} epochs run). Validation AUPRC was "
-                f"{self.history.val_auprc[:3]}...; a NaN means the validation "
-                f"bucket holds a single class."
+                f"training finished without ever selecting a best checkpoint "
+                f"({self.history.checks_run} validation checks). Validation "
+                f"AUPRC was {self.history.val_auprc[:3]}...; a NaN means the "
+                f"validation bucket holds a single class."
             )
         self.model.load_state_dict(self._best_state)
-        # A further fit() continues rather than replaying epochs. Without this,
-        # calling fit twice on one trainer re-runs from epoch 0 while
-        # history.epochs_run tracks the loop index, so the recorded epoch count
-        # and the number of epochs actually trained drift apart.
-        self._start_epoch = self.history.epochs_run
+        self._start_pass = self._current_pass
         return self.history
 
     # -- checkpointing -----------------------------------------------------
@@ -733,6 +806,8 @@ class V2Trainer:
                 "scheduler_state": self.scheduler.state_dict(),
                 "history": asdict(self.history),
                 "epochs_run": self.history.epochs_run,
+                "optimizer_steps": self.history.optimizer_steps,
+                "pass_index": self._current_pass,
                 "best_optimizer_step": self._best_optimizer_step,
             },
             path,
@@ -761,8 +836,10 @@ class V2Trainer:
         self._best_state = {k: v.clone() for k, v in blob["model_state"].items()}
         stored = blob.get("history", {})
         self.history = V2History(**stored) if stored else V2History()
+        self.history.steps_per_epoch = self._steps_per_epoch
         self._best_optimizer_step = int(blob.get("best_optimizer_step", 0))
-        self._start_epoch = int(blob.get("epochs_run", 0))
+        self._start_pass = int(blob.get("pass_index", 0))
+        self._current_pass = self._start_pass
 
     # -- manifest ----------------------------------------------------------
     def manifest(self, *, checkpoint_hash: str = "", extra: dict | None = None) -> dict:
@@ -796,11 +873,17 @@ class V2Trainer:
             "seed": self.spec.seed,
             "n_parameters": self.model.n_parameters(),
             "parameter_table": self.model.parameter_table(),
+            "best_check": self.history.best_check,
             "best_epoch": self.history.best_epoch,
             "best_optimizer_step": self._best_optimizer_step,
             "best_val_auprc": self.history.best_val_auprc,
-            "epochs_run": self.history.epochs_run,
+            "checks_run": self.history.checks_run,
             "optimizer_steps": self.history.optimizer_steps,
+            "steps_per_epoch": self._steps_per_epoch,
+            "effective_epochs": round(self.history.effective_epochs, 3),
+            "max_optimizer_steps": self.spec.max_optimizer_steps,
+            "validation_interval_steps": self.spec.validation_interval_steps,
+            "patience_checks": self.spec.patience_checks,
             "stopped_by": self.history.stopped_by,
             "wall_time_s": round(self.history.wall_time_s, 1),
             "checkpoint_sha256": checkpoint_hash,

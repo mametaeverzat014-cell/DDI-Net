@@ -100,12 +100,22 @@ def build_specs(spec_of: dict, seeds: list[int] | None = None) -> list[V2RunSpec
     """One V2RunSpec per (configuration, seed)."""
     seeds = seeds if seeds is not None else spec_of["selection_seeds"]
     fixed = spec_of["fixed"]
+    # The budget comes from the FROZEN amendment, not from hparam_search.fixed:
+    # configs/v2_preregistered.yaml still records the superseded 400 epochs, and
+    # it is deliberately left unedited so the original preregistration reads as
+    # written. configs/v2_budget_frozen.yaml is what applies.
+    budget = yaml.safe_load(
+        (ROOT / "configs" / "v2_budget_frozen.yaml").read_text())["budget"]
+    if budget["unit"] != "optimizer_steps":
+        raise ValueError(f"frozen budget unit is {budget['unit']!r}, expected "
+                         f"'optimizer_steps'")
     base = V2RunSpec(
         ablation=spec_of["primary_ablation"],
         scheme=spec_of["primary_scheme"],
         negatives=spec_of["primary_negatives"],
-        max_epochs=int(fixed.get("max_epochs", 400)),
-        patience=int(fixed.get("patience", 30)),
+        max_optimizer_steps=int(budget["max_optimizer_steps"]),
+        validation_interval_steps=int(budget["validation_interval_steps"]),
+        patience_checks=int(budget["early_stopping_patience_checks"]),
         weight_decay=float(fixed.get("weight_decay", 1e-4)),
     )
     specs: list[V2RunSpec] = []
@@ -161,6 +171,10 @@ def main() -> int:
     print(f"split / negatives         {spec_of['primary_scheme']} / "
           f"{spec_of['primary_negatives']}")
     print(f"evaluation mode           validation_only (test is not touched)")
+    b = yaml.safe_load((ROOT / "configs" / "v2_budget_frozen.yaml").read_text())["budget"]
+    print(f"budget (FROZEN)           {b['max_optimizer_steps']:,} optimiser steps, "
+          f"validate every {b['validation_interval_steps']}, patience "
+          f"{b['early_stopping_patience_checks']} checks")
 
     declared = spec_of["declared_n_configurations"]
     if declared is not None and declared != len(configs):

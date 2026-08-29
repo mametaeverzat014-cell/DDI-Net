@@ -454,7 +454,7 @@ def test_dropping_test_does_not_disturb_validation_negatives(universe, split):
 @frozen_only
 def test_trainer_refuses_test_prediction_in_validation_only(universe, split):
     bundle, _ = resolve_biology(V2RunSpec(), list(universe.drugs["drugbank_id"]))
-    spec = V2RunSpec(max_epochs=1)
+    spec = V2RunSpec(max_optimizer_steps=4, validation_interval_steps=2)
     trainer = _tiny_trainer(spec, universe, split, bundle)
     with pytest.raises(TestSetSealed, match="validation_only"):
         trainer.predict_test()
@@ -468,14 +468,18 @@ def test_trainer_holds_no_test_bucket(universe, split):
     assert trainer._pooled("test") is None
 
 
-def _tiny_trainer(spec, universe, split, bundle):
-    """A trainer over a deliberately small pair sample, for API-level tests."""
+def _tiny_trainer(spec, universe, split, bundle, full_dataset: bool = False):
+    """A trainer over a deliberately small pair sample, for API-level tests.
+
+    ``full_dataset=True`` keeps every pair, which is what the steps-per-epoch
+    arithmetic has to be checked against.
+    """
     dataset = build_v2_dataset(spec, universe, split, EvaluationMode.VALIDATION_ONLY)
     # BOTH classes from every bucket. head(200) alone takes the first 200 rows,
     # and the sampler emits positives before negatives, so it produced a
     # single-class validation set - AUPRC came back NaN, no epoch ever counted
     # as an improvement, and the run looked like it worked.
-    small = pd.concat(
+    small = dataset if full_dataset else pd.concat(
         [g.head(100) for _, g in dataset.groupby(["bucket", "label"], sort=True)],
         ignore_index=True,
     )
@@ -654,14 +658,14 @@ def test_periodic_checkpoint_survives_an_interrupted_run(universe, split, tmp_pa
     """
     pytest.importorskip("rdkit")
     bundle, _ = resolve_biology(V2RunSpec(), list(universe.drugs["drugbank_id"]))
-    spec = V2RunSpec(max_epochs=2)
+    spec = V2RunSpec(max_optimizer_steps=4, validation_interval_steps=2)
     trainer = _tiny_trainer(spec, universe, split, bundle)
     path = tmp_path / "run.pt"
-    trainer.fit(max_epochs=1, checkpoint_path=path, checkpoint_every=1)
+    trainer.fit(max_optimizer_steps=2, checkpoint_path=path, checkpoint_every_checks=1)
     assert path.exists(), "no checkpoint written during training"
 
     blob = torch.load(path, map_location="cpu", weights_only=False)
-    assert blob["epochs_run"] == 1
+    assert blob["optimizer_steps"] == 2
     assert "current_state" in blob and "model_state" in blob
 
 
@@ -669,14 +673,14 @@ def test_periodic_checkpoint_survives_an_interrupted_run(universe, split, tmp_pa
 def test_resume_continues_from_where_training_stopped(universe, split, tmp_path):
     pytest.importorskip("rdkit")
     bundle, _ = resolve_biology(V2RunSpec(), list(universe.drugs["drugbank_id"]))
-    spec = V2RunSpec(max_epochs=3)
+    spec = V2RunSpec(max_optimizer_steps=6, validation_interval_steps=2)
     first = _tiny_trainer(spec, universe, split, bundle)
     path = tmp_path / "run.pt"
-    first.fit(max_epochs=1, checkpoint_path=path, checkpoint_every=1)
+    first.fit(max_optimizer_steps=2, checkpoint_path=path, checkpoint_every_checks=1)
 
     second = _tiny_trainer(spec, universe, split, bundle)
     second.load_checkpoint(path)
-    assert second._start_epoch == 1
+    assert second.history.optimizer_steps == 2
     assert second.spec.run_id() == first.spec.run_id()
     assert second.history.best_val_auprc == first.history.best_val_auprc
 
@@ -689,17 +693,17 @@ def test_resume_restores_the_training_weights_not_the_best_weights(
     leave it."""
     pytest.importorskip("rdkit")
     bundle, _ = resolve_biology(V2RunSpec(), list(universe.drugs["drugbank_id"]))
-    trainer = _tiny_trainer(V2RunSpec(max_epochs=3), universe, split, bundle)
+    trainer = _tiny_trainer(V2RunSpec(max_optimizer_steps=6, validation_interval_steps=2), universe, split, bundle)
     path = tmp_path / "run.pt"
-    trainer.fit(max_epochs=1, checkpoint_path=path, checkpoint_every=1)
+    trainer.fit(max_optimizer_steps=2, checkpoint_path=path, checkpoint_every_checks=1)
     # Force current != best by taking one more step without improving the best.
     trainer.history.best_val_auprc = 1.0
-    trainer.fit(max_epochs=2, checkpoint_path=path, checkpoint_every=1)
+    trainer.fit(max_optimizer_steps=4, checkpoint_path=path, checkpoint_every_checks=1)
     blob = torch.load(path, map_location="cpu", weights_only=False)
     key = next(iter(blob["model_state"]))
     assert not torch.equal(blob["model_state"][key], blob["current_state"][key])
 
-    resumed = _tiny_trainer(V2RunSpec(max_epochs=3), universe, split, bundle)
+    resumed = _tiny_trainer(V2RunSpec(max_optimizer_steps=6, validation_interval_steps=2), universe, split, bundle)
     resumed.load_checkpoint(path)
     live = resumed.model.state_dict()[key].detach().cpu()
     assert torch.equal(live, blob["current_state"][key])
@@ -711,46 +715,51 @@ def test_patience_counter_survives_a_resume(universe, split, tmp_path):
     past where early stopping would have ended it."""
     pytest.importorskip("rdkit")
     bundle, _ = resolve_biology(V2RunSpec(), list(universe.drugs["drugbank_id"]))
-    trainer = _tiny_trainer(V2RunSpec(max_epochs=4), universe, split, bundle)
+    trainer = _tiny_trainer(V2RunSpec(max_optimizer_steps=8, validation_interval_steps=2), universe, split, bundle)
     path = tmp_path / "run.pt"
     # One real epoch first, so a best checkpoint exists; only then pin the best
     # score out of reach. Setting it before any epoch means nothing ever
     # improves, which now correctly raises rather than reporting best_epoch=0.
-    trainer.fit(max_epochs=1, checkpoint_path=path, checkpoint_every=1)
-    assert trainer.history.epochs_since_improvement == 0
+    trainer.fit(max_optimizer_steps=2, checkpoint_path=path, checkpoint_every_checks=1)
+    assert trainer.history.checks_since_improvement == 0
     trainer.history.best_val_auprc = 1.0        # nothing can improve on this
-    trainer.fit(max_epochs=3, checkpoint_path=path, checkpoint_every=1)
-    assert trainer.history.epochs_run == 3
-    assert trainer.history.epochs_since_improvement == 2
+    trainer.fit(max_optimizer_steps=6, checkpoint_path=path, checkpoint_every_checks=1)
+    assert trainer.history.optimizer_steps == 6
+    assert trainer.history.checks_since_improvement == 2
 
-    resumed = _tiny_trainer(V2RunSpec(max_epochs=4), universe, split, bundle)
+    resumed = _tiny_trainer(V2RunSpec(max_optimizer_steps=8, validation_interval_steps=2), universe, split, bundle)
     resumed.load_checkpoint(path)
-    assert resumed.history.epochs_since_improvement == 2
-    assert resumed._start_epoch == 3
+    assert resumed.history.checks_since_improvement == 2
+    assert resumed.history.optimizer_steps == 6
 
 
-def test_max_epochs_is_part_of_the_run_identity():
-    """It sets T_max of the cosine schedule, so a different cap is a different
-    learning-rate trajectory - a different run, not a longer one. Measured:
-    the same seed at cap 2 gave val AUPRC 0.7172/0.7360 for epochs 1-2 and at
-    cap 4 gave 0.7115/0.7376."""
-    assert V2RunSpec(max_epochs=2).run_id() != V2RunSpec(max_epochs=4).run_id()
-    assert "max_epochs" in V2RunSpec().IDENTITY
+def test_budget_fields_are_part_of_the_run_identity():
+    """max_optimizer_steps sets T_max of the cosine schedule, so a different cap
+    is a different learning-rate trajectory - a different run, not a longer
+    one. Measured under the old epoch budget: the same seed at cap 2 gave
+    0.7172/0.7360 and at cap 4 gave 0.7115/0.7376."""
+    base = V2RunSpec()
+    for field_name, value in (("max_optimizer_steps", 14640),
+                              ("validation_interval_steps", 732),
+                              ("patience_checks", 10)):
+        assert replace(base, **{field_name: value}).run_id() != base.run_id()
+        assert field_name in base.IDENTITY
 
 
 def test_failed_resume_reports_the_nearest_sibling(runner, tmp_path):
     """--resume finding nothing must say so, and say why. Silence is how the
     first resume demonstration in this project quietly started from scratch."""
-    spec_a = V2RunSpec(max_epochs=2)
+    spec_a = V2RunSpec(max_optimizer_steps=14640)
     manifest = tmp_path / f"{spec_a.run_id()}.manifest.json"
     manifest.write_text(json.dumps({"hyperparameters": spec_a.to_dict()}))
-    notes = runner.describe_sibling_checkpoints(V2RunSpec(max_epochs=4), tmp_path)
+    notes = runner.describe_sibling_checkpoints(V2RunSpec(), tmp_path)
     assert len(notes) == 1
-    assert "max_epochs" in notes[0] and "2" in notes[0] and "4" in notes[0]
+    assert "max_optimizer_steps" in notes[0]
+    assert "14640" in notes[0] and "21960" in notes[0]
 
 
 def test_sibling_search_ignores_wholly_different_configurations(runner, tmp_path):
-    far = V2RunSpec(max_epochs=4, bio_dim=128, lr=3e-4, batch_size=512,
+    far = V2RunSpec(max_optimizer_steps=14640, bio_dim=128, lr=3e-4, batch_size=512,
                     dropout_bio=0.3)
     (tmp_path / f"{far.run_id()}.manifest.json").write_text(
         json.dumps({"hyperparameters": far.to_dict()}))
@@ -776,11 +785,11 @@ def test_a_run_that_never_selects_a_best_epoch_fails_loudly(universe, split):
     from ddinet.features.molgraph import smiles_to_graph
     graphs = {n: smiles_to_graph(s) for n, s in
               zip(universe.drugs["name"], universe.drugs["smiles"])}
-    trainer = V2Trainer(V2RunSpec(max_epochs=1), universe, split, bundle, graphs,
+    trainer = V2Trainer(V2RunSpec(max_optimizer_steps=2, validation_interval_steps=2), universe, split, bundle, graphs,
                         mode=EvaluationMode.VALIDATION_ONLY, dataset=single_class)
     assert len(np.unique(trainer._val["labels"].numpy())) == 1
     with pytest.raises(RuntimeError, match="without ever selecting a best epoch"):
-        trainer.fit(max_epochs=1)
+        trainer.fit(max_optimizer_steps=2)
 
 
 @frozen_only
@@ -799,8 +808,101 @@ def test_a_second_fit_continues_rather_than_replaying_epochs(universe, split):
     epoch 0 would report fewer epochs than it actually trained."""
     pytest.importorskip("rdkit")
     bundle, _ = resolve_biology(V2RunSpec(), list(universe.drugs["drugbank_id"]))
-    trainer = _tiny_trainer(V2RunSpec(max_epochs=3), universe, split, bundle)
-    trainer.fit(max_epochs=1)
-    assert trainer.history.epochs_run == 1 == len(trainer.history.val_auprc)
-    trainer.fit(max_epochs=3)
-    assert trainer.history.epochs_run == 3 == len(trainer.history.val_auprc)
+    trainer = _tiny_trainer(V2RunSpec(max_optimizer_steps=6, validation_interval_steps=2), universe, split, bundle)
+    trainer.fit(max_optimizer_steps=2)
+    assert trainer.history.optimizer_steps == 2 == 2*len(trainer.history.val_auprc)
+    trainer.fit(max_optimizer_steps=6)
+    assert trainer.history.optimizer_steps == 6 == 2*len(trainer.history.val_auprc)
+
+
+# 16 -- budget fairness across batch sizes --------------------------------
+def test_both_batch_sizes_get_the_same_optimiser_budget():
+    """An epoch cap would give batch 256 twice the updates, and batch size is
+    one of the five searched axes."""
+    small = V2RunSpec(batch_size=256)
+    large = V2RunSpec(batch_size=512)
+    assert small.max_optimizer_steps == large.max_optimizer_steps == 21960
+
+
+def test_both_batch_sizes_get_the_same_number_of_validation_checks():
+    """The mirror-image confound. Under a step cap with per-epoch validation,
+    batch 512 would get 60 checkpoint-selection opportunities and batch 256
+    only 30 - and with a validation plateau of sd 0.0034 and 10-12 tied epochs
+    (measured in the adequacy pilot), more samples of the plateau means a
+    higher expected maximum for no modelling reason."""
+    for batch in (256, 512):
+        spec = V2RunSpec(batch_size=batch)
+        checks = -(-spec.max_optimizer_steps // spec.validation_interval_steps)
+        assert checks == 60, batch
+
+
+@frozen_only
+def test_steps_per_epoch_differs_but_the_step_budget_does_not(universe, split):
+    """Pins the arithmetic the fairness argument rests on."""
+    pytest.importorskip("rdkit")
+    bundle, _ = resolve_biology(V2RunSpec(), list(universe.drugs["drugbank_id"]))
+    observed = {}
+    for batch in (256, 512):
+        spec = V2RunSpec(batch_size=batch)
+        trainer = _tiny_trainer(spec, universe, split, bundle, full_dataset=True)
+        observed[batch] = trainer._steps_per_epoch
+        assert trainer._total_checks == 60
+    assert observed[256] == 2 * observed[512] - (1 if observed[512] * 2 % 2 else 0) \
+        or observed[256] in (2 * observed[512], 2 * observed[512] - 1)
+    assert observed[512] == 366 and observed[256] == 732
+
+
+@frozen_only
+def test_frozen_budget_config_matches_the_run_spec_defaults():
+    """The defaults must not drift from the file the freeze commit locked."""
+    import yaml
+    budget = yaml.safe_load(
+        (ROOT / "configs" / "v2_budget_frozen.yaml").read_text())["budget"]
+    spec = V2RunSpec()
+    assert budget["unit"] == "optimizer_steps"
+    assert spec.max_optimizer_steps == budget["max_optimizer_steps"] == 21960
+    assert spec.validation_interval_steps == budget["validation_interval_steps"] == 366
+    assert spec.patience_checks == budget["early_stopping_patience_checks"] == 30
+
+
+@frozen_only
+def test_grid_uses_the_frozen_budget_not_the_superseded_epoch_cap(grid):
+    """configs/v2_preregistered.yaml still records max_epochs: 400 on purpose -
+    the original preregistration is not edited. The grid must ignore it."""
+    specs = grid.build_specs(grid.load_grid())
+    assert {s.max_optimizer_steps for s in specs} == {21960}
+    assert {s.validation_interval_steps for s in specs} == {366}
+    assert {s.patience_checks for s in specs} == {30}
+
+
+@frozen_only
+def test_validation_runs_on_the_step_interval_not_per_epoch(universe, split):
+    """The change this phase exists for. With interval 2 and a 6-step budget
+    there must be 3 checks, regardless of how many steps make an epoch."""
+    pytest.importorskip("rdkit")
+    bundle, _ = resolve_biology(V2RunSpec(), list(universe.drugs["drugbank_id"]))
+    spec = V2RunSpec(max_optimizer_steps=6, validation_interval_steps=2)
+    trainer = _tiny_trainer(spec, universe, split, bundle)
+    history = trainer.fit()
+    assert history.checks_run == 3
+    assert history.optimizer_steps == 6
+    assert len(history.epoch_records) == 3
+    assert [r["cumulative_optimizer_steps"] for r in history.epoch_records] == [2, 4, 6]
+
+
+@frozen_only
+def test_run_records_both_steps_and_effective_epochs(universe, split):
+    """Batch-size effects must stay visible in the record."""
+    pytest.importorskip("rdkit")
+    bundle, _ = resolve_biology(V2RunSpec(), list(universe.drugs["drugbank_id"]))
+    spec = V2RunSpec(max_optimizer_steps=4, validation_interval_steps=2)
+    trainer = _tiny_trainer(spec, universe, split, bundle)
+    trainer.fit()
+    manifest = trainer.manifest()
+    for key in ("optimizer_steps", "effective_epochs", "steps_per_epoch",
+                "checks_run", "best_check", "best_optimizer_step",
+                "max_optimizer_steps", "validation_interval_steps",
+                "patience_checks"):
+        assert key in manifest, key
+    record = trainer.history.epoch_records[0]
+    assert "effective_epochs" in record and "cumulative_optimizer_steps" in record
