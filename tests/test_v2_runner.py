@@ -635,3 +635,110 @@ def test_manifest_records_the_control_f_hashes(universe, split):
     assert bio["control_f_seed"] == 20260829
     assert bio["biology_source"] == "shuffled"
     assert len(bio["control_f_manifest_sha256"]) == 64
+
+
+# 15 -- interruption and resume -------------------------------------------
+@frozen_only
+def test_periodic_checkpoint_survives_an_interrupted_run(universe, split, tmp_path):
+    """A run killed mid-training must leave something to resume from.
+
+    Without periodic checkpointing a checkpoint appeared only when a run
+    finished, so a 400-epoch job dying at epoch 300 started over. This project
+    has lost three long runs to container restarts already.
+    """
+    pytest.importorskip("rdkit")
+    bundle, _ = resolve_biology(V2RunSpec(), list(universe.drugs["drugbank_id"]))
+    spec = V2RunSpec(max_epochs=2)
+    trainer = _tiny_trainer(spec, universe, split, bundle)
+    path = tmp_path / "run.pt"
+    trainer.fit(max_epochs=1, checkpoint_path=path, checkpoint_every=1)
+    assert path.exists(), "no checkpoint written during training"
+
+    blob = torch.load(path, map_location="cpu", weights_only=False)
+    assert blob["epochs_run"] == 1
+    assert "current_state" in blob and "model_state" in blob
+
+
+@frozen_only
+def test_resume_continues_from_where_training_stopped(universe, split, tmp_path):
+    pytest.importorskip("rdkit")
+    bundle, _ = resolve_biology(V2RunSpec(), list(universe.drugs["drugbank_id"]))
+    spec = V2RunSpec(max_epochs=3)
+    first = _tiny_trainer(spec, universe, split, bundle)
+    path = tmp_path / "run.pt"
+    first.fit(max_epochs=1, checkpoint_path=path, checkpoint_every=1)
+
+    second = _tiny_trainer(spec, universe, split, bundle)
+    second.load_checkpoint(path)
+    assert second._start_epoch == 1
+    assert second.spec.run_id() == first.spec.run_id()
+    assert second.history.best_val_auprc == first.history.best_val_auprc
+
+
+@frozen_only
+def test_resume_restores_the_training_weights_not_the_best_weights(
+        universe, split, tmp_path):
+    """Resuming from the best epoch would rewind the optimiser on every
+    restart, so a run interrupted repeatedly during a plateau could never
+    leave it."""
+    pytest.importorskip("rdkit")
+    bundle, _ = resolve_biology(V2RunSpec(), list(universe.drugs["drugbank_id"]))
+    trainer = _tiny_trainer(V2RunSpec(max_epochs=3), universe, split, bundle)
+    path = tmp_path / "run.pt"
+    trainer.fit(max_epochs=1, checkpoint_path=path, checkpoint_every=1)
+    # Force current != best by taking one more step without improving the best.
+    trainer.history.best_val_auprc = 1.0
+    trainer.fit(max_epochs=2, checkpoint_path=path, checkpoint_every=1)
+    blob = torch.load(path, map_location="cpu", weights_only=False)
+    key = next(iter(blob["model_state"]))
+    assert not torch.equal(blob["model_state"][key], blob["current_state"][key])
+
+    resumed = _tiny_trainer(V2RunSpec(max_epochs=3), universe, split, bundle)
+    resumed.load_checkpoint(path)
+    live = resumed.model.state_dict()[key].detach().cpu()
+    assert torch.equal(live, blob["current_state"][key])
+
+
+@frozen_only
+def test_patience_counter_survives_a_resume(universe, split, tmp_path):
+    """Otherwise an interrupted run gets a fresh patience budget and trains
+    past where early stopping would have ended it."""
+    pytest.importorskip("rdkit")
+    bundle, _ = resolve_biology(V2RunSpec(), list(universe.drugs["drugbank_id"]))
+    trainer = _tiny_trainer(V2RunSpec(max_epochs=4), universe, split, bundle)
+    path = tmp_path / "run.pt"
+    trainer.history.best_val_auprc = 1.0        # nothing can improve on this
+    trainer.fit(max_epochs=2, checkpoint_path=path, checkpoint_every=1)
+    assert trainer.history.epochs_since_improvement == 2
+
+    resumed = _tiny_trainer(V2RunSpec(max_epochs=4), universe, split, bundle)
+    resumed.load_checkpoint(path)
+    assert resumed.history.epochs_since_improvement == 2
+
+
+def test_max_epochs_is_part_of_the_run_identity():
+    """It sets T_max of the cosine schedule, so a different cap is a different
+    learning-rate trajectory - a different run, not a longer one. Measured:
+    the same seed at cap 2 gave val AUPRC 0.7172/0.7360 for epochs 1-2 and at
+    cap 4 gave 0.7115/0.7376."""
+    assert V2RunSpec(max_epochs=2).run_id() != V2RunSpec(max_epochs=4).run_id()
+    assert "max_epochs" in V2RunSpec().IDENTITY
+
+
+def test_failed_resume_reports_the_nearest_sibling(runner, tmp_path):
+    """--resume finding nothing must say so, and say why. Silence is how the
+    first resume demonstration in this project quietly started from scratch."""
+    spec_a = V2RunSpec(max_epochs=2)
+    manifest = tmp_path / f"{spec_a.run_id()}.manifest.json"
+    manifest.write_text(json.dumps({"hyperparameters": spec_a.to_dict()}))
+    notes = runner.describe_sibling_checkpoints(V2RunSpec(max_epochs=4), tmp_path)
+    assert len(notes) == 1
+    assert "max_epochs" in notes[0] and "2" in notes[0] and "4" in notes[0]
+
+
+def test_sibling_search_ignores_wholly_different_configurations(runner, tmp_path):
+    far = V2RunSpec(max_epochs=4, bio_dim=128, lr=3e-4, batch_size=512,
+                    dropout_bio=0.3)
+    (tmp_path / f"{far.run_id()}.manifest.json").write_text(
+        json.dumps({"hyperparameters": far.to_dict()}))
+    assert runner.describe_sibling_checkpoints(V2RunSpec(), tmp_path) == []
