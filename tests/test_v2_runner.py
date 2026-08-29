@@ -471,8 +471,14 @@ def test_trainer_holds_no_test_bucket(universe, split):
 def _tiny_trainer(spec, universe, split, bundle):
     """A trainer over a deliberately small pair sample, for API-level tests."""
     dataset = build_v2_dataset(spec, universe, split, EvaluationMode.VALIDATION_ONLY)
-    small = pd.concat([g.head(200) for _, g in dataset.groupby("bucket", sort=True)],
-                      ignore_index=True)
+    # BOTH classes from every bucket. head(200) alone takes the first 200 rows,
+    # and the sampler emits positives before negatives, so it produced a
+    # single-class validation set - AUPRC came back NaN, no epoch ever counted
+    # as an improvement, and the run looked like it worked.
+    small = pd.concat(
+        [g.head(100) for _, g in dataset.groupby(["bucket", "label"], sort=True)],
+        ignore_index=True,
+    )
     from ddinet.features.molgraph import smiles_to_graph
     graphs = {n: smiles_to_graph(s) for n, s in
               zip(universe.drugs["name"], universe.drugs["smiles"])}
@@ -707,13 +713,20 @@ def test_patience_counter_survives_a_resume(universe, split, tmp_path):
     bundle, _ = resolve_biology(V2RunSpec(), list(universe.drugs["drugbank_id"]))
     trainer = _tiny_trainer(V2RunSpec(max_epochs=4), universe, split, bundle)
     path = tmp_path / "run.pt"
+    # One real epoch first, so a best checkpoint exists; only then pin the best
+    # score out of reach. Setting it before any epoch means nothing ever
+    # improves, which now correctly raises rather than reporting best_epoch=0.
+    trainer.fit(max_epochs=1, checkpoint_path=path, checkpoint_every=1)
+    assert trainer.history.epochs_since_improvement == 0
     trainer.history.best_val_auprc = 1.0        # nothing can improve on this
-    trainer.fit(max_epochs=2, checkpoint_path=path, checkpoint_every=1)
+    trainer.fit(max_epochs=3, checkpoint_path=path, checkpoint_every=1)
+    assert trainer.history.epochs_run == 3
     assert trainer.history.epochs_since_improvement == 2
 
     resumed = _tiny_trainer(V2RunSpec(max_epochs=4), universe, split, bundle)
     resumed.load_checkpoint(path)
     assert resumed.history.epochs_since_improvement == 2
+    assert resumed._start_epoch == 3
 
 
 def test_max_epochs_is_part_of_the_run_identity():
@@ -742,3 +755,52 @@ def test_sibling_search_ignores_wholly_different_configurations(runner, tmp_path
     (tmp_path / f"{far.run_id()}.manifest.json").write_text(
         json.dumps({"hyperparameters": far.to_dict()}))
     assert runner.describe_sibling_checkpoints(V2RunSpec(), tmp_path) == []
+
+
+@frozen_only
+def test_a_run_that_never_selects_a_best_epoch_fails_loudly(universe, split):
+    """A single-class validation bucket makes AUPRC NaN, no epoch improves on
+    -inf, and the run would otherwise report best_epoch=0 as a success. That
+    exact failure happened while this runner was being written."""
+    pytest.importorskip("rdkit")
+    bundle, _ = resolve_biology(V2RunSpec(), list(universe.drugs["drugbank_id"]))
+    dataset = build_v2_dataset(V2RunSpec(), universe, split,
+                               EvaluationMode.VALIDATION_ONLY)
+    positives_only = dataset[
+        (dataset["label"] == 1) | dataset["bucket"].str.startswith("train")
+    ]
+    single_class = pd.concat(
+        [g.head(120) for _, g in positives_only.groupby("bucket", sort=True)],
+        ignore_index=True,
+    )
+    from ddinet.features.molgraph import smiles_to_graph
+    graphs = {n: smiles_to_graph(s) for n, s in
+              zip(universe.drugs["name"], universe.drugs["smiles"])}
+    trainer = V2Trainer(V2RunSpec(max_epochs=1), universe, split, bundle, graphs,
+                        mode=EvaluationMode.VALIDATION_ONLY, dataset=single_class)
+    assert len(np.unique(trainer._val["labels"].numpy())) == 1
+    with pytest.raises(RuntimeError, match="without ever selecting a best epoch"):
+        trainer.fit(max_epochs=1)
+
+
+@frozen_only
+def test_the_tiny_fixture_has_both_classes_in_validation(universe, split):
+    """Pins the fixture defect itself, so it cannot come back silently."""
+    pytest.importorskip("rdkit")
+    bundle, _ = resolve_biology(V2RunSpec(), list(universe.drugs["drugbank_id"]))
+    trainer = _tiny_trainer(V2RunSpec(), universe, split, bundle)
+    assert len(np.unique(trainer._val["labels"].numpy())) == 2
+    assert len(np.unique(trainer._train["labels"].numpy())) == 2
+
+
+@frozen_only
+def test_a_second_fit_continues_rather_than_replaying_epochs(universe, split):
+    """history.epochs_run tracks the loop index, so a fit() that restarted at
+    epoch 0 would report fewer epochs than it actually trained."""
+    pytest.importorskip("rdkit")
+    bundle, _ = resolve_biology(V2RunSpec(), list(universe.drugs["drugbank_id"]))
+    trainer = _tiny_trainer(V2RunSpec(max_epochs=3), universe, split, bundle)
+    trainer.fit(max_epochs=1)
+    assert trainer.history.epochs_run == 1 == len(trainer.history.val_auprc)
+    trainer.fit(max_epochs=3)
+    assert trainer.history.epochs_run == 3 == len(trainer.history.val_auprc)

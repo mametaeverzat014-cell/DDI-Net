@@ -661,8 +661,24 @@ class V2Trainer:
             self.history.stopped_by = "epoch_limit"
 
         self.history.wall_time_s += time.time() - started
-        if self._best_state is not None:
-            self.model.load_state_dict(self._best_state)
+        if self._best_state is None:
+            # Every epoch's validation score was NaN or never beat -inf, so no
+            # checkpoint was ever selected. Silently returning would report
+            # best_epoch=0 and a NaN metric as a completed run - which is how a
+            # single-class validation bucket looked like a working experiment
+            # while this runner was being written.
+            raise RuntimeError(
+                f"training finished without ever selecting a best epoch "
+                f"({self.history.epochs_run} epochs run). Validation AUPRC was "
+                f"{self.history.val_auprc[:3]}...; a NaN means the validation "
+                f"bucket holds a single class."
+            )
+        self.model.load_state_dict(self._best_state)
+        # A further fit() continues rather than replaying epochs. Without this,
+        # calling fit twice on one trainer re-runs from epoch 0 while
+        # history.epochs_run tracks the loop index, so the recorded epoch count
+        # and the number of epochs actually trained drift apart.
+        self._start_epoch = self.history.epochs_run
         return self.history
 
     # -- checkpointing -----------------------------------------------------
