@@ -1,1 +1,2 @@
 run_id,config_id,seed,split,split_seed,model,ablation,biology_source,aggregation,bio_dim,dropout_bio,dropout_pair,lr,batch_size,n_parameters,best_epoch,epochs_run,stopped_by,val_auprc,val_auroc,val_brier,val_ece,val_n,val_prevalence,runtime_s,status,tag
+6d7520619787a830,659b9597a8f4b95b,0,drug,0,bio_gine,M4,true,mean,64,0.1,0.1,0.001,512,593652,4,4,epoch_limit,0.760949469367076,0.769985202843268,0.2071231005615262,0.09988572667325996,93610,0.5,361.1,completed,SMOKE_ONLY
