@@ -272,3 +272,55 @@ def test_full_model_is_symmetric_with_molecules():
     assert torch.equal(
         m(batch, a, c).interaction_logit, m(batch, c, a).interaction_logit
     )
+
+
+# -- the unique-element fast path -----------------------------------------
+def test_unique_element_path_equals_the_naive_path():
+    """phi runs on distinct element values and the result is gathered. That is
+    an optimisation, so it has to be exactly the same arithmetic - in a
+    512-drug batch it removes 45x of the pathway phi work and 10x of the
+    protein phi work, which is the difference between a feasible grid and an
+    infeasible one, and would be worthless if it changed a number."""
+    torch.manual_seed(0)
+    enc = DeepSetsEncoder(6, 12, 5, dropout=0.0, aggregation="mean").eval()
+    vocab = torch.randn(6, 6)
+    codes = torch.randint(0, 6, (40,))
+    owner = torch.sort(torch.randint(0, 7, (40,))).values
+    sizes = torch.bincount(owner, minlength=7).float()
+    empty = sizes == 0
+    with torch.no_grad():
+        naive = enc(vocab[codes], owner, 7, sizes, empty)
+        uniq, inverse = torch.unique(codes, return_inverse=True)
+        fast = enc(vocab[uniq], owner, 7, sizes, empty, inverse=inverse)
+    assert torch.equal(naive, fast)
+
+
+def test_protein_code_packing_round_trips():
+    """The (protein, relation, evidence) triple is packed into one integer so
+    torch.unique can run on a 1-D tensor. An off-by-one in the packing would
+    silently merge two different elements."""
+    from ddinet.data.biology import EVIDENCE_TYPES, RELATION_TYPES
+
+    ids = torch.tensor([0, 1, 2892, 7, 7])
+    rel = torch.tensor([0, 3, 1, 2, 2])
+    ev = torch.tensor([0, 2, 1, 1, 1])
+    code = (ids * len(RELATION_TYPES) + rel) * len(EVIDENCE_TYPES) + ev
+    back_ev = code % len(EVIDENCE_TYPES)
+    rest = code // len(EVIDENCE_TYPES)
+    back_rel = rest % len(RELATION_TYPES)
+    back_id = rest // len(RELATION_TYPES)
+    assert torch.equal(back_id, ids)
+    assert torch.equal(back_rel, rel)
+    assert torch.equal(back_ev, ev)
+    # distinct triples must not collide, identical triples must
+    assert len(torch.unique(code)) == 4
+
+
+def test_phi_has_no_dropout():
+    """The unique-element path is exact only because phi is dropout-free.
+    Adding dropout to phi would make repeated elements share a noise pattern
+    instead of drawing independently, and the optimisation would silently stop
+    being equivalent."""
+    enc = DeepSetsEncoder(4, 8, 4, dropout=0.5, aggregation="mean")
+    assert not any(isinstance(m, torch.nn.Dropout) for m in enc.phi)
+    assert any(isinstance(m, torch.nn.Dropout) for m in enc.rho)

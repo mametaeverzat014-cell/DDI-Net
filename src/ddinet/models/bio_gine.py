@@ -354,12 +354,31 @@ class DeepSetsEncoder(nn.Module):
         n_drugs: int,
         sizes: torch.Tensor,
         empty: torch.Tensor,
+        inverse: torch.Tensor | None = None,
     ) -> torch.Tensor:
+        """``inverse``, when given, says ``elements`` holds the UNIQUE element
+        features and ``elements[inverse]`` reconstructs the full sequence.
+
+        phi depends only on an element's own content, and set elements repeat
+        heavily across drugs: in a 512-drug batch the 77,956 pathway elements
+        take only 1,729 distinct values (45x) and the 25,901 protein elements
+        only 2,491 (10x). Running phi on the distinct values and gathering is
+        the same arithmetic for an order of magnitude less of it.
+
+        This is exact ONLY because phi carries no dropout. That was already a
+        design commitment, for an unrelated reason - dropping features of
+        individual set elements before a MEAN makes the aggregate's variance
+        scale with 1/|P(d)|, i.e. set size re-entering as noise. Were dropout
+        ever added to phi, the shared computation would also share its noise
+        pattern and this path would stop being equivalent.
+        """
         if elements.numel() == 0:
             return self.missing.unsqueeze(0).expand(n_drugs, -1)
+        h = self.phi(elements)
+        if inverse is not None:
+            h = h[inverse]
         pooled = _segment_reduce(
-            self.phi(elements), owner, n_drugs,
-            aggregation=self.aggregation, sizes=sizes,
+            h, owner, n_drugs, aggregation=self.aggregation, sizes=sizes,
         )
         out = self.rho(pooled)
         # torch.where, not indexed assignment: keeps the graph intact for
@@ -544,15 +563,26 @@ class BioGine(nn.Module):
             ids = self.protein_id if full else self.protein_id[pos]
             rel = self.protein_rel if full else self.protein_rel[pos]
             ev = self.protein_ev if full else self.protein_ev[pos]
+            # One integer per element that determines its phi input exactly.
+            # Packing rather than torch.unique over a 2-D tensor because the
+            # 1-D path is much faster and the arithmetic is unambiguous:
+            # relation and evidence vocabularies are fixed-size and small.
+            code = (ids * len(RELATION_TYPES) + rel) * len(EVIDENCE_TYPES) + ev
+            uniq_code, inverse = torch.unique(code, return_inverse=True)
+            u_ev = uniq_code % len(EVIDENCE_TYPES)
+            rest = uniq_code // len(EVIDENCE_TYPES)
+            u_rel = rest % len(RELATION_TYPES)
+            u_id = rest // len(RELATION_TYPES)
             elements = torch.cat(
                 [
-                    self.protein_embedding(ids),
-                    self.relation_embedding(rel),
-                    self.evidence_embedding(ev),
+                    self.protein_embedding(u_id),
+                    self.relation_embedding(u_rel),
+                    self.evidence_embedding(u_ev),
                 ],
                 dim=-1,
             )
-            prot = self.protein_encoder(elements, owner, n, size, empty_prot)
+            prot = self.protein_encoder(elements, owner, n, size, empty_prot,
+                                        inverse=inverse)
 
         if self.pathway_encoder is not None:
             if full:
@@ -562,8 +592,10 @@ class BioGine(nn.Module):
                 pos, owner = _gather_subset(self.pathway_offsets, node_idx)
                 size = self.pathway_size[node_idx]
             ids = self.pathway_id if full else self.pathway_id[pos]
+            uniq_id, inverse = torch.unique(ids, return_inverse=True)
             path = self.pathway_encoder(
-                self.pathway_embedding(ids), owner, n, size, empty_path
+                self.pathway_embedding(uniq_id), owner, n, size, empty_path,
+                inverse=inverse,
             )
 
         mask = torch.stack([(~empty_prot).float(), (~empty_path).float()], dim=-1)
