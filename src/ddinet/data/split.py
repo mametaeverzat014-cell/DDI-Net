@@ -345,29 +345,64 @@ def build_split(
         group_by=group_by,
         generic_scaffold=generic_scaffold,
     )
+    return assemble_split(
+        pairs, train_d, val_d, test_d, group_by=group_by, seed=seed
+    )
 
-    def route(a: str, b: str) -> str | None:
-        sa = "train" if a in train_d else ("val" if a in val_d else "test")
-        sb = "train" if b in train_d else ("val" if b in val_d else "test")
-        combo = {sa, sb}
-        if combo == {"train"}:
-            return "train"
-        if combo == {"train", "val"}:
-            return "val_S2"
-        if combo == {"val"}:
-            return "val_S3"
-        if combo == {"train", "test"}:
-            return "test_S2"
-        if combo == {"test"}:
-            return "test_S3"
-        return None  # val<->test straddle: discard
 
-    routed = [route(a, b) for a, b in zip(pairs["drug_a"], pairs["drug_b"])]
+BUCKET_NAMES: tuple[str, ...] = ("train", "val_S2", "val_S3", "test_S2", "test_S3")
+
+
+def route_pair(a: str, b: str, train_d: set, val_d: set, test_d: set) -> str | None:
+    """Bucket for one pair, or None if it straddles val and test.
+
+    Extracted so that Phase A-2 (which computes the drug partition) and V2
+    (which LOADS the frozen partition and must not recompute it) route pairs
+    through the same code. Two copies of this function would be two chances to
+    disagree about what "val_S3" means, and the disagreement would show up as a
+    metric, not as an error.
+    """
+    sa = "train" if a in train_d else ("val" if a in val_d else "test")
+    sb = "train" if b in train_d else ("val" if b in val_d else "test")
+    combo = {sa, sb}
+    if combo == {"train"}:
+        return "train"
+    if combo == {"train", "val"}:
+        return "val_S2"
+    if combo == {"val"}:
+        return "val_S3"
+    if combo == {"train", "test"}:
+        return "test_S2"
+    if combo == {"test"}:
+        return "test_S3"
+    return None  # val<->test straddle: discard
+
+
+def assemble_split(
+    pairs: pd.DataFrame,
+    train_d: set,
+    val_d: set,
+    test_d: set,
+    *,
+    group_by: GroupBy = "drug",
+    seed: int = 0,
+) -> DrugLevelSplit:
+    """Route pairs into buckets for a GIVEN drug partition and verify it.
+
+    The partition is an input here, not something computed: that is what lets
+    V2 rebuild the identical split object from the frozen assignment file
+    without re-running the splitting algorithm, which would be a regeneration
+    the preregistration forbids.
+    """
+    routed = [
+        route_pair(a, b, train_d, val_d, test_d)
+        for a, b in zip(pairs["drug_a"], pairs["drug_b"])
+    ]
     tagged = pairs.assign(_bucket=routed)
 
     buckets = {
         name: tagged.loc[tagged["_bucket"] == name].drop(columns="_bucket").reset_index(drop=True)
-        for name in ("train", "val_S2", "val_S3", "test_S2", "test_S3")
+        for name in BUCKET_NAMES
     }
     discarded = tagged.loc[tagged["_bucket"].isna()].drop(columns="_bucket").reset_index(drop=True)
 

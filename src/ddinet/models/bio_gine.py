@@ -212,6 +212,22 @@ class BiologicalSets:
         self.empty_protein = self.protein_size == 0
         self.empty_pathway = self.pathway_size == 0
 
+        # CSR-style offsets. The elements are already grouped by owner in drug
+        # order, so drug i owns rows [offset[i], offset[i+1]). This is what makes
+        # a minibatch affordable: the preregistered grid trains on 256- or
+        # 512-pair batches, and encoding all 1,705 drugs on every one of ~700
+        # steps per epoch would cost ~700x what Phase A-2 paid per epoch.
+        # With offsets, the elements of a 512-drug subset are gathered with
+        # arithmetic instead of a Python loop.
+        self.protein_offsets = torch.cat([
+            torch.zeros(1, dtype=torch.long),
+            torch.cumsum(self.protein_size.long(), 0),
+        ])
+        self.pathway_offsets = torch.cat([
+            torch.zeros(1, dtype=torch.long),
+            torch.cumsum(self.pathway_size.long(), 0),
+        ])
+
     def tensors(self) -> dict[str, torch.Tensor]:
         return {
             "protein_id": self.protein_id,
@@ -224,6 +240,8 @@ class BiologicalSets:
             "pathway_size": self.pathway_size,
             "empty_protein": self.empty_protein,
             "empty_pathway": self.empty_pathway,
+            "protein_offsets": self.protein_offsets,
+            "pathway_offsets": self.pathway_offsets,
         }
 
 
@@ -252,6 +270,41 @@ def _segment_reduce(
     if aggregation == "mean":
         out = out / sizes.clamp(min=1.0).unsqueeze(-1)
     return out
+
+
+def _gather_subset(
+    offsets: torch.Tensor, node_idx: torch.Tensor
+) -> tuple[torch.Tensor, torch.Tensor]:
+    """Element positions and local owner ids for a subset of drugs.
+
+    ``offsets`` is CSR: drug *i* owns element rows ``[offsets[i], offsets[i+1])``.
+    Given ``node_idx``, return (a) the flat element positions belonging to those
+    drugs, in ``node_idx`` order, and (b) for each of those elements, the
+    POSITION of its owner within ``node_idx`` - not the global drug index, so
+    the segmented reduction produces one row per selected drug.
+
+    Vectorised because it runs on every training step. The trick is standard:
+    build the destination offsets by cumulative sum of the selected sizes, then
+    reconstruct each element's source index as
+    ``start_of_its_drug + (its position within the drug)``.
+    """
+    sizes = offsets[node_idx + 1] - offsets[node_idx]
+    total = int(sizes.sum())
+    if total == 0:
+        empty = torch.zeros(0, dtype=torch.long, device=offsets.device)
+        return empty, empty
+    owner = torch.repeat_interleave(
+        torch.arange(len(node_idx), device=offsets.device), sizes
+    )
+    # Offset of each selected drug's block within the OUTPUT, so that
+    # (running position) - (block start) is the position within the drug.
+    out_starts = torch.cat([
+        torch.zeros(1, dtype=torch.long, device=offsets.device),
+        torch.cumsum(sizes, 0)[:-1],
+    ])
+    within = torch.arange(total, device=offsets.device) - out_starts[owner]
+    positions = offsets[node_idx][owner] + within
+    return positions, owner
 
 
 class DeepSetsEncoder(nn.Module):
@@ -446,15 +499,27 @@ class BioGine(nn.Module):
         self._biology_installed = True
 
     # -- encoding ----------------------------------------------------------
-    def encode_biology(self) -> tuple[torch.Tensor | None, torch.Tensor | None, torch.Tensor]:
-        """Encode every drug's biology once. Returns ``(prot, path, mask)``.
+    def encode_biology(
+        self, node_idx: torch.Tensor | None = None
+    ) -> tuple[torch.Tensor | None, torch.Tensor | None, torch.Tensor]:
+        """Encode drug biology. Returns ``(prot, path, mask)``.
 
-        Encoding all drugs at once rather than per pair is not only faster: the
-        embedding tables are shared, so a per-pair encoding would recompute the
-        same drug hundreds of times per epoch and, with dropout active, give one
-        drug several different representations within a single step.
+        With ``node_idx=None`` every drug is encoded and row *i* is drug *i*.
+        With ``node_idx`` given, only those drugs are encoded and row *i* is
+        ``node_idx[i]`` - the LOCAL position, which is what a minibatch needs.
 
-        ``mask`` is ``[N, 2]`` float: has_protein, has_pathway. Passed to the
+        The subset path exists for cost, not for semantics: DeepSets aggregation
+        is per drug, so a drug's representation does not depend on which other
+        drugs were encoded alongside it, and the subset result is exactly the
+        corresponding rows of the full result. ``test_subset_encoding_equals_
+        full_encoding`` asserts that rather than leaving it as a claim.
+
+        Encoding the batch's drugs once, rather than once per pair, still
+        matters: the embedding tables are shared, so per-pair encoding would
+        recompute the same drug many times per step and, with dropout active,
+        give one drug several different representations inside a single step.
+
+        ``mask`` is ``[n, 2]`` float: has_protein, has_pathway. Passed to the
         decoder rather than used to gate the embeddings - gating would make
         "missing" and "present but uninformative" indistinguishable downstream.
         """
@@ -463,40 +528,72 @@ class BioGine(nn.Module):
                 "set_biology() was never called; every drug would take the "
                 "MISSING token and the model would score no biology at all"
             )
-        n = self.n_drugs
+        full = node_idx is None
+        n = self.n_drugs if full else len(node_idx)
+        empty_prot = self.empty_protein if full else self.empty_protein[node_idx]
+        empty_path = self.empty_pathway if full else self.empty_pathway[node_idx]
+
         prot = path = None
         if self.protein_encoder is not None:
+            if full:
+                pos, owner = None, self.protein_owner
+                size = self.protein_size
+            else:
+                pos, owner = _gather_subset(self.protein_offsets, node_idx)
+                size = self.protein_size[node_idx]
+            ids = self.protein_id if full else self.protein_id[pos]
+            rel = self.protein_rel if full else self.protein_rel[pos]
+            ev = self.protein_ev if full else self.protein_ev[pos]
             elements = torch.cat(
                 [
-                    self.protein_embedding(self.protein_id),
-                    self.relation_embedding(self.protein_rel),
-                    self.evidence_embedding(self.protein_ev),
+                    self.protein_embedding(ids),
+                    self.relation_embedding(rel),
+                    self.evidence_embedding(ev),
                 ],
                 dim=-1,
             )
-            prot = self.protein_encoder(
-                elements, self.protein_owner, n, self.protein_size, self.empty_protein
-            )
+            prot = self.protein_encoder(elements, owner, n, size, empty_prot)
+
         if self.pathway_encoder is not None:
-            elements = self.pathway_embedding(self.pathway_id)
+            if full:
+                pos, owner = None, self.pathway_owner
+                size = self.pathway_size
+            else:
+                pos, owner = _gather_subset(self.pathway_offsets, node_idx)
+                size = self.pathway_size[node_idx]
+            ids = self.pathway_id if full else self.pathway_id[pos]
             path = self.pathway_encoder(
-                elements, self.pathway_owner, n, self.pathway_size, self.empty_pathway
+                self.pathway_embedding(ids), owner, n, size, empty_path
             )
-        mask = torch.stack(
-            [(~self.empty_protein).float(), (~self.empty_pathway).float()], dim=-1
-        )
+
+        mask = torch.stack([(~empty_prot).float(), (~empty_path).float()], dim=-1)
         return prot, path, mask
 
-    def encode(self, mol_batch=None) -> tuple[torch.Tensor, torch.Tensor]:
-        """Fuse the branches into one vector per drug. Returns ``(h, mask)``."""
+    def encode(
+        self, mol_batch=None, node_idx: torch.Tensor | None = None
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        """Fuse the branches into one vector per drug. Returns ``(h, mask)``.
+
+        When ``node_idx`` is given, ``mol_batch`` must contain exactly those
+        drugs' molecular graphs, in the same order. The caller owns that
+        alignment; a mismatch is caught here by shape rather than producing a
+        model that silently pairs one drug's chemistry with another's biology.
+        """
         parts: list[torch.Tensor] = []
-        prot, path, mask = self.encode_biology()
+        prot, path, mask = self.encode_biology(node_idx)
+        expected = mask.shape[0]
         if self.mol_encoder is not None:
             if mol_batch is None:
                 raise ValueError("use_molecular_branch is on but mol_batch is None")
             pooled, _ = self.mol_encoder(
                 mol_batch.x, mol_batch.edge_index, mol_batch.edge_attr, mol_batch.batch
             )
+            if pooled.shape[0] != expected:
+                raise ValueError(
+                    f"mol_batch holds {pooled.shape[0]} molecules but "
+                    f"{expected} drugs were selected; the molecular batch must "
+                    f"match node_idx exactly, in order"
+                )
             parts.append(pooled)
         if prot is not None:
             parts.append(prot)
@@ -570,4 +667,6 @@ _EMPTY_BIOLOGY: dict[str, torch.Tensor] = {
     "pathway_size": torch.zeros(0),
     "empty_protein": torch.zeros(0, dtype=torch.bool),
     "empty_pathway": torch.zeros(0, dtype=torch.bool),
+    "protein_offsets": torch.zeros(1, dtype=torch.long),
+    "pathway_offsets": torch.zeros(1, dtype=torch.long),
 }
