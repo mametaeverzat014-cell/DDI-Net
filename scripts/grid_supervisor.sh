@@ -71,8 +71,12 @@ if RUNNER_PID=$(adopt_pid); then
     echo "$RUNNER_PID" > "$PIDFILE"
     say "adopted running runner pid $RUNNER_PID"
 else
+    # Start immediately rather than idling until the first poll. The common
+    # reason no runner is present at startup is that the container was just
+    # recreated and killed it, which is exactly when waiting wastes machine.
     RUNNER_PID=""
     say "no runner found at startup"
+    start_runner
 fi
 
 stale=0

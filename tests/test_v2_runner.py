@@ -1025,3 +1025,71 @@ def test_run_v2_only_touches_trainer_attributes_that_exist():
     assert not missing, (
         f"scripts/run_v2.py reads trainer attributes that V2Trainer never "
         f"defines: {missing}")
+
+
+def test_upsert_row_does_not_corrupt_earlier_rows(tmp_path):
+    """Writing run 2 must leave run 1's biology_source as the string "true".
+
+    Regression, and the more damaging half of the CSV round-trip bug: the
+    *writer* re-read the results file with type inference. Once every row said
+    biology_source="true", the column came back boolean and was written out as
+    "True", so each completed run was corrupted by the next run's write. The
+    integrity check compares that field as a string, so previously finished runs
+    started failing verification and were queued to train again -- a 96-run grid
+    that re-runs its own finished work and never converges.
+    """
+    import importlib.util
+
+    root = Path(__file__).resolve().parents[1]
+    sp = importlib.util.spec_from_file_location(
+        "run_v2_under_test", root / "scripts" / "run_v2.py")
+    rv2 = importlib.util.module_from_spec(sp)
+    sys.modules["run_v2_under_test"] = rv2
+    sp.loader.exec_module(rv2)
+
+    results = tmp_path / "grid.csv"
+
+    def row(run_id: str, auprc: float) -> dict:
+        base = {c: "" for c in rv2.RESULT_COLUMNS}
+        base.update(run_id=run_id, config_id="cfg", seed=0, split="drug",
+                    model="bio_gine", ablation="M4", biology_source="true",
+                    aggregation="mean", val_auprc=auprc, status="completed")
+        return base
+
+    rv2.upsert_row(results, row("aaaa000000000001", 0.7952))
+    rv2.upsert_row(results, row("bbbb000000000002", 0.7936))
+
+    raw = results.read_text().splitlines()
+    assert len(raw) == 3, raw                      # header + two runs
+    assert "True" not in raw[1], f"row 1 corrupted by row 2's write: {raw[1]}"
+    for line in raw[1:]:
+        assert ",true," in f",{line}," or "true" in line
+
+    back = pd.read_csv(results, dtype=str)
+    assert list(back["biology_source"]) == ["true", "true"]
+
+
+def test_upsert_row_replaces_same_run_id(tmp_path):
+    """A resumed run replaces its own row rather than adding a second one."""
+    import importlib.util
+
+    root = Path(__file__).resolve().parents[1]
+    sp = importlib.util.spec_from_file_location(
+        "run_v2_under_test2", root / "scripts" / "run_v2.py")
+    rv2 = importlib.util.module_from_spec(sp)
+    sys.modules["run_v2_under_test2"] = rv2
+    sp.loader.exec_module(rv2)
+
+    results = tmp_path / "grid.csv"
+
+    def row(run_id: str, auprc: float) -> dict:
+        base = {c: "" for c in rv2.RESULT_COLUMNS}
+        base.update(run_id=run_id, biology_source="true", val_auprc=auprc,
+                    status="completed")
+        return base
+
+    rv2.upsert_row(results, row("aaaa000000000001", 0.10))
+    rv2.upsert_row(results, row("aaaa000000000001", 0.20))
+    back = pd.read_csv(results, dtype=str)
+    assert len(back) == 1
+    assert float(back.iloc[0]["val_auprc"]) == 0.20

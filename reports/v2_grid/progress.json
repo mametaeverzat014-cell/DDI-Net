@@ -1,14 +1,12 @@
 {
-  "timestamp_utc": "2026-08-30T00:59:04.282289+00:00",
-  "completed": 2,
+  "timestamp_utc": "2026-08-30T02:35:17.042928+00:00",
+  "completed": 1,
   "total": 96,
-  "failed": 1,
-  "failed_runs": {
-    "eb90dbceae741375": "exit 1, row absent"
-  },
-  "currently_running": "b42cc4930da045d0 bio64 db0.1 dp0.1 lr0.0003 bs256 seed0",
-  "elapsed_hours": 0.85,
-  "estimated_remaining_hours": 39.76,
-  "mean_hours_per_run": 0.423,
+  "failed": 0,
+  "failed_runs": {},
+  "currently_running": "b1d12225270d3c01 bio64 db0.1 dp0.1 lr0.001 bs256 seed0",
+  "elapsed_hours": 0.0,
+  "estimated_remaining_hours": 0.0,
+  "mean_hours_per_run": 0.0,
   "test_evaluated": false
 }

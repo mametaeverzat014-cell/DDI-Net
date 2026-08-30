@@ -161,8 +161,19 @@ def upsert_row(path: Path, row: dict) -> pd.DataFrame:
     "the same run" decidable without comparing every column.
     """
     path.parent.mkdir(parents=True, exist_ok=True)
-    frame = pd.read_csv(path) if path.exists() else pd.DataFrame(columns=RESULT_COLUMNS)
-    frame = frame[frame["run_id"] != row["run_id"]] if len(frame) else frame
+    # Read every existing column as text. Rows already on disk are only being
+    # carried across untouched, so re-typing them can do nothing but harm:
+    # a biology_source column whose every value is the literal "true" is
+    # inferred as boolean and written back as "True", silently corrupting each
+    # previously completed run on every subsequent write. Because the integrity
+    # check compares it as a string, those runs then fail verification and are
+    # queued to train again -- a grid that re-runs its own finished work and
+    # never converges. Reading as text also keeps float formatting byte-exact
+    # instead of round-tripping through repr.
+    frame = (pd.read_csv(path, dtype=str, keep_default_na=False)
+             if path.exists() else pd.DataFrame(columns=RESULT_COLUMNS))
+    if len(frame):
+        frame = frame[frame["run_id"].astype(str) != str(row["run_id"])]
     frame = pd.concat([frame, pd.DataFrame([row])], ignore_index=True)
     frame = frame[list(RESULT_COLUMNS)]
     frame.to_csv(path, index=False)
@@ -296,7 +307,7 @@ def main() -> int:
         curve_path = Path(args.curves)
         curve_path.parent.mkdir(parents=True, exist_ok=True)
         if curve_path.exists():
-            existing = pd.read_csv(curve_path)
+            existing = pd.read_csv(curve_path, dtype=str, keep_default_na=False)
             existing = existing[existing["run_id"] != spec.run_id()]
             curve = pd.concat([existing, curve], ignore_index=True)
         curve.to_csv(curve_path, index=False)
