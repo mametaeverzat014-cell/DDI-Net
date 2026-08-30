@@ -90,3 +90,6 @@ reports/*_log.txt
 # External baseline implementations: cloned manually, not vendored.
 external/*/
 !external/README.md
+
+# transient supervisor state: the runner PID of the moment
+reports/*/runner.pid
