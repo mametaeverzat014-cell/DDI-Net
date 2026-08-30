@@ -108,10 +108,26 @@ def verify_run(row: pd.Series, spec: V2RunSpec) -> tuple[bool, str]:
     return True, ""
 
 
+#: Columns compared as strings by verify_run(). They must be read back as
+#: strings, not re-typed by pandas' inference. This is not cosmetic: every run
+#: in this grid writes biology_source="true", so the whole column is the literal
+#: "true" and read_csv infers it as bool. The value then compares as np.True_
+#: against the expected "true" and every completed run is rejected as corrupt --
+#: after paying its full training cost. Identifier columns are pinned for the
+#: same reason: an all-digit run_id would be read back as an integer and a
+#: leading zero would be lost.
+STRING_COLUMNS = tuple(REQUIRED_INVARIANTS) + (
+    "run_id", "config_id", "status", "stopped_by", "tag",
+)
+
+
 def completed_rows() -> pd.DataFrame:
     if not RESULTS.exists():
         return pd.DataFrame()
-    return pd.read_csv(RESULTS)
+    # dtype is pinned only for the string columns. Numeric columns keep normal
+    # inference, so a blank metric still arrives as NaN and is rejected by the
+    # finiteness check rather than raising on float("").
+    return pd.read_csv(RESULTS, dtype={c: str for c in STRING_COLUMNS})
 
 
 def run_one(spec: V2RunSpec, verbose: bool) -> int:

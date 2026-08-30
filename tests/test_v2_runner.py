@@ -911,3 +911,74 @@ def test_run_records_both_steps_and_effective_epochs(universe, split):
         assert key in manifest, key
     record = trainer.history.epoch_records[0]
     assert "effective_epochs" in record and "cumulative_optimizer_steps" in record
+
+
+# ---------------------------------------------------------------------------
+# Grid runner: integrity check must survive the CSV round-trip
+# ---------------------------------------------------------------------------
+
+def _load_grid_runner():
+    """Import scripts/34_v2_grid_runner.py by path (numeric module name)."""
+    import importlib.util
+
+    root = Path(__file__).resolve().parents[1]
+    spec = importlib.util.spec_from_file_location(
+        "grid_runner_under_test", root / "scripts" / "34_v2_grid_runner.py")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["grid_runner_under_test"] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_completed_rows_keeps_biology_source_a_string(tmp_path, monkeypatch):
+    """A results file where every run has biology_source="true" must read back
+    as the string "true".
+
+    Regression. pandas infers a column whose every value is the literal "true"
+    as boolean, so the round-trip turned "true" into np.True_. verify_run
+    compares it as a string, so every completed run was rejected as corrupt --
+    after paying its full training cost. The whole preregistered grid writes
+    biology_source="true", so this rejected all 96 runs, not a rare one.
+    """
+    grid = _load_grid_runner()
+    results = tmp_path / "v2_validation_grid.csv"
+    pd.DataFrame([
+        {"run_id": "b1d12225270d3c01", "config_id": "54c67ba5be7f3683",
+         "biology_source": "true", "ablation": "M4", "aggregation": "mean",
+         "split": "drug", "model": "bio_gine", "status": "completed",
+         "stopped_by": "patience", "tag": "V2_GRID", "val_auprc": 0.7952},
+    ]).to_csv(results, index=False)
+    monkeypatch.setattr(grid, "RESULTS", results)
+
+    rows = grid.completed_rows()
+    value = rows.iloc[0]["biology_source"]
+    assert isinstance(value, str), f"read back as {type(value).__name__}"
+    assert value == "true"
+    # The comparison verify_run actually performs.
+    assert str(value) == grid.REQUIRED_INVARIANTS["biology_source"]
+
+
+def test_completed_rows_preserves_numeric_run_ids(tmp_path, monkeypatch):
+    """run_id is a hex digest and may come out all-digits with a leading zero.
+
+    Left to inference that becomes an integer and the leading zero is gone, so
+    the run no longer matches its own spec and is re-run from scratch.
+    """
+    grid = _load_grid_runner()
+    results = tmp_path / "v2_validation_grid.csv"
+    pd.DataFrame([
+        {"run_id": "0123456789012345", "config_id": "0000000000000001",
+         "biology_source": "true", "ablation": "M4", "aggregation": "mean",
+         "split": "drug", "model": "bio_gine", "status": "completed",
+         "stopped_by": "patience", "tag": "V2_GRID", "val_auprc": 0.5},
+    ]).to_csv(results, index=False)
+    monkeypatch.setattr(grid, "RESULTS", results)
+
+    assert grid.completed_rows().iloc[0]["run_id"] == "0123456789012345"
+
+
+def test_string_columns_cover_every_required_invariant():
+    """Any invariant added later is pinned to str too, or it can be re-typed."""
+    grid = _load_grid_runner()
+    missing = set(grid.REQUIRED_INVARIANTS) - set(grid.STRING_COLUMNS)
+    assert not missing, f"invariants not pinned to str: {sorted(missing)}"
