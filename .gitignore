@@ -93,3 +93,6 @@ external/*/
 
 # transient supervisor state: the runner PID of the moment
 reports/*/runner.pid
+
+# per-wake liveness samples, regenerated continuously
+reports/*/duty_cycle.log
