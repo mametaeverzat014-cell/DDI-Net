@@ -248,8 +248,16 @@ def main() -> int:
     if args.resume:
         if ckpt_path.exists():
             trainer.load_checkpoint(ckpt_path)
-            print(f"resumed  from epoch {trainer._start_epoch} "
-                  f"(best val AUPRC {trainer.history.best_val_auprc:.4f})")
+            # Report the position in optimizer steps: that is the unit the
+            # budget is denominated in, and the attribute that used to be
+            # printed here (_start_epoch) stopped existing when training became
+            # step-native. Resume is what protects a multi-day grid against an
+            # interruption, so a crash on this line costs far more than the line.
+            print(f"resumed  at step {trainer.history.optimizer_steps:,}/"
+                  f"{spec.max_optimizer_steps:,} "
+                  f"(pass {trainer._start_pass}, "
+                  f"check {trainer.history.checks_run}/{trainer._total_checks}, "
+                  f"best val AUPRC {trainer.history.best_val_auprc:.4f})")
         else:
             # Never resume silently-not-resuming. --resume was asked for, so a
             # fresh start is a surprise and has to say so. The common cause is

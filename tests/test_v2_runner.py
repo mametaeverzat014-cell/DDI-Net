@@ -982,3 +982,46 @@ def test_string_columns_cover_every_required_invariant():
     grid = _load_grid_runner()
     missing = set(grid.REQUIRED_INVARIANTS) - set(grid.STRING_COLUMNS)
     assert not missing, f"invariants not pinned to str: {sorted(missing)}"
+
+
+def test_run_v2_only_touches_trainer_attributes_that_exist():
+    """Every ``trainer.<attr>`` in scripts/run_v2.py must exist on V2Trainer.
+
+    Regression. The resume branch printed ``trainer._start_epoch``, which
+    stopped existing when training became step-native. Nothing referenced it
+    until a run was actually interrupted and restarted, so the break stayed
+    invisible until resume was needed -- which is exactly when it is needed:
+    resume is what protects a multi-day grid from an interruption. The whole
+    branch is one print, and it took down the run that tried to continue.
+    """
+    import ast
+
+    root = Path(__file__).resolve().parents[1]
+    script = ast.parse((root / "scripts" / "run_v2.py").read_text())
+    used = {
+        node.attr
+        for node in ast.walk(script)
+        if isinstance(node, ast.Attribute)
+        and isinstance(node.value, ast.Name)
+        and node.value.id == "trainer"
+    }
+    assert used, "no trainer attribute accesses found - did the script change shape?"
+
+    trainer_src = ast.parse(
+        (root / "src" / "ddinet" / "training" / "v2_trainer.py").read_text())
+    cls = next(n for n in ast.walk(trainer_src)
+               if isinstance(n, ast.ClassDef) and n.name == "V2Trainer")
+    defined = {n.name for n in cls.body
+               if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))}
+    for node in ast.walk(cls):
+        # self.<name> = ... anywhere in the class body
+        if isinstance(node, ast.Attribute) and isinstance(node.value, ast.Name) \
+                and node.value.id == "self" and isinstance(node.ctx, ast.Store):
+            defined.add(node.attr)
+        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Attribute):
+            defined.add(node.target.attr)
+
+    missing = sorted(used - defined)
+    assert not missing, (
+        f"scripts/run_v2.py reads trainer attributes that V2Trainer never "
+        f"defines: {missing}")
