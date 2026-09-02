@@ -220,10 +220,14 @@ def main() -> int:
     ap.add_argument("--tag", default="",
                     help="free-text label, e.g. SMOKE_ONLY")
     ap.add_argument("--threads", type=int, default=4)
+    ap.add_argument("--device", choices=["cpu", "cuda"], default="cuda",
+                    help="training device; cuda fails closed if unavailable")
     ap.add_argument("--verbose", action="store_true")
     args = ap.parse_args()
 
     torch.set_num_threads(args.threads)
+    if args.device == "cuda" and not torch.cuda.is_available():
+        raise RuntimeError("CUDA requested but torch.cuda.is_available() is False")
     spec = build_spec(args)
     mode = EvaluationMode(args.evaluation_mode)
 
@@ -246,7 +250,7 @@ def main() -> int:
         print(f"tag      {args.tag}")
 
     trainer = V2Trainer(spec, universe, split, bundle, mol_graphs,
-                        mode=mode, dataset=None)
+                        mode=mode, dataset=None, device=args.device)
     print(f"params   {trainer.model.n_parameters():,}")
     print(f"pairs    train {len(trainer._train['labels']):,} | "
           f"val {len(trainer._val['labels']):,}")
