@@ -65,15 +65,54 @@ REQUIRED_INVARIANTS = {
 }
 
 
-def load_specs() -> list[V2RunSpec]:
+#: The amended grid: 8 configurations x 3 seeds. Amendment 2 cut the frozen 32
+#: configurations to a 2^(5-2) fractional replicate because the full factorial
+#: needs ~108 h of machine time and this environment delivers 0.23% duty cycle.
+#: Seeds were deliberately NOT cut -- see docs/V2_PREREGISTRATION_AMENDMENT_FRACTION.md.
+N_CONFIGURATIONS = 8
+N_SEEDS = 3
+N_RUNS = N_CONFIGURATIONS * N_SEEDS
+
+#: The five axes, in the frozen YAML's key order. The fraction is defined over
+#: these and nothing else.
+FRACTION_AXES = ("bio_dim", "dropout_bio", "dropout_pair", "lr", "batch_size")
+
+
+def _load_module(name: str, path):
     import importlib.util
 
-    spec = importlib.util.spec_from_file_location(
-        "run_v2_grid", ROOT / "scripts" / "run_v2_grid.py")
+    spec = importlib.util.spec_from_file_location(name, path)
     module = importlib.util.module_from_spec(spec)
-    sys.modules["run_v2_grid"] = module
+    sys.modules[name] = module
     spec.loader.exec_module(module)
-    return module.build_specs(module.load_grid())
+    return module
+
+
+def fraction_keys() -> set[tuple]:
+    """The 8 configurations of the amended fraction, as axis-value tuples.
+
+    Derived by scripts/37_v2_fraction.py straight from the frozen YAML, so the
+    selection is reproducible without seeing any result. Kept as a separate
+    module rather than inlined here so the rule and its justification live in
+    one place next to the amendment that declares it.
+    """
+    module = _load_module("v2_fraction", ROOT / "scripts" / "37_v2_fraction.py")
+    return {tuple(c[axis] for axis in FRACTION_AXES) for c in module.fraction()}
+
+
+def load_specs() -> list[V2RunSpec]:
+    """Enumerate the amended grid: the full 96 filtered to the fraction.
+
+    Filtering the full enumeration rather than re-implementing it keeps run_id
+    identity untouched: a configuration kept by the fraction has exactly the run
+    ids it had in the full grid, so runs already completed under the original
+    plan still count and are not retrained.
+    """
+    module = _load_module("run_v2_grid", ROOT / "scripts" / "run_v2_grid.py")
+    everything = module.build_specs(module.load_grid())
+    keep = fraction_keys()
+    return [s for s in everything
+            if tuple(getattr(s, axis) for axis in FRACTION_AXES) in keep]
 
 
 def verify_run(row: pd.Series, spec: V2RunSpec) -> tuple[bool, str]:
@@ -223,17 +262,18 @@ def main() -> int:
     args = ap.parse_args()
 
     specs = load_specs()
-    if len(specs) != 96:
-        print(f"STOP: expected 96 runs, enumerated {len(specs)}.")
+    if len(specs) != N_RUNS:
+        print(f"STOP: expected {N_RUNS} runs, enumerated {len(specs)}.")
         return 1
-    if len({s.run_id() for s in specs}) != 96:
+    if len({s.run_id() for s in specs}) != N_RUNS:
         print("STOP: run_id collisions in the enumeration.")
         return 1
-    if len({s.config_id() for s in specs}) != 32:
-        print(f"STOP: expected 32 configs, got "
+    if len({s.config_id() for s in specs}) != N_CONFIGURATIONS:
+        print(f"STOP: expected {N_CONFIGURATIONS} configs, got "
               f"{len({s.config_id() for s in specs})}.")
         return 1
-    print(f"grid: 32 configs x 3 seeds = {len(specs)} runs, no collisions")
+    print(f"grid: {N_CONFIGURATIONS} configs x {N_SEEDS} seeds = {len(specs)} runs, "
+          f"no collisions (amended fraction)")
 
     if not args.execute:
         print("Enumeration only. Pass --execute to run.")

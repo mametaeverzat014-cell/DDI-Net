@@ -1093,3 +1093,96 @@ def test_upsert_row_replaces_same_run_id(tmp_path):
     back = pd.read_csv(results, dtype=str)
     assert len(back) == 1
     assert float(back.iloc[0]["val_auprc"]) == 0.20
+
+
+# ---------------------------------------------------------------------------
+# Amendment 2: the 2^(5-2) fraction of the frozen grid
+# ---------------------------------------------------------------------------
+
+def _load_fraction():
+    import importlib.util
+
+    root = Path(__file__).resolve().parents[1]
+    spec = importlib.util.spec_from_file_location(
+        "v2_fraction_under_test", root / "scripts" / "37_v2_fraction.py")
+    module = importlib.util.module_from_spec(spec)
+    sys.modules["v2_fraction_under_test"] = module
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_fraction_matches_the_amendment_exactly():
+    """The eight configurations are those the amendment tabulates, verbatim.
+
+    The selection rule is the whole point of amendment 2: it was declared
+    before the configurations were chosen so that nobody, including me, could
+    pick the fraction to suit a result. Pinning the output here means a later
+    edit to the generators changes a failing test rather than changing the
+    experiment quietly.
+    """
+    declared = {
+        (64, 0.1, 0.1, 1.0e-3, 256),
+        (64, 0.1, 0.2, 1.0e-3, 512),
+        (64, 0.3, 0.1, 3.0e-4, 256),
+        (64, 0.3, 0.2, 3.0e-4, 512),
+        (128, 0.1, 0.1, 3.0e-4, 512),
+        (128, 0.1, 0.2, 3.0e-4, 256),
+        (128, 0.3, 0.1, 1.0e-3, 512),
+        (128, 0.3, 0.2, 1.0e-3, 256),
+    }
+    module = _load_fraction()
+    got = {tuple(c[a] for a in module.AXES) for c in module.fraction()}
+    assert got == declared, f"fraction drifted from the amendment: {got ^ declared}"
+
+
+def test_fraction_is_balanced_on_every_axis():
+    """Four runs at each level of each axis.
+
+    An unbalanced fraction would confound an axis with the choice of fraction
+    itself, which is exactly the failure a declared rule is meant to prevent.
+    """
+    module = _load_fraction()
+    chosen = module.fraction()
+    for axis in module.AXES:
+        counts = {}
+        for c in chosen:
+            counts[c[axis]] = counts.get(c[axis], 0) + 1
+        assert sorted(counts.values()) == [4, 4], f"{axis} unbalanced: {counts}"
+
+
+def test_fraction_is_anchored_at_the_reference_corner():
+    """The first-listed level of every axis is one of the eight.
+
+    That anchor is what makes the already-computed reference configuration part
+    of the fraction, and it comes from the frozen YAML's key order rather than
+    from any observed metric.
+    """
+    import yaml
+
+    module = _load_fraction()
+    root = Path(__file__).resolve().parents[1]
+    grid = yaml.safe_load(
+        (root / "configs" / "v2_preregistered.yaml").read_text())["hparam_search"]["grid"]
+    corner = tuple(grid[axis][0] for axis in module.AXES)
+    got = {tuple(c[a] for a in module.AXES) for c in module.fraction()}
+    assert corner in got, f"reference corner {corner} is not in the fraction"
+
+
+def test_grid_runner_enumerates_the_amended_grid():
+    """24 runs over 8 configurations, and run ids unchanged from the full grid.
+
+    Filtering the full enumeration rather than rebuilding it is what lets runs
+    already completed under the original 32x3 plan still count: their run ids
+    must be byte-identical, or they would be retrained from scratch.
+    """
+    grid = _load_grid_runner()
+    specs = grid.load_specs()
+    assert len(specs) == grid.N_RUNS == 24
+    assert len({s.config_id() for s in specs}) == grid.N_CONFIGURATIONS == 8
+    assert len({s.run_id() for s in specs}) == 24
+
+    # The reference configuration's already-completed runs must survive the cut.
+    anchor = [s for s in specs if s.bio_dim == 64 and s.dropout_bio == 0.1
+              and s.dropout_pair == 0.1 and s.lr == 1.0e-3 and s.batch_size == 256]
+    assert len(anchor) == 3, "reference configuration lost its three seeds"
+    assert {"b1d12225270d3c01", "6531bc4096b173aa"} <= {s.run_id() for s in anchor}

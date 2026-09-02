@@ -25,7 +25,9 @@ LOG="${GRID_LOG:-reports/v2_grid/grid_runner.log}"
 SUP_LOG="${GRID_SUP_LOG:-reports/v2_grid/supervisor.log}"
 PROGRESS="${GRID_PROGRESS:-reports/v2_grid/progress.json}"
 PIDFILE="${GRID_PIDFILE:-reports/v2_grid/runner.pid}"
-TOTAL="${GRID_TOTAL:-96}"
+# 24 after amendment 2 cut the grid to a 2^(5-2) fraction x 3 seeds. A stale
+# total would keep the supervisor running forever past a finished grid.
+TOTAL="${GRID_TOTAL:-24}"
 POLL_S="${GRID_POLL_S:-300}"
 MAX_STALE_RESTARTS="${GRID_MAX_STALE:-3}"
 
