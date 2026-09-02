@@ -1,0 +1,14 @@
+V2 BIO-GINE FROZEN CONFIG
+Selection criterion: highest mean validation AUPRC across 3 preregistered grid seeds
+Test set was not used for hyperparameter selection.
+
+config_id=e8ece7c41ae09e5f
+bio_dim=128
+dropout_bio=0.1
+dropout_pair=0.1
+lr=0.001
+batch_size=512
+
+validation_mean_auprc=0.816207
+validation_std_auprc=0.007187
+validation_seeds=3
