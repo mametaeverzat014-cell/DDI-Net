@@ -665,6 +665,25 @@ class V2Trainer:
             "val_prevalence": float(m.prevalence),
         }
 
+    def test_metrics(self, threshold: float = 0.5) -> dict:
+        """AUPRC, AUROC, Brier and ECE on the test set.
+
+        This is available only in WITH_TEST mode. In validation-only mode,
+        predict_test() raises TestSetSealed before any test label is exposed.
+        """
+        y, s = self.predict_test()
+        if not len(y):
+            return {}
+        m = compute_binary_metrics(y, s, threshold=threshold)
+        return {
+            "test_auprc": float(m.auprc),
+            "test_auroc": float(m.auc_roc),
+            "test_brier": float(m.brier),
+            "test_ece": float(expected_calibration_error(y, s, n_bins=15)),
+            "test_n": int(m.n),
+            "test_prevalence": float(m.prevalence),
+        }
+
     # -- training loop -----------------------------------------------------
     def fit(
         self,
