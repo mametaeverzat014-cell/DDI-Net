@@ -1,0 +1,221 @@
+{
+  "frozen_tag": "v2-final-github-safe-2026-09-03",
+  "frozen_commit": "92c481eeaba8faff991ced850e1c4de418ea31b0",
+  "provenance_commit": "4657c256ee5e0157f529ebae41e96e0dc4dd9a3e",
+  "selected_config_id": "e8ece7c41ae09e5f",
+  "n_final_seeds": 5,
+  "test_n_pooled": 84690,
+  "test_n_s3": 7758,
+  "test_prevalence": 0.5,
+  "models": {
+    "M4_pooled": {
+      "mean": 0.8117107056824635,
+      "std": 0.009671090046444024,
+      "n": 5
+    },
+    "M4_s3": {
+      "mean": 0.7372412574502945,
+      "std": 0.015253024558550193,
+      "n": 5
+    },
+    "M0_pooled": {
+      "mean": 0.7784449441524766,
+      "std": 0.0058921316342164685,
+      "n": 5
+    },
+    "M0_s3": {
+      "mean": 0.7145015188306003,
+      "std": 0.006464976176374413,
+      "n": 5
+    },
+    "Dual_pooled": {
+      "mean": 0.7146828625677214,
+      "std": 0.0066805045394641455,
+      "n": 5
+    },
+    "Dual_s3": {
+      "mean": 0.6197607334330234,
+      "std": 0.027841614523342995,
+      "n": 5
+    },
+    "BIO_RF_pooled": {
+      "mean": 0.7396120481896608,
+      "std": 0.0016827346473415321,
+      "n": 5
+    },
+    "degree_RF_pooled": {
+      "mean": 0.6504215381986544,
+      "std": 0.0005891973547866884,
+      "n": 5
+    },
+    "M4_shuffled_pooled": {
+      "mean": 0.69225591904776,
+      "std": 0.005440989812719405,
+      "n": 5
+    },
+    "M4_shuffled_s3": {
+      "mean": 0.6305124710306378,
+      "std": 0.01046229050023505,
+      "n": 5
+    },
+    "M1_pooled": {
+      "mean": 0.8186088334562088,
+      "std": 0.0017257261239102227,
+      "n": 5
+    },
+    "M1_s3": {
+      "mean": 0.7468486317522413,
+      "std": 0.007804245285906905,
+      "n": 5
+    },
+    "M2_pooled": {
+      "mean": 0.8268912129778538,
+      "std": 0.005995285632690542,
+      "n": 5
+    },
+    "M2_s3": {
+      "mean": 0.7593620869076,
+      "std": 0.011406578082770824,
+      "n": 5
+    },
+    "M3_pooled": {
+      "mean": 0.8176723860166201,
+      "std": 0.004186958625680136,
+      "n": 5
+    },
+    "M3_s3": {
+      "mean": 0.7465615854554561,
+      "std": 0.00526389145051856,
+      "n": 5
+    },
+    "M4_SUM_pooled": {
+      "mean": 0.8264743641552563,
+      "std": 0.009234210258993047,
+      "n": 5
+    },
+    "M4_SUM_s3": {
+      "mean": 0.7484939304283305,
+      "std": 0.012681131267852325,
+      "n": 5
+    }
+  },
+  "hypotheses": {
+    "H-V2-1": {
+      "delta_mean": 0.03326576152998693,
+      "delta_std": 0.004308128638386002,
+      "ci95_low": 0.027916513300072426,
+      "ci95_high": 0.038615009759901425,
+      "paired_t": 17.26608241025403,
+      "raw_p": 6.602767161236487e-05,
+      "cohen_dz": 7.721626794888284,
+      "n_seeds": 5,
+      "holm_adjusted_p": 0.0001980830148370946,
+      "status": "CONFIRMATORY",
+      "comparison": "BIO-GINE M4 vs aligned molecular GINE (M0)",
+      "test_view": "pooled drug-disjoint",
+      "conclusion": "Supported (confirmatory)"
+    },
+    "H-V2-2": {
+      "delta_mean": 0.11748052401727108,
+      "delta_std": 0.022866754467766457,
+      "ci95_low": 0.0890876982388804,
+      "ci95_high": 0.14587334979566177,
+      "paired_t": 11.48805083402699,
+      "raw_p": 0.0003277480500606161,
+      "cohen_dz": 5.1376125187715,
+      "n_seeds": 5,
+      "holm_adjusted_p": 0.0006554961001212321,
+      "status": "CONFIRMATORY",
+      "comparison": "BIO-GINE M4 vs aligned Dual",
+      "test_view": "S3",
+      "conclusion": "Supported (confirmatory)"
+    },
+    "H-V2-3": {
+      "delta_mean": 0.11945478663470346,
+      "delta_std": 0.014092332529781879,
+      "ci95_low": 0.10195684468175753,
+      "ci95_high": 0.1369527285876494,
+      "paired_t": 18.95420950282278,
+      "raw_p": 4.563648828331559e-05,
+      "cohen_dz": 8.476580181616846,
+      "n_seeds": 5,
+      "holm_adjusted_p": 0.00018254595313326236,
+      "status": "CONFIRMATORY",
+      "comparison": "BIO-GINE M4 true biology vs degree-preserving shuffled biology",
+      "test_view": "pooled drug-disjoint",
+      "conclusion": "Supported (confirmatory)"
+    },
+    "H-V2-4": {
+      "delta_mean": 0.161289167483809,
+      "delta_std": 0.00986980278212622,
+      "ci95_low": 0.14903418869987153,
+      "ci95_high": 0.17354414626774647,
+      "paired_t": 36.541109330094564,
+      "raw_p": 3.3485677861763538e-06,
+      "cohen_dz": 16.341680887068648,
+      "n_seeds": 5,
+      "holm_adjusted_p": 1.6742838930881768e-05,
+      "status": "CONFIRMATORY",
+      "comparison": "BIO-GINE M4 vs biological-degree-only RF",
+      "test_view": "pooled drug-disjoint",
+      "conclusion": "Supported (confirmatory)"
+    },
+    "H-V2-5": {
+      "delta_mean": -0.023346300774577715,
+      "delta_std": 0.03003121720455264,
+      "ci95_low": -0.060634981999708217,
+      "ci95_high": 0.013942380450552787,
+      "paired_t": -1.7383216670684203,
+      "raw_p": 0.15714602001053277,
+      "cohen_dz": -0.777401082865149,
+      "n_seeds": 5,
+      "holm_adjusted_p": 0.15714602001053277,
+      "status": "EXPLORATORY",
+      "comparison": "M4-minus-M0 gain: pathway-covered vs pathway-uncovered pairs",
+      "test_view": "pooled drug-disjoint subgroup contrast",
+      "conclusion": "Exploratory direction unsupported"
+    }
+  },
+  "control_e": {
+    "r2_train": 0.5430199338679731,
+    "r2_test_reported_in_json": 0.0,
+    "held_out_target_variance": 0.0,
+    "identifiable": false
+  },
+  "bootstrap": [
+    {
+      "hypothesis": "H-V2-1",
+      "seed": 0,
+      "model_a": "M4 true mean",
+      "model_b": "M0 GINE",
+      "n_pairs": 84690,
+      "n_bootstrap": 1000,
+      "bootstrap_rng_seed": 20260829,
+      "model_a_auprc": 0.8235342391660389,
+      "model_b_auprc": 0.7838479210735139,
+      "observed_delta": 0.0396863180925249,
+      "bootstrap_delta_mean": 0.0395074811584048,
+      "bootstrap_delta_std": 0.0019481707051527,
+      "bootstrap_ci95_low": 0.0356170367877316,
+      "bootstrap_ci95_high": 0.0432843786057363,
+      "bootstrap_fraction_le_zero": 0.0
+    },
+    {
+      "hypothesis": "H-V2-3",
+      "seed": 0,
+      "model_a": "M4 true mean",
+      "model_b": "M4 shuffled biology",
+      "n_pairs": 84690,
+      "n_bootstrap": 1000,
+      "bootstrap_rng_seed": 20260829,
+      "model_a_auprc": 0.8235342391660389,
+      "model_b_auprc": 0.6913350217259946,
+      "observed_delta": 0.1321992174400442,
+      "bootstrap_delta_mean": 0.1321436923589798,
+      "bootstrap_delta_std": 0.0024072406345247,
+      "bootstrap_ci95_low": 0.1274428430608557,
+      "bootstrap_ci95_high": 0.1367459867864661,
+      "bootstrap_fraction_le_zero": 0.0
+    }
+  ]
+}

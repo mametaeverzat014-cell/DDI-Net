@@ -1,0 +1,199 @@
+% references.bib — DDI-Net manuscript
+%
+% VERIFICATION RULE: every entry below was checked against the publisher or an
+% authoritative index before being added. Title, authors, year, venue and DOI
+% (or a stable identifier where no DOI exists) were confirmed. Page ranges are
+% included only where they were confirmed; a field is omitted rather than
+% guessed. No entry is included on the strength of recollection alone.
+
+% ---------------------------------------------------------------- DDI models
+
+@article{zitnik2018decagon,
+  author  = {Zitnik, Marinka and Agrawal, Monica and Leskovec, Jure},
+  title   = {Modeling polypharmacy side effects with graph convolutional networks},
+  journal = {Bioinformatics},
+  volume  = {34},
+  number  = {13},
+  pages   = {i457--i466},
+  year    = {2018},
+  doi     = {10.1093/bioinformatics/bty294}
+}
+
+@article{ryu2018deepddi,
+  author  = {Ryu, Jae Yong and Kim, Hyun Uk and Lee, Sang Yup},
+  title   = {Deep learning improves prediction of drug--drug and drug--food interactions},
+  journal = {Proceedings of the National Academy of Sciences},
+  volume  = {115},
+  number  = {18},
+  year    = {2018},
+  doi     = {10.1073/pnas.1803294115}
+}
+
+@article{nyamabo2021ssiddi,
+  author  = {Nyamabo, Arnold K. and Yu, Hui and Shi, Jian-Yu},
+  title   = {{SSI--DDI}: substructure--substructure interactions for drug--drug interaction prediction},
+  journal = {Briefings in Bioinformatics},
+  volume  = {22},
+  number  = {6},
+  pages   = {bbab133},
+  year    = {2021},
+  doi     = {10.1093/bib/bbab133}
+}
+
+@article{zhang2023emergnn,
+  author  = {Zhang, Yongqi and Yao, Quanming and Yue, Ling and Wu, Xian and Zhang, Ziheng and Lin, Zhenxi and Zheng, Yefeng},
+  title   = {Emerging drug interaction prediction enabled by a flow-based graph neural network with biomedical network},
+  journal = {Nature Computational Science},
+  volume  = {3},
+  pages   = {1023--1033},
+  year    = {2023},
+  doi     = {10.1038/s43588-023-00558-4}
+}
+
+% ------------------------------------------------------------ GNN / ML methods
+
+@inproceedings{xu2019gin,
+  author    = {Xu, Keyulu and Hu, Weihua and Leskovec, Jure and Jegelka, Stefanie},
+  title     = {How Powerful are Graph Neural Networks?},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2019},
+  note      = {arXiv:1810.00826}
+}
+
+@inproceedings{hu2020pretraining,
+  author    = {Hu, Weihua and Liu, Bowen and Gomes, Joseph and Zitnik, Marinka and Liang, Percy and Pande, Vijay and Leskovec, Jure},
+  title     = {Strategies for Pre-training Graph Neural Networks},
+  booktitle = {International Conference on Learning Representations (ICLR)},
+  year      = {2020},
+  note      = {Source of the GINE edge-feature variant of GIN used here}
+}
+
+@inproceedings{zaheer2017deepsets,
+  author    = {Zaheer, Manzil and Kottur, Satwik and Ravanbakhsh, Siamak and P{\'o}czos, Barnab{\'a}s and Salakhutdinov, Ruslan and Smola, Alexander J.},
+  title     = {Deep Sets},
+  booktitle = {Advances in Neural Information Processing Systems 30 (NIPS)},
+  pages     = {3391--3401},
+  year      = {2017}
+}
+
+@inproceedings{guo2017calibration,
+  author    = {Guo, Chuan and Pleiss, Geoff and Sun, Yu and Weinberger, Kilian Q.},
+  title     = {On Calibration of Modern Neural Networks},
+  booktitle = {Proceedings of the 34th International Conference on Machine Learning (ICML)},
+  series    = {PMLR},
+  volume    = {70},
+  pages     = {1321--1330},
+  year      = {2017}
+}
+
+% ------------------------------------------------------- evaluation / statistics
+
+@article{saito2015prc,
+  author  = {Saito, Takaya and Rehmsmeier, Marc},
+  title   = {The Precision-Recall Plot Is More Informative than the {ROC} Plot When Evaluating Binary Classifiers on Imbalanced Datasets},
+  journal = {PLOS ONE},
+  volume  = {10},
+  number  = {3},
+  pages   = {e0118432},
+  year    = {2015},
+  doi     = {10.1371/journal.pone.0118432}
+}
+
+@article{holm1979,
+  author  = {Holm, Sture},
+  title   = {A Simple Sequentially Rejective Multiple Test Procedure},
+  journal = {Scandinavian Journal of Statistics},
+  volume  = {6},
+  number  = {2},
+  pages   = {65--70},
+  year    = {1979}
+}
+
+@article{kapoor2023leakage,
+  author  = {Kapoor, Sayash and Narayanan, Arvind},
+  title   = {Leakage and the reproducibility crisis in machine-learning-based science},
+  journal = {Patterns},
+  volume  = {4},
+  number  = {9},
+  pages   = {100804},
+  year    = {2023},
+  doi     = {10.1016/j.patter.2023.100804}
+}
+
+% ------------------------------------------------------------- cheminformatics
+
+@article{rogers2010ecfp,
+  author  = {Rogers, David and Hahn, Mathew},
+  title   = {Extended-Connectivity Fingerprints},
+  journal = {Journal of Chemical Information and Modeling},
+  volume  = {50},
+  number  = {5},
+  pages   = {742--754},
+  year    = {2010},
+  doi     = {10.1021/ci100050t}
+}
+
+@article{bemis1996scaffold,
+  author  = {Bemis, Guy W. and Murcko, Mark A.},
+  title   = {The Properties of Known Drugs. 1. Molecular Frameworks},
+  journal = {Journal of Medicinal Chemistry},
+  volume  = {39},
+  number  = {15},
+  pages   = {2887--2893},
+  year    = {1996},
+  doi     = {10.1021/jm9602928}
+}
+
+% ------------------------------------------------------------------ databases
+
+@article{wishart2018drugbank,
+  author  = {Wishart, David S. and Feunang, Yannick D. and Guo, An C. and Lo, Elvis J. and Marcu, Ana and Grant, Jason R. and Sajed, Tanvir and Johnson, Daniel and Li, Carin and Sayeeda, Zinat and Assempour, Nazanin and Iynkkaran, Ithayavani and Liu, Yifeng and Maciejewski, Adam and Gale, Nicola and Wilson, Alex and Chin, Lucy and Cummings, Ryan and Le, Diana and Pon, Allison and Knox, Craig and Wilson, Michael},
+  title   = {{DrugBank} 5.0: a major update to the {DrugBank} database for 2018},
+  journal = {Nucleic Acids Research},
+  volume  = {46},
+  number  = {D1},
+  pages   = {D1074--D1082},
+  year    = {2018},
+  doi     = {10.1093/nar/gkx1037}
+}
+
+@article{mendez2019chembl,
+  author  = {Mendez, David and Gaulton, Anna and Bento, A. Patr{\'i}cia and Chambers, Jon and De Veij, Marleen and F{\'e}lix, Eloy and Magari{\~n}os, Mar{\'i}a Paula and Mosquera, Juan F. and Mutowo, Prudence and Nowotka, Micha{\l} and Gordillo-Mara{\~n}{\'o}n, Mar{\'i}a and Hunter, Fiona and Junco, Laura and Mugumbate, Grace and Rodriguez-Lopez, Milagros and Atkinson, Francis and Bosc, Nicolas and Radoux, Chris J. and Segura-Cabrera, Aldo and Hersey, Anne and Leach, Andrew R.},
+  title   = {{ChEMBL}: towards direct deposition of bioassay data},
+  journal = {Nucleic Acids Research},
+  volume  = {47},
+  number  = {D1},
+  pages   = {D930--D940},
+  year    = {2019},
+  doi     = {10.1093/nar/gky1075}
+}
+
+@article{gillespie2022reactome,
+  author  = {Gillespie, Marc and Jassal, Bijay and Stephan, Ralf and Milacic, Marija and Rothfels, Karen and Senff-Ribeiro, Andrea and Griss, Johannes and Sevilla, Cristoffer and Matthews, Lisa and Gong, Chuqiao and others},
+  title   = {The reactome pathway knowledgebase 2022},
+  journal = {Nucleic Acids Research},
+  volume  = {50},
+  number  = {D1},
+  pages   = {D687--D692},
+  year    = {2022},
+  doi     = {10.1093/nar/gkab1028}
+}
+
+@article{uniprot2023,
+  author  = {{The UniProt Consortium}},
+  title   = {{UniProt}: the Universal Protein Knowledgebase in 2023},
+  journal = {Nucleic Acids Research},
+  volume  = {51},
+  number  = {D1},
+  pages   = {D523--D531},
+  year    = {2023},
+  doi     = {10.1093/nar/gkac1052}
+}
+
+@inproceedings{huang2021tdc,
+  author    = {Huang, Kexin and Fu, Tianfan and Gao, Wenhao and Zhao, Yue and Roohani, Yusuf and Leskovec, Jure and Coley, Connor W. and Xiao, Cao and Sun, Jimeng and Zitnik, Marinka},
+  title     = {Therapeutics Data Commons: Machine Learning Datasets and Tasks for Drug Discovery and Development},
+  booktitle = {Advances in Neural Information Processing Systems, Datasets and Benchmarks Track},
+  year      = {2021},
+  note      = {arXiv:2102.09548}
+}

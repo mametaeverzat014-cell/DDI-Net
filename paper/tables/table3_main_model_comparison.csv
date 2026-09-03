@@ -1,0 +1,7 @@
+model,category,pooled_auprc_mean,pooled_auprc_std,n_seeds,source_file,s3_auprc_mean,s3_auprc_std
+BIO-GINE M4 (primary),Full model,0.8117107056824635,0.009671090046444024,5,reports/v2_final/v2_final_test.csv; v2_final_s3_posthoc.csv,0.7372412574502945,0.015253024558550193
+Aligned molecular GINE (M0),Structure-only baseline,0.7784449441524766,0.0058921316342164685,5,reports/v2_baselines/m0_test_s3.csv,0.7145015188306003,0.006464976176374413
+Aligned Dual (GINE + DDI network),Transductive baseline,0.7146828625677214,0.0066805045394641455,5,reports/v2_aligned_ensemble.csv,0.6197607334330234,0.027841614523342995
+BIO-RF (fingerprint + biology RF),Non-neural baseline,0.7396120481896608,0.0016827346473415321,5,reports/v2_bio_controls/bio_rf_test.csv,,
+Biological-degree-only RF (CONTROL A),Shortcut control,0.6504215381986544,0.0005891973547866884,5,reports/v2_bio_controls/biological_degree_rf_test.csv,,
+"BIO-GINE M4, shuffled biology (CONTROL F)",Shortcut control,0.69225591904776,0.005440989812719405,5,reports/v2_ablations/test_frozen.csv,0.6305124710306378,0.01046229050023505

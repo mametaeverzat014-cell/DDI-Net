@@ -1,0 +1,25 @@
+property,value,source
+Dataset identifier,DDI_MECH_1705_V1,data/mechanism_v1/MANIFEST.json
+DDI source,"TDC DrugBank DDI (PyTDC 1.1.15), CC BY-NC 4.0",DATA_PROVENANCE.md
+Drugs in experimental universe,"1,705",data/mechanism_v1/MANIFEST.json
+Positive DDI pairs,"191,392",data/mechanism_v1/MANIFEST.json
+Interaction types in source,"86 (used only as positive-vs-absent, not as labels)",reports/dataset_report.md
+Drug excluded (unparseable SMILES),"DB11630 (10 pairs, 0.0052% of corpus)",data/mechanism_v1/MANIFEST.json
+Drug-protein edge rows,"146,743",data/mechanism_v1/drug_protein_edges.parquet
+"Distinct (drug,protein,relation,evidence) triples after duplicate collapse","94,088",biology.py _distinct_triples
+Relation types,"target / enzyme / transporter / carrier  (target 139,988; enzyme 3,972; transporter 2,185; carrier 598)",data/mechanism_v1/drug_protein_edges.parquet
+Evidence types,DOCUMENTED_DATABASE_RELATION / CURATED_MOA / EXPERIMENTAL_BIOACTIVITY,ddinet/data/biology.py
+Protein vocabulary (embedding rows),"2,893",BiologyBundle
+Proteins with descriptive metadata,"2,778 of 2,893 (115 referenced by edges have no name/gene/EC row)",data/mechanism_v1/proteins.parquet
+Pathway vocabulary,"1,969",data/mechanism_v1/pathways.parquet
+Protein-pathway edges,"14,576",data/mechanism_v1/protein_pathway_edges.parquet
+Drug-protein set elements under M4,"94,088",BiologyBundle (M4)
+Drug-pathway set elements under M4,"284,203",BiologyBundle (M4)
+Drugs with >=1 protein annotation,"1,638 of 1,705 (96.07%)",BiologyBundle (M4)
+Drugs with >=1 pathway annotation,"1,614 of 1,705 (94.66%)",BiologyBundle (M4)
+Median / max proteins per drug,19 / 627,BiologyBundle (M4)
+Median / max pathways per drug,"52 / 1,078",BiologyBundle (M4)
+Drug-disjoint split (seed 0),"train 1,195 / val 255 / test 255 drugs",data/mechanism_v1/split_assignments.csv
+Pooled drug-disjoint test pairs,"84,690 (prevalence 0.5)",reports/v2_final/v2_final_test.csv
+S3 test pairs,"7,758 (prevalence 0.5)",reports/v2_final/v2_final_s3_posthoc.csv
+DDI edges used as biological features,0 (biology.py never opens ddi_positive_labels.parquet or a split file),ddinet/data/biology.py line 78

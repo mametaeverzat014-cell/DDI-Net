@@ -1,0 +1,35 @@
+property,value,source
+Selected configuration ID,e8ece7c41ae09e5f,reports/v2_grid/FROZEN_SELECTED_CONFIG.txt
+Atom feature dimension,50,ddinet/features/molgraph.py
+Bond feature dimension,11,ddinet/features/molgraph.py
+Molecular encoder,"GINE, 3 layers, hidden 64, SUM pooling with norm",BioGineConfig defaults (frozen at Phase A-2 values)
+Molecular dropout,0.1,BioGineConfig
+Biological embedding dim (bio_dim),128,FROZEN_SELECTED_CONFIG.txt
+Relation embedding dim,16,BioGineConfig
+Evidence embedding dim,16,BioGineConfig
+Biological aggregation,"MEAN (SUM is CONTROL C, never selected on validation)",BioGineConfig
+Biological dropout,0.1,FROZEN_SELECTED_CONFIG.txt
+Fusion,"Linear -> LayerNorm, hidden 128",BioGine.__init__
+Pair decoder input dimension,388,BioGine.pair_input_dim
+Pair decoder,Linear 388->256 -> ReLU -> Dropout -> 256->128 -> ReLU -> Dropout -> 128->1,BioGine.__init__
+Pair dropout,0.1,FROZEN_SELECTED_CONFIG.txt
+Pair terms,"sum, |difference|, elementwise product, min/max of modality masks (all commutative)",BioGine.score_pairs
+Total parameters,"1,122,804",BioGine.n_parameters()
+  parameters: molecular_encoder,"54,275",BioGine.parameter_table()
+  parameters: protein_embedding,"370,304",BioGine.parameter_table()
+  parameters: protein_encoder,"140,160",BioGine.parameter_table()
+  parameters: pathway_embedding,"252,032",BioGine.parameter_table()
+  parameters: pathway_encoder,"131,968",BioGine.parameter_table()
+  parameters: fusion,"41,088",BioGine.parameter_table()
+  parameters: fusion_norm,256,BioGine.parameter_table()
+  parameters: pair_mlp,"132,609",BioGine.parameter_table()
+  parameters: relation_embedding,64,BioGine.parameter_table()
+  parameters: evidence_embedding,48,BioGine.parameter_table()
+Learning rate,1e-3,FROZEN_SELECTED_CONFIG.txt
+Batch size,512,FROZEN_SELECTED_CONFIG.txt
+Optimizer-step budget,"21,960",configs/v2_budget_frozen.yaml
+Validation interval,every 366 optimizer steps (60 checks),configs/v2_budget_frozen.yaml
+Early stopping,patience 30 validation checks,configs/v2_budget_frozen.yaml
+Validation grid,32 configurations x 3 seeds = 96 runs,reports/v2_grid/v2_validation_grid_96_COMPLETE_BACKUP.csv
+Final training seeds,5 (0-4),reports/v2_final/v2_final_test.csv
+Negative sampling,"degree-matched, degree computed from TRAINING pairs only",ddinet/data/negatives.py
