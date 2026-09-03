@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
-  "description": "DDI-Net research site \u2014 presentation layer over the frozen V2 scientific state. All numbers are generated from the frozen tag by tools/build_frozen_data.py; nothing here is hand-typed.",
+  "description": "DDI-Net research site — presentation layer over the frozen V2 scientific state. All numbers are generated from the frozen tag by tools/build_frozen_data.py; nothing here is hand-typed.",
   "scripts": {
     "predev": "python3 tools/build_frozen_data.py",
     "dev": "vite",
@@ -20,6 +20,7 @@
   },
   "devDependencies": {
     "@testing-library/react": "^16.0.1",
+    "@types/node": "^22.20.1",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "@typescript-eslint/eslint-plugin": "^8.13.0",

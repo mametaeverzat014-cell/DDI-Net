@@ -111,6 +111,23 @@ def ladder(name):
 readiness = json.loads((REPO / "data/mechanism_v1/model_readiness.json").read_text())
 manifest = json.loads((REPO / "data/mechanism_v1/MANIFEST.json").read_text())
 
+# biological graph facts (from parquet present on this branch)
+_dpe = pd.read_parquet(REPO / "data/mechanism_v1/drug_protein_edges.parquet")
+_rel_counts = {k: int(v) for k, v in _dpe.relation_type.value_counts().items()}
+_proteins = pd.read_parquet(REPO / "data/mechanism_v1/proteins.parquet")
+_pathways = pd.read_parquet(REPO / "data/mechanism_v1/pathways.parquet")
+_pp = pd.read_parquet(REPO / "data/mechanism_v1/protein_pathway_edges.parquet")
+biology_graph = {
+    "drug_protein_edge_rows": int(len(_dpe)),
+    "relation_counts": _rel_counts,
+    "evidence_types": ["DOCUMENTED_DATABASE_RELATION", "CURATED_MOA", "EXPERIMENTAL_BIOACTIVITY"],
+    "protein_rows": int(len(_proteins)),
+    "pathway_rows": int(len(_pathways)),
+    "protein_pathway_edges": int(len(_pp)),
+    "sources": {"drug_protein": "DrugBank + ChEMBL", "protein_pathway": "Reactome via UniProt", "protein_meta": "UniProt/SwissProt"},
+    "source": "data/mechanism_v1/*.parquet",
+}
+
 # leakage story: fraction of test pairs whose BOTH endpoints were seen in
 # training, per split scheme (seed 0). random_pair leaks; drug/scaffold do not.
 split_cmp = frozen_csv("reports/split_comparison.csv")
@@ -240,6 +257,7 @@ data = {
         "note": "Fraction of test pairs whose both endpoints appeared in training (seed 0). Random-pair splitting leaks; drug- and scaffold-holdout do not.",
         "source": "reports/split_comparison.csv",
     },
+    "biology_graph": biology_graph,
     "models": models,
     "ladder": ladder_rows,
     "hypotheses": hypotheses,

@@ -5,10 +5,11 @@ import type { View } from "../App";
 
 const ITEMS: { id: View; label: string }[] = [
   { id: "analyze", label: "ANALYZE" },
-  { id: "analyze", label: "MECHANISM" },
   { id: "model", label: "MODEL" },
   { id: "research", label: "RESEARCH" },
   { id: "data", label: "DATA" },
+  { id: "drugs", label: "DRUGS" },
+  { id: "limitations", label: "LIMITATIONS" },
 ];
 
 export function Nav({ view, setView }: { view: View; setView: (v: View) => void }) {
@@ -31,12 +32,12 @@ export function Nav({ view, setView }: { view: View; setView: (v: View) => void 
         <span className="mono" style={{ color: "var(--text)", fontSize: 14, letterSpacing: "0.08em" }}>DDI-NET</span>
       </button>
 
-      <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
-        {ITEMS.map((it, i) => {
-          const active = view === it.id && !(it.label === "MECHANISM");
+      <div style={{ display: "flex", gap: 4, alignItems: "center", flexWrap: "wrap", justifyContent: "flex-end" }}>
+        {ITEMS.map((it) => {
+          const active = view === it.id;
           return (
             <button
-              key={it.label + i}
+              key={it.label}
               onClick={() => setView(it.id)}
               className="mono"
               style={{

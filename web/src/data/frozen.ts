@@ -52,6 +52,16 @@ export interface FrozenData {
     pooled_pairs: number; s3_pairs: number; prevalence: number; source: string;
   };
   leakage: { both_endpoints_seen: Record<string, number>; note: string; source: string };
+  biology_graph: {
+    drug_protein_edge_rows: number;
+    relation_counts: Record<string, number>;
+    evidence_types: string[];
+    protein_rows: number;
+    pathway_rows: number;
+    protein_pathway_edges: number;
+    sources: Record<string, string>;
+    source: string;
+  };
   models: ModelRow[];
   ladder: ModelRow[];
   hypotheses: Hypothesis[];

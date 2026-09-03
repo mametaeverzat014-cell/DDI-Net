@@ -3,9 +3,13 @@ import { Nav } from "./components/Nav";
 import { Footer } from "./components/Footer";
 import { Home } from "./views/Home";
 import { Research } from "./views/Research";
-import { Placeholder } from "./views/Placeholder";
+import { Analyze } from "./views/Analyze";
+import { Model } from "./views/Model";
+import { Data } from "./views/Data";
+import { DrugExplorer } from "./views/DrugExplorer";
+import { Limitations } from "./views/Limitations";
 
-export type View = "home" | "analyze" | "model" | "research" | "data";
+export type View = "home" | "analyze" | "model" | "research" | "data" | "drugs" | "limitations";
 
 export function App() {
   const [view, setView] = useState<View>("home");
@@ -18,12 +22,14 @@ export function App() {
       <Nav view={view} setView={setView} />
       <main>
         {view === "home" && <Home setView={setView} />}
+        {view === "analyze" && <Analyze />}
+        {view === "model" && <Model />}
         {view === "research" && <Research />}
-        {view === "analyze" && <Placeholder title="Analyze a drug pair" phase="Foundation build — Analyze arrives in the next iteration." />}
-        {view === "model" && <Placeholder title="How BIO-GINE works" phase="Foundation build — the architecture view arrives in the next iteration." />}
-        {view === "data" && <Placeholder title="Data & provenance" phase="Foundation build — the data explorer arrives in the next iteration." />}
+        {view === "data" && <Data />}
+        {view === "drugs" && <DrugExplorer />}
+        {view === "limitations" && <Limitations />}
       </main>
-      <Footer />
+      <Footer setView={setView} />
     </>
   );
 }

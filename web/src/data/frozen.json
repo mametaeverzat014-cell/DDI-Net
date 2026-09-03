@@ -52,6 +52,29 @@
     "note": "Fraction of test pairs whose both endpoints appeared in training (seed 0). Random-pair splitting leaks; drug- and scaffold-holdout do not.",
     "source": "reports/split_comparison.csv"
   },
+  "biology_graph": {
+    "drug_protein_edge_rows": 146743,
+    "relation_counts": {
+      "target": 139988,
+      "enzyme": 3972,
+      "transporter": 2185,
+      "carrier": 598
+    },
+    "evidence_types": [
+      "DOCUMENTED_DATABASE_RELATION",
+      "CURATED_MOA",
+      "EXPERIMENTAL_BIOACTIVITY"
+    ],
+    "protein_rows": 2778,
+    "pathway_rows": 1969,
+    "protein_pathway_edges": 14576,
+    "sources": {
+      "drug_protein": "DrugBank + ChEMBL",
+      "protein_pathway": "Reactome via UniProt",
+      "protein_meta": "UniProt/SwissProt"
+    },
+    "source": "data/mechanism_v1/*.parquet"
+  },
   "models": [
     {
       "label": "BIO-GINE M4",
