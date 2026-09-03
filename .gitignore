@@ -101,3 +101,24 @@ reports/*/duty_cycle.log
 # переписывается раннером каждые несколько минут
 reports/v2_grid/progress.json
 reports/v2_grid/GRID_PROGRESS.md
+
+# Vast/remote training checkpoint artifacts
+reports/v2_checkpoints/*.manifest.json
+reports/v2_checkpoints/*.pt
+reports/v2_checkpoints_PRE_VAST_ARCHIVE/
+reports/v2_final_checkpoints/
+reports/v2_grid_PRE_VAST_ARCHIVE/
+
+# Runtime/final-run progress artifacts
+reports/v2_final/progress.json
+reports/v2_final/FINAL_PROGRESS.md
+
+# Backup/pre-CUDA script
+scripts/15_phase_a2_gnn.py.pre_cuda
+
+# Vast5090 diagnostic outputs
+reports/VAST5090_*.csv
+
+# Ablation runtime progress
+reports/v2_ablations/PROGRESS.md
+reports/v2_ablations/progress.json

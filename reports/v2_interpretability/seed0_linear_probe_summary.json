@@ -1,0 +1,14 @@
+{
+  "probe": "Ridge(alpha=1.0)",
+  "target": "positive training-DDI degree only",
+  "features": "frozen seed-0 BIO-GINE biological embedding",
+  "n_train_drugs": 1195,
+  "n_test_drugs": 255,
+  "r2_train": 0.5430199338679731,
+  "r2_test": 0.0,
+  "pearson_test": NaN,
+  "spearman_test": NaN,
+  "elevated_concern_r2_gt_0_4": false,
+  "f4_probe_component_r2_gt_0_6": false,
+  "note": "CONTROL E measures whether the learned biological embedding encodes training-DDI degree/popularity. It is not a causal interpretation."
+}

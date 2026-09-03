@@ -1,0 +1,27 @@
+{
+  "analysis": "V2 post-hoc interpretability",
+  "seed": 0,
+  "git_commit_at_execution": "acda01f4ff71660f6e8a383fb5698e1c0988a39d",
+  "checkpoint": "reports/v2_final_checkpoints/bd45f84e3c1b2c33.pt",
+  "checkpoint_run_id": "bd45f84e3c1b2c33",
+  "n_test_pairs": 84690,
+  "n_top_pairs": 20,
+  "n_protein_ablations": 4031,
+  "n_pathway_ablations": 13192,
+  "n_modality_rows": 84690,
+  "linear_probe": {
+    "probe": "Ridge(alpha=1.0)",
+    "target": "positive training-DDI degree only",
+    "features": "frozen seed-0 BIO-GINE biological embedding",
+    "n_train_drugs": 1195,
+    "n_test_drugs": 255,
+    "r2_train": 0.5430199338679731,
+    "r2_test": 0.0,
+    "pearson_test": NaN,
+    "spearman_test": NaN,
+    "elevated_concern_r2_gt_0_4": false,
+    "f4_probe_component_r2_gt_0_6": false,
+    "note": "CONTROL E measures whether the learned biological embedding encodes training-DDI degree/popularity. It is not a causal interpretation."
+  },
+  "interpretation_rule": "Attribution values describe frozen-model reliance under post-hoc perturbation. They are not causal biological mechanisms or clinical recommendations."
+}

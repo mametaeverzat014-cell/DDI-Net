@@ -1,0 +1,22 @@
+{
+  "hypothesis": "H-V2-5",
+  "status": "EXPLORATORY",
+  "preregistered_direction": "delta_covered > delta_uncovered",
+  "n_seeds": 5,
+  "mean_delta_covered": 0.03169696915407951,
+  "mean_delta_uncovered": 0.0550432699286572,
+  "mean_contrast": -0.023346300774577687,
+  "std_contrast": 0.03003121720455263,
+  "ci95_two_sided": [
+    -0.060634981999708175,
+    0.0139423804505528
+  ],
+  "paired_t": -1.7383216670684185,
+  "df": 4,
+  "p_two_sided_descriptive": 0.15714602001053307,
+  "p_directional_descriptive": 0.9214269899947335,
+  "cohen_dz": -0.7774010828651483,
+  "direction_supported": false,
+  "strict_significance_threshold": null,
+  "note": "Exploratory preregistered directional analysis. No strict significance threshold was preregistered."
+}
