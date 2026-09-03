@@ -1,0 +1,83 @@
+@import "./tokens.css";
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* grainy scientific texture — the design's fixed dot-grid noise overlay */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.055) 1px, transparent 1px);
+  background-size: 3px 3px;
+  mix-blend-mode: overlay;
+  opacity: 0.5;
+}
+
+a { color: var(--cyan); text-decoration: none; }
+a:hover { color: #a8f0fa; }
+::selection { background: rgba(76, 141, 255, 0.32); }
+canvas { display: block; }
+
+h1, h2, h3 { font-weight: 700; letter-spacing: -0.035em; line-height: 1.02; margin: 0; }
+h1 { font-size: clamp(30px, 6.4vw, 88px); }
+h2 { font-size: clamp(30px, 3.9vw, 56px); letter-spacing: -0.03em; }
+h3 { font-size: clamp(20px, 2.4vw, 30px); letter-spacing: -0.02em; }
+p { margin: 0; color: var(--text-2); font-size: clamp(15px, 1.15vw, 18px); line-height: 1.66; }
+
+.mono { font-family: var(--font-mono); }
+.hand { font-family: var(--font-hand); }
+
+/* micro-label: 10–11px uppercase, wide tracking */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--text-3);
+}
+
+.wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 clamp(20px, 5vw, 56px); }
+.section { padding: clamp(64px, 12vh, 150px) 0; position: relative; z-index: 1; }
+
+/* focus visibility for keyboard users */
+:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 4px; }
+
+/* scroll-reveal: native view-timeline where supported, otherwise just visible */
+@keyframes rise { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+@keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@keyframes breathe { 0%, 100% { opacity: 0.45; } 50% { opacity: 0.9; } }
+
+.reveal {
+  opacity: 1;
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      opacity: 0;
+      animation: rise 1s var(--ease) forwards;
+      animation-timeline: view();
+      animation-range: entry 5% cover 32%;
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+}
+
+/* two-column blocks collapse to one column on narrow viewports */
+@media (max-width: 760px) {
+  .collapse { grid-template-columns: 1fr !important; }
+}

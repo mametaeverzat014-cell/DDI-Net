@@ -1,0 +1,45 @@
+/*
+ * DDI-Net design tokens — transcribed verbatim from the Claude Design handoff
+ * (UI-UX-description.md section 1). These are the design's real values; do not
+ * invent new ones. Accents are semantic categories, not decoration.
+ */
+:root {
+  /* background / surfaces */
+  --bg: #06101f;
+  --surface: rgba(255, 255, 255, 0.028);
+  --surface-strong: rgba(255, 255, 255, 0.04);
+  --border: rgba(255, 255, 255, 0.08);
+  --border-soft: rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.12);
+
+  /* text */
+  --text: #e8eff8;
+  --text-2: rgba(160, 182, 210, 0.88);
+  --text-3: rgba(138, 160, 188, 0.7);
+
+  /* semantic accents */
+  --cyan: #6fe3f5;   /* proteins, implemented, primary CTA, links */
+  --blue: #4c8dff;   /* molecular / structural evidence */
+  --violet: #9b8cff; /* pathways, controls / baselines */
+  --amber: #ffc478;  /* DEMO / pending / not-yet-measured */
+  --red: #ff9e9e;    /* quarantined data */
+
+  /* glass illumination */
+  --glow-core: rgba(38, 84, 168, 0.42);
+  --glow-mid: rgba(20, 48, 104, 0.2);
+
+  /* geometry */
+  --radius: 9px;
+  --radius-lg: 14px;
+  --blur: blur(8px);
+
+  /* type */
+  --font-ui: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-hand: "Caveat", cursive;
+
+  /* motion */
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+
+  --maxw: 1180px;
+}

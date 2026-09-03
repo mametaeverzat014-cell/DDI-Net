@@ -1,0 +1,36 @@
+{
+  "name": "ddi-net-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "DDI-Net research site \u2014 presentation layer over the frozen V2 scientific state. All numbers are generated from the frozen tag by tools/build_frozen_data.py; nothing here is hand-typed.",
+  "scripts": {
+    "predev": "python3 tools/build_frozen_data.py",
+    "dev": "vite",
+    "prebuild": "python3 tools/build_frozen_data.py",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.0.1",
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "@typescript-eslint/eslint-plugin": "^8.13.0",
+    "@typescript-eslint/parser": "^8.13.0",
+    "@vitejs/plugin-react": "^4.3.3",
+    "eslint": "^8.57.1",
+    "eslint-plugin-react-hooks": "^4.6.2",
+    "eslint-plugin-react-refresh": "^0.4.14",
+    "jsdom": "^25.0.1",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10",
+    "vitest": "^2.1.4"
+  }
+}
