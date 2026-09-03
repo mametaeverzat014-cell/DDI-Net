@@ -15,29 +15,29 @@ generated from that tag by `paper/build_tables.py` and checked by
 ## ABSTRACT
 
 Patients taking several medicines at once can experience drug–drug interactions
-(DDIs), in which one drug changes the effect or handling of another. Because the
-number of possible drug pairs grows quadratically with the number of drugs,
-computational screening is attractive — but its usefulness depends entirely on
-whether a model still works for a drug it has never seen. Many DDI benchmarks
-split data at the level of *pairs*, which allows the same drug to appear in both
-training and test pairs. A model can then score highly by recognising familiar
-drugs and their known interaction neighbourhoods, a form of context that does not
-exist for a genuinely new compound.
+(DDIs), in which one drug changes the effect or handling of another. Computational
+screening is attractive, but its usefulness depends on whether a model still works
+for a drug it has never seen. Many DDI benchmarks split data at the level of
+*pairs*, which allows the same drug to appear in both training and test pairs; a
+model can then score highly by recognising familiar drugs and their known
+interaction neighbourhoods — context that does not exist for a genuinely new
+compound.
 
 We asked whether biologically grounded representations — the proteins a drug is
 annotated against and the pathways those proteins belong to — can supply
-transferable context in place of that missing interaction neighbourhood, and
-whether any resulting improvement reflects biological *identity* rather than the
-simpler fact that well-studied drugs carry more annotations. We built BIO-GINE, a
-model combining a GINE encoder over molecular graphs with permutation-invariant
-Deep Sets encoders over each drug's protein and pathway annotations, fused into a
-symmetric pair decoder. Evaluation used a fixed drug-disjoint split (1,195 train /
-255 validation / 255 test drugs), degree-matched negatives, hyperparameters chosen
-on validation across 96 runs, and a test set opened once.
+transferable context in place of that missing neighbourhood, and whether any
+improvement reflects biological *identity* rather than simply that well-studied
+drugs carry more annotations. We built BIO-GINE, combining a GINE encoder over
+molecular graphs with permutation-invariant Deep Sets encoders over each drug's
+protein and pathway annotations, fused into a symmetric pair decoder. Evaluation
+used a fixed drug-disjoint split (1,195 / 255 / 255 drugs) and degree-matched
+negatives; the primary configuration was frozen before test evaluation, with no
+test result used for selection.
 
-On 84,690 held-out drug-disjoint pairs, BIO-GINE reached 0.8117 ± 0.0097 AUPRC
-across five seeds, against 0.7784 ± 0.0059 for an aligned molecular-only model
-(paired Δ = +0.0333, Holm-adjusted *p* = 1.98 × 10⁻⁴). On the S3 subset, in which
+On the 84,690-pair pooled drug-holdout test (S2+S3; at least one endpoint is a
+held-out drug), BIO-GINE reached 0.8117 ± 0.0097 AUPRC across five seeds, against
+0.7784 ± 0.0059 for an aligned molecular-only model (paired Δ = +0.0333,
+Holm-adjusted *p* = 1.98 × 10⁻⁴). On the S3 subset, in which
 *both* drugs have zero interaction adjacency in the training graph, BIO-GINE
 reached 0.7372 ± 0.0153 while an aligned model with a DDI-network branch fell to
 0.6198 ± 0.0278 (Δ = +0.1175, Holm *p* = 6.56 × 10⁻⁴). Two shortcut controls
@@ -55,7 +55,9 @@ ladder was non-monotonic, and the preregistered primary configuration was not th
 best-performing variant. These are research predictions on a curated
 1,705-drug subset; the system is not clinically validated.
 
-**Word count: 331.**
+*(Abstract length ≈ 400 words counting statistical tokens; the density reflects
+the required reporting of five hypotheses with effect sizes and adjusted
+p-values.)*
 
 ---
 
@@ -161,8 +163,9 @@ Contributions:
 1. **BIO-GINE**, combining a molecular GINE encoder with Deep Sets encoders over
    per-drug protein and pathway annotation sets, fused through a symmetric pair
    decoder (Section 3.11).
-2. **A drug-disjoint evaluation** reporting both the pooled test set and the S3
-   subset in which both drugs are unseen (Section 3.9, 4.1, 4.3).
+2. **A drug-disjoint evaluation** reporting both the pooled drug-holdout test set
+   (S2+S3; at least one endpoint held out) and the S3 subset in which both drugs
+   are unseen (Section 3.9, 4.1, 4.3).
 3. **Falsification controls for the annotation-popularity explanation** — a
    degree-preserving biological-identity shuffle, an annotation-count-only
    baseline, and an aggregation control (Sections 3.13, 4.4–4.6).
@@ -201,20 +204,31 @@ with no message passing between drugs, and we evaluate on drugs absent from
 training.
 
 ## 2.4 Cold-start and unseen-drug generalization
-EmerGNN [zhang2023emergnn] explicitly targets emerging drugs with little known
-interaction data, using a flow-based GNN over a biomedical network, and reports
-strong results at larger scale than this study. It is the most closely related
-prior work.
+Cold-start DDI prediction — generalizing to drugs with little or no known
+interaction history — is an active research area, with methods spanning
+substructure-aware molecular models, multimodal fusion, and language-grounded
+representations, alongside a broader literature on inductive splits that
+distinguish transductive link completion within a fixed drug set from inductive
+generalization to unseen drugs. Among these, EmerGNN [zhang2023emergnn] is the
+closest to the present work in aim: it explicitly targets emerging drugs with
+little known interaction data, using a flow-based GNN over a biomedical network,
+and reports strong results at larger scale than this study. We single it out for
+detailed comparison because of that shared motivation, not because it is the only
+modern method in this space; a full comparative survey of 2024–2026 cold-start DDI
+methods is beyond the literature we verified for this manuscript (see the marked
+literature-review task in `PAPER_FACTS.md`).
 
 ## 2.5 Gap addressed by this work
 Across the methods above, biological information is used and reported to help.
-What we did not find in this literature is a control that **preserves annotation
-degree exactly while destroying annotation identity**. Without such a control, a
-reported biological gain is compatible with the model having learned annotation
-popularity. This study is organised around supplying that control, and around
-reporting what happens when it is applied. Our reading of the cited work is
-summarised in `NOVELTY_MATRIX.md`; no conclusion here depends on the absence of
-prior work.
+We did not identify, in the literature we reviewed, a prior DDI study using this
+exact degree-preserving biological-identity falsification control — one that
+**preserves annotation degree exactly while destroying annotation identity**.
+Without such a control, a reported biological gain is compatible with the model
+having learned annotation popularity. This study is organised around supplying
+that control, and around reporting what happens when it is applied. This is a
+bounded claim about the literature we surveyed, not an exhaustive priority claim;
+our reading of the cited work is summarised in `NOVELTY_MATRIX.md`, and no
+conclusion here depends on the absence of prior work.
 
 ---
 
@@ -227,8 +241,14 @@ was trained. That file fixes the hypotheses (H-V2-1 … H-V2-5), the statistical
 tests, the alpha level, minimum effect sizes where applicable, the falsification
 criteria (F1 … F5), and the evidence ladder. Two amendments exist as separate
 documents that do not modify the original: a training-budget amendment
-(Section 3.15) and a control-implementation note (Section 3.13). The test set was
-evaluated once, after hyperparameters were frozen.
+(Section 3.15) and a control-implementation note (Section 3.13). The primary M4
+configuration was frozen after the validation-only grid and before its first test
+evaluation. Each baseline, control and ablation was likewise specified and frozen
+before its own test evaluation — the frozen artifacts record a "before-run" or
+"before-test" git commit for each, and the evaluation events are separately
+timestamped — and no test result was ever fed back into hyperparameter or model
+selection. This is the sense in which the test set was "sealed": it was used only
+to measure frozen configurations, never to choose among them.
 
 ## 3.2 DDI dataset
 
@@ -286,12 +306,24 @@ layers, hidden dimension 64, and sum pooling with normalisation**, dropout 0.1.
 These are the values in the code, and they differ from the architecture plan
 document, which reads "GINE (4-layer, d=128, same as Phase A-2)". The two halves
 of that phrase contradict each other: the earlier phase froze `hidden_dim=64,
-mol_layers=3`. The implementation follows the *measured* earlier configuration,
-because the M0 baseline in the evidence ladder is that earlier frozen result,
-reused rather than retrained. Had the literal 4/128 been used, the molecular
-branch would have changed at the same time as the biological branch was added,
-and every M-minus-M0 difference would confound the two. The deviation is recorded
-in the source file.
+mol_layers=3`. The implementation follows the *measured* earlier molecular
+configuration. Had the literal 4/128 been used, the molecular branch would have
+changed at the same time as the biological branch was added, and every
+M-minus-M0 difference would confound the two. The deviation is recorded in the
+source file.
+
+**M0 was retrained under the V2 protocol, not reused from the earlier phase.**
+The M0 baseline in the evidence ladder inherits the earlier molecular
+*architecture and hyperparameters*, but it was trained afresh
+(`scripts/38_v2_m0_test.py`, which drives the same `V2Trainer` used for the full
+model) on the identical frozen drug-disjoint split, under the identical
+21,960-step optimizer budget, with the biological branch switched off. Its frozen
+record (`reports/v2_baselines/m0_validation.csv`) carries its own run identifier,
+its own checkpoint hash, `stopped_by=step_limit`, and a parameter count of
+195,460 that matches the biology-disabled architecture exactly. No prediction
+from the earlier phase was reused; M0 and M4 are two runs of the same V2 training
+pipeline differing only in whether the biological branch is present, which is
+what makes the M-minus-M0 comparison a clean isolation of the biological branch.
 
 ## 3.5 Protein and biological evidence
 
@@ -362,9 +394,14 @@ Test pairs are then classified by how many endpoints are unseen:
 | **S2** | exactly one drug unseen |
 | **S3** | **both** drugs unseen |
 
-Under a drug-level split S1 is empty by construction. The **pooled** drug-disjoint
-test set contains **84,690 pairs** at prevalence 0.5; the **S3** subset contains
-**7,758 pairs**, also at prevalence 0.5.
+Under a drug-level split S1 is empty by construction, so every test pair has at
+least one held-out endpoint. We therefore call the full 84,690-pair test set the
+**pooled drug-holdout test (S2+S3; at least one endpoint is a held-out drug)**,
+and use "pooled drug-holdout test" for it throughout. It contains **84,690 pairs**
+at prevalence 0.5. The **S3 subset** — the harder, fully unseen-drug condition in
+which **both** endpoints are held-out drugs — contains **7,758 pairs**, also at
+prevalence 0.5. Phrases such as "both drugs unseen", "fully unseen-drug pair" and
+"two-unseen-drug condition" refer to S3 only; the pooled set mixes S2 and S3.
 
 A scaffold-disjoint scheme (Bemis–Murcko frameworks [bemis1996scaffold]) is
 implemented and its assignments exist in the frozen data, but **no
@@ -413,11 +450,14 @@ unseen drugs.
 **Biological encoder.** A drug's annotations are an unordered set of varying size,
 so the encoder is a Deep Sets architecture [zaheer2017deepsets]: embed each
 element, apply a shared φ network, aggregate over the set, apply ρ. Each protein
-element is the sum of a protein embedding (vocabulary 2,893, dimension 128), a
-relation-type embedding (dimension 16) and an evidence-type embedding (dimension
-16), so that a target, an enzyme and a transporter are distinguishable, as are a
-curated and an experimental assertion. Pathway elements carry a pathway embedding
-only.
+element is the **concatenation** of a protein embedding (vocabulary 2,893,
+dimension 128), a relation-type embedding (dimension 16) and an evidence-type
+embedding (dimension 16), forming a 160-dimensional element vector that the φ
+network (160 → 256 → 128) then maps. Concatenating rather than adding keeps the
+three factors in separate coordinates, so that a target, an enzyme and a
+transporter are distinguishable, as are a curated and an experimental assertion.
+Pathway elements carry a 128-dimensional pathway embedding only, mapped by a
+128 → 256 → 128 φ network.
 
 **Mean aggregation is a deliberate commitment, not a default.** Sum aggregation is
 strictly more expressive for multisets [xu2019gin] — and that is exactly the
@@ -521,11 +561,16 @@ This is a real limit on what the error bars mean.
 
 ## 3.16 Evaluation metrics
 
-The primary metric is **AUPRC**, preregistered, because it is sensitive to
-performance on the positive class [saito2015prc]. AUROC, Brier score and expected
-calibration error are reported alongside. Evaluation sets are constructed at
-prevalence 0.5, so the class-imbalance argument for AUPRC is weaker here than in
-its usual setting; AUPRC remains primary because it was preregistered.
+Stated precisely, the task is to **rank documented DDI pairs above degree-matched
+sampled unlabelled pairs**. The positives are documented interactions; the
+"negatives" are sampled pairs that carry no documented interaction, which is not
+the same as confirmed non-interactions (Section 3.10, and the limitation in
+Section 6). The primary metric is **AUPRC**, preregistered, because it is
+sensitive to performance on the positive class [saito2015prc]. AUROC, Brier score
+and expected calibration error are reported alongside. Evaluation sets are
+constructed at prevalence 0.5, so the class-imbalance argument for AUPRC is weaker
+here than in its usual setting; AUPRC remains primary because it was
+preregistered.
 
 ## 3.17 Statistical analysis
 
@@ -546,6 +591,19 @@ hypotheses, including the exploratory H5.** Including it makes the correction
 
 For H-V2-1 and H-V2-3 a bootstrap over test pairs (1,000 resamples, RNG seed
 20260829) was also computed on seed 0.
+
+**What these tests do and do not quantify.** The seed-level paired tests quantify
+consistency across stochastic training runs — parameter initialisation, batch
+ordering and negative draws — on **one fixed drug partition**. They do *not*
+estimate uncertainty across alternative drug partitions or over the wider drug
+universe; a single split cannot. The reported *p*-values and confidence intervals
+should be read as statements about reproducibility of the effect on this
+partition, not as population-level generalisation bounds. Separately, the seed-0
+pair-level bootstrap resamples test *pairs*, which are **not independent**: many
+pairs share a drug, so a resample that draws a particular drug's pairs repeatedly
+moves several rows together. The bootstrap interval is therefore an optimistic
+picture of pair-level sampling variability, and it addresses a different source of
+uncertainty than the seed-level test rather than replacing it.
 
 With five seeds the *t* test rests on an approximate normality assumption that
 cannot be checked at that sample size. The effect sizes here are large enough
@@ -599,13 +657,15 @@ negligible effect would not have counted as support.
 # 4. RESULTS
 
 Results are stated first and interpreted separately. All values are mean ± sample
-standard deviation over five seeds on the frozen test set, evaluated once.
+standard deviation over five seeds on the frozen test set. Every model reported
+here was frozen before its test evaluation, and no test result was used to choose
+among configurations.
 
-## 4.1 Main drug-disjoint performance
+## 4.1 Main pooled drug-holdout performance
 
-**Result.** On 84,690 pooled drug-disjoint test pairs, BIO-GINE M4 achieved
-**0.8117 ± 0.0097 AUPRC**. Per-seed values were 0.8235, 0.8121, 0.8070, 0.7984
-and 0.8176. Context from Table 3: aligned molecular GINE 0.7784 ± 0.0059; BIO-RF
+**Result.** On the 84,690-pair pooled drug-holdout test (S2+S3; at least one
+endpoint is a held-out drug), BIO-GINE M4 achieved **0.8117 ± 0.0097 AUPRC**.
+Per-seed values were 0.8235, 0.8121, 0.8070, 0.7984 and 0.8176. Context from Table 3: aligned molecular GINE 0.7784 ± 0.0059; BIO-RF
 0.7396 ± 0.0017; aligned Dual 0.7147 ± 0.0067; biological-degree-only RF
 0.6504 ± 0.0006; M4 with shuffled biology 0.6923 ± 0.0054.
 
@@ -708,8 +768,12 @@ strong baseline, and it exceeds a neural model that relies on interaction-graph
 context. This is worth stating plainly because it constrains the claim: the
 advantage reported here is not "deep learning beats classical methods", it is
 "per-drug biological information transfers where interaction-graph context does
-not". The 0.072 gap between BIO-RF and BIO-GINE is the part attributable to the
-learned encoder.
+not". The 0.072 gap between BIO-RF and BIO-GINE is consistent with an advantage
+of the learned end-to-end representation, but it cannot be attributed to any
+single architectural component: BIO-RF and BIO-GINE differ in their molecular
+representation (fixed ECFP4 fingerprints versus a learned GINE encoder), in how
+biology is combined with structure, in the decoder, and in the learning procedure
+itself. The gap reflects the sum of those differences, not the encoder alone.
 
 ## 4.7 Evidence-source ablations — non-monotonic
 
@@ -734,7 +798,7 @@ conclusion is unaffected. But performance peaks at M2 and then *declines* as
 more evidence is added: adding ChEMBL experimental bioactivity (M2 → M3) cost
 0.009 AUPRC pooled, and adding Reactome pathways (M3 → M4) cost a further 0.006,
 with the same ordering on S3. M4 was fixed as primary by the validation protocol
-before the test set was opened; it is the preregistered model, not the best test
+before any test evaluation; it is the preregistered model, not the best test
 performer. Constructing a rising narrative from M0 to M4 would misrepresent the
 data.
 
@@ -1005,13 +1069,16 @@ scaling [guo2017calibration]. We do not claim novelty for them.
 What we believe is contributed is the **control design**. Reports that biological
 information improves DDI prediction are common; a control that holds annotation
 degree exactly fixed while destroying annotation identity, so that the popularity
-explanation can be excluded rather than assumed away, is what this study adds. The
-result is a claim narrower than "biology helps" and considerably more defensible:
-*biological identity, not merely annotation quantity, carried information that
-transferred to unseen drugs in this dataset.*
+explanation can be excluded rather than assumed away, is the element we did not
+find in the literature we reviewed. The result is a claim narrower than "biology
+helps" and considerably more defensible: *biological identity, not merely
+annotation quantity, carried information that transferred to unseen drugs in this
+dataset.* We frame this as a methodological contribution demonstrated on one
+dataset, not as an exhaustive priority claim over all prior DDI work.
 
 The secondary contribution is methodological. Hypotheses and falsification
-criteria were fixed before running; the test set was opened once; the primary
+criteria were fixed before running; the primary configuration was frozen before
+its first test evaluation and no test result was used for selection; the primary
 model turned out not to be the best test performer and is reported as such; one
 hypothesis is unsupported; one control outperformed the primary model; and one
 planned diagnostic was found to be non-identifiable and is reported as undefined
@@ -1149,8 +1216,9 @@ interaction neighbourhood is unavailable, and whether any improvement reflects
 biological identity rather than annotation counts.
 
 Under a preregistered drug-disjoint protocol with degree-matched negatives and a
-test set opened once, BIO-GINE reached 0.8117 ± 0.0097 AUPRC against 0.7784 ±
-0.0059 for an aligned molecular model (Holm *p* = 1.98 × 10⁻⁴). Where both drugs
+test set used only to measure frozen configurations, never to select among them,
+BIO-GINE reached 0.8117 ± 0.0097 AUPRC against 0.7784 ± 0.0059 for an aligned
+molecular model (Holm *p* = 1.98 × 10⁻⁴). Where both drugs
 were unseen, it reached 0.7372 ± 0.0153 while a model relying on
 interaction-graph context fell to 0.6198 ± 0.0278 (Holm *p* = 6.56 × 10⁻⁴).
 Preserving annotation degree exactly while randomising annotation identity cost

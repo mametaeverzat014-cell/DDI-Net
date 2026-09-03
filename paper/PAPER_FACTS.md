@@ -63,6 +63,8 @@ Source: `BiologyBundle` under each policy.
 | Molecular encoder | GINE, **3 layers, hidden 64, SUM pooling** | `BioGineConfig` defaults | measured |
 | bio_dim | 128 | `FROZEN_SELECTED_CONFIG.txt` | selected on validation |
 | Relation / evidence embedding dims | 16 / 16 | `BioGineConfig` | preregistered |
+| Protein element construction | **concatenation** of protein (128) + relation (16) + evidence (16) = 160-dim, fed to φ (160→256→128) — NOT summed | `BioGine.encode_biology` (`torch.cat`, line ~576); `DeepSetsEncoder` `element_dim=b+rel_dim+ev_dim` | measured |
+| Pathway element construction | 128-dim pathway embedding, fed to φ (128→256→128) | `BioGine.encode_biology`; `DeepSetsEncoder` `element_dim=b` | measured |
 | Biological aggregation | MEAN | `BioGineConfig` | preregistered (SUM = CONTROL C) |
 | dropout_bio / dropout_pair | 0.1 / 0.1 | `FROZEN_SELECTED_CONFIG.txt` | selected on validation |
 | Fusion | Linear → LayerNorm, hidden 128 | `BioGine.__init__` | measured |
@@ -77,6 +79,30 @@ Source: `BiologyBundle` under each policy.
 > `hidden_dim=64, mol_layers=3`. The implementation follows the *measured* Phase
 > A-2 configuration so that every M-minus-M0 difference is attributable to the
 > biological branch alone. **Methods must state 3 layers / hidden 64.**
+
+> **M0 provenance (verified against artifacts).** M0 was **retrained under the V2
+> protocol, not reused** from Phase A-2. `scripts/38_v2_m0_test.py` drives the same
+> `V2Trainer` used for the full model, taking the final-runner specs with
+> `ablation="M0"` (biological branch off). Its frozen record
+> `reports/v2_baselines/m0_validation.csv` carries its own `run_id`
+> (`11b0cfe445e48a99`), its own `checkpoint_sha256`, `config_id=77926ed46926273d`,
+> `optimizer_steps=21960`, `stopped_by=step_limit`, tag `FROZEN_M0_SAME_SPLIT`, and
+> `n_parameters=195460` — which reproduces exactly when the biology-disabled
+> architecture is instantiated. The `bio_gine.py` comment "reused rather than
+> retrained" refers to the *architecture/hyperparameter* inheritance philosophy,
+> not to the execution; the artifacts show a fresh training run. **Methods must say
+> M0 was retrained/aligned under the V2 protocol, inheriting the molecular config.**
+
+> **Test-set discipline (verified against commit sequence and timestamps).** The
+> primary M4 config was frozen after the validation-only grid (`9ca77f7`,
+> `226f038`) before its first test evaluation (`5376f7e`, recorded `fb6beae`). M0
+> was frozen (`52053a2`) before its own test evaluation (`9924028`). Each
+> baseline/control/ablation CSV carries a "before-run"/"before-test"/"evaluator"
+> git commit and a distinct `evaluated_at_utc` (M4 2026-09-02T18:24 → M0
+> 2026-09-02T19:36 → ablations/RF controls 2026-09-03T04:34–05:23). The defensible
+> claim is **not** "the test set was touched exactly once" but "each configuration
+> was frozen before its own test evaluation, and no test result was used for
+> selection." **Methods must use the precise wording, not "opened once".**
 
 ## 3. Training and model selection
 
@@ -279,4 +305,17 @@ both conditions are met (Holm p 1.98e-04; dz 7.72). H-V2-3 likewise.
 
 ## 13. Open items marked [VERIFY] in the manuscript
 
-None. Every number used in the manuscript resolved to a frozen source.
+No numeric value is unresolved — every number used in the manuscript resolved to a
+frozen source.
+
+**One marked literature-review task (non-numeric).** §2.4 references a full
+comparative survey of 2024–2026 cold-start / unseen-drug DDI methods that is
+**beyond the literature verified for this manuscript**. A preliminary search
+indicates this is an active area (substructure-aware, multimodal, and
+language-grounded methods, plus DTI-side cold-start work), but none of those
+candidates was verified to the standard used for `references.bib` (confirmed
+title, authors, year, venue, DOI). They are therefore **not cited**. Before
+submission, a maintainer should either verify and add specific recent methods to
+the Related Work comparison or leave the framing as the bounded "closest prior
+work" statement now used. No conclusion in the manuscript depends on resolving
+this task; it affects completeness of positioning, not any result.
