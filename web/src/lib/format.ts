@@ -35,7 +35,13 @@ export function pct(x: number, dp = 1): string {
   return `${x.toFixed(dp)}%`;
 }
 
-/** Thousands separators, locale-independent (always comma). */
-export function count(n: number): string {
-  return n.toLocaleString("en-US");
+/** Thousands separators. English groups with a comma, Russian with a no-break
+ *  space, which is the Russian typographic convention. Only the GROUPING is
+ *  language-dependent — decimal values (AUPRC, p-values, deltas) keep the dot
+ *  everywhere, because that is how they appear in the artifacts and the
+ *  manuscript, and a decimal comma would be a different-looking number. */
+export function count(n: number, lang: "ru" | "en" = "en"): string {
+  return lang === "ru"
+    ? n.toLocaleString("en-US").replace(/,/g, "\u00a0")
+    : n.toLocaleString("en-US");
 }

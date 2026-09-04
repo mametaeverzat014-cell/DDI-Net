@@ -3,8 +3,11 @@ import { AuprcBars } from "../components/AuprcBars";
 import { Badge } from "../components/Badge";
 import { frozen, hypothesis, model } from "../data/frozen";
 import { auprc, delta, meanSd, pValue } from "../lib/format";
+import { useI18n, fill } from "../i18n";
+import { gloss } from "../data/labels";
 
 export function Research() {
+  const { t, lang } = useI18n();
   const [regime, setRegime] = useState<"pooled" | "s3">("pooled");
   const main = frozen.models;
   const ladder = frozen.ladder;
@@ -12,13 +15,11 @@ export function Research() {
   return (
     <section className="section" style={{ paddingTop: "18vh" }}>
       <div className="wrap">
-        <span className="eyebrow">Results — read from the frozen V2 state</span>
-        <h1 style={{ marginTop: 18, maxInlineSize: "16ch" }}>The evidence, in full.</h1>
+        <span className="eyebrow">{t("rs.eyebrow")}</span>
+        <h1 style={{ marginTop: 18, maxInlineSize: "16ch" }}>{t("rs.title")}</h1>
         <p style={{ marginTop: 20, maxWidth: 640 }}>
-          Every number below is generated from the frozen artifacts at tag{" "}
-          <span className="mono" style={{ color: "var(--text-2)" }}>{frozen.meta.frozen_tag}</span>. Confidence intervals,
-          Holm-adjusted p-values and effect sizes are recomputed from the per-seed values, not
-          retyped. The primary configuration was frozen before any test evaluation.
+          {t("rs.lede1")}{" "}
+          <span className="mono" style={{ color: "var(--text-2)" }}>{frozen.meta.frozen_tag}</span>{t("rs.lede2")}
         </p>
 
         {/* regime toggle */}
@@ -35,38 +36,32 @@ export function Research() {
                 borderRadius: 20, padding: "7px 16px", fontSize: 11, letterSpacing: "0.12em", cursor: "pointer",
               }}
             >
-              {r === "pooled" ? "POOLED DRUG-HOLDOUT (S2+S3)" : "S3 · BOTH DRUGS HELD OUT"}
+              {r === "pooled" ? t("rs.pooled") : t("rs.s3")}
             </button>
           ))}
         </div>
 
         {/* MAIN COMPARISON */}
         <div style={{ marginTop: 28, border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", background: "var(--surface)", backdropFilter: "var(--blur)", padding: "28px 26px" }}>
-          <AuprcBars rows={regime === "s3" ? main.filter((m) => m.s3_mean !== null) : main} metric={regime} title={regime === "pooled" ? "Model comparison — pooled drug-holdout AUPRC" : "Model comparison — S3 AUPRC (both drugs held out)"} />
+          <AuprcBars rows={regime === "s3" ? main.filter((m) => m.s3_mean !== null) : main} metric={regime} title={regime === "pooled" ? t("rs.cmp.pooled") : t("rs.cmp.s3")} />
           <p className="mono" style={{ marginTop: 18, fontSize: 11, color: "var(--text-3)" }}>
-            {regime === "s3"
-              ? "S3 is the hardest condition: neither drug has any interaction adjacency in the training graph. The Dual model, which relies on that adjacency, degrades most here."
-              : "Colour: cyan = full model · blue = baselines · violet = shortcut controls. Axis begins at 0.5 and is never truncated."}
+            {regime === "s3" ? t("rs.note.s3") : t("rs.note.pooled")}
           </p>
         </div>
 
         {/* HYPOTHESES */}
-        <h2 style={{ marginTop: 90 }}>Preregistered hypotheses</h2>
-        <p style={{ marginTop: 16, maxWidth: 620 }}>
-          Five hypotheses, fixed before any run. Holm–Bonferroni correction spans all five,
-          including the exploratory H-V2-5 — which makes the correction stricter for the four
-          confirmatory ones.
-        </p>
+        <h2 style={{ marginTop: 90 }}>{t("rs.hyp")}</h2>
+        <p style={{ marginTop: 16, maxWidth: 620 }}>{t("rs.hyplede")}</p>
         <div style={{ marginTop: 28, display: "flex", flexDirection: "column", gap: 12 }}>
           {frozen.hypotheses.map((h) => (
             <div key={h.id} style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 18, alignItems: "center", border: "1px solid var(--border-soft)", borderRadius: "var(--radius)", padding: "16px 20px", background: "var(--surface)" }} className="collapse">
               <div style={{ display: "flex", flexDirection: "column", gap: 6, minWidth: 120 }}>
                 <span className="mono" style={{ fontSize: 13, color: "var(--text)" }}>{h.id}</span>
-                <Badge kind={h.status === "confirmatory" ? "measured" : "exploratory"}>{h.status}</Badge>
+                <Badge kind={h.status === "confirmatory" ? "measured" : "exploratory"}>{h.status === "confirmatory" ? t("rs.confirmatory") : t("rs.exploratory")}</Badge>
               </div>
               <div>
-                <div style={{ fontSize: 14, color: "var(--text-2)" }}>{h.comparison}</div>
-                <div className="mono" style={{ fontSize: 11, color: "var(--text-3)", marginTop: 4 }}>{h.view}</div>
+                <div style={{ fontSize: 14, color: "var(--text-2)" }} title={h.comparison}>{gloss(h.comparison, lang)}</div>
+                <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 4 }} title={h.view}>{gloss(h.view, lang)}</div>
               </div>
               <div style={{ textAlign: "right", display: "flex", flexDirection: "column", gap: 3 }}>
                 <span className="mono" style={{ fontSize: 15, color: h.status === "confirmatory" ? "var(--cyan)" : "var(--amber)" }}>Δ {delta(h.delta)}</span>
@@ -74,7 +69,7 @@ export function Research() {
                   95% CI [{delta(h.ci_low)}, {delta(h.ci_high)}]
                 </span>
                 <span className="mono" style={{ fontSize: 11, color: "var(--text-3)" }}>Holm p = {pValue(h.holm_p)} · dz {h.dz.toFixed(2)}</span>
-                <span style={{ fontSize: 11, color: h.status === "confirmatory" ? "var(--text-2)" : "var(--amber)" }}>{h.conclusion}</span>
+                <span style={{ fontSize: 11, color: h.status === "confirmatory" ? "var(--text-2)" : "var(--amber)" }} title={h.conclusion}>{gloss(h.conclusion, lang)}</span>
               </div>
             </div>
           ))}
@@ -82,52 +77,47 @@ export function Research() {
         <p className="mono" style={{ marginTop: 14, fontSize: 10.5, color: "var(--text-3)" }}>reports/v2_statistics/final_h1_h5_holm.csv</p>
 
         {/* EVIDENCE LADDER (non-monotonic) */}
-        <h2 style={{ marginTop: 90 }}>Evidence ladder — non-monotonic</h2>
-        <p style={{ marginTop: 16, maxWidth: 640 }}>
-          Adding biological evidence one source at a time. Every biological variant beats the
-          no-biology baseline (M0), but the ladder <strong>does not rise monotonically</strong>:
-          M2 is the strongest variant, and the SUM control beats the primary MEAN model. M4 was
-          fixed as primary on validation before the test set was opened — it is the preregistered
-          model, not the best test performer.
-        </p>
+        <h2 style={{ marginTop: 90 }}>{t("rs.ladder")}</h2>
+        <p style={{ marginTop: 16, maxWidth: 640 }}>{t("rs.ladderlede")}</p>
         <div style={{ marginTop: 28, border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", background: "var(--surface)", backdropFilter: "var(--blur)", padding: "28px 26px" }}>
           <AuprcBars rows={regime === "s3" ? ladder.filter((m) => m.s3_mean !== null) : ladder} metric={regime} />
         </div>
 
         {/* CONTROLS SUMMARY */}
-        <h2 style={{ marginTop: 90 }}>Shortcut controls</h2>
+        <h2 style={{ marginTop: 90 }}>{t("rs.controls")}</h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 20, marginTop: 28 }}>
           <ControlCard
-            title="CONTROL F — identity shuffle"
-            body={`Rewiring which proteins each drug is annotated against, at fixed degree, drops AUPRC from ${auprc(model("BIO-GINE M4").pooled_mean)} to ${auprc(model("BIO-GINE M4, shuffled biology (CONTROL F)").pooled_mean)}. ${Math.round(frozen.control_f.changed_fraction * 100)}% of edges changed; ${(frozen.control_f.retained_fraction * 100).toFixed(2)}% retained.`}
+            title={t("rs.cf.title")}
+            body={fill(t("rs.cf.body"), {
+              a: auprc(model("BIO-GINE M4").pooled_mean),
+              b: auprc(model("BIO-GINE M4, shuffled biology (CONTROL F)").pooled_mean),
+              c: Math.round(frozen.control_f.changed_fraction * 100),
+              d: (frozen.control_f.retained_fraction * 100).toFixed(2),
+            })}
             source={frozen.control_f.source}
           />
           <ControlCard
-            title="CONTROL A — count-only baseline"
-            body={`A random forest on annotation counts alone reaches ${auprc(model("Biological-degree-only RF (CONTROL A)").pooled_mean)} — above chance, so popularity is genuinely predictive, but far below the full model.`}
+            title={t("rs.ca.title")}
+            body={fill(t("rs.ca.body"), { a: auprc(model("Biological-degree-only RF (CONTROL A)").pooled_mean) })}
             source={model("Biological-degree-only RF (CONTROL A)").source}
           />
           <ControlCard
-            title="CONTROL E — not identifiable"
-            body={`The planned probe predicts training-DDI degree from the embedding. Held-out R² is undefined: every held-out drug has degree zero, so target variance is zero. Train R² = ${frozen.control_e.r2_train.toFixed(3)}, reported descriptively.`}
+            title={t("rs.ce.title")}
+            body={fill(t("rs.ce.body"), { a: frozen.control_e.r2_train.toFixed(3) })}
             source={frozen.control_e.source}
             amber
           />
         </div>
 
         {/* CALIBRATION */}
-        <h2 style={{ marginTop: 90 }}>Calibration</h2>
-        <p style={{ marginTop: 16, maxWidth: 640 }}>
-          One temperature per seed, fitted only on validation predictions and applied to the
-          frozen test predictions. Expected calibration error falls by roughly a factor of three;
-          ranking is unchanged, because temperature scaling is monotonic.
-        </p>
+        <h2 style={{ marginTop: 90 }}>{t("rs.calib")}</h2>
+        <p style={{ marginTop: 16, maxWidth: 640 }}>{t("rs.caliblede")}</p>
         <div style={{ marginTop: 24, overflowX: "auto" }}>
           <table style={{ borderCollapse: "collapse", width: "100%", minWidth: 520 }}>
             <thead>
               <tr>
-                {["seed", "temperature", "ECE raw → scaled", "Brier raw → scaled"].map((h) => (
-                  <th key={h} className="mono" style={{ textAlign: "left", fontSize: 11, color: "var(--text-3)", fontWeight: 400, padding: "8px 12px", borderBottom: "1px solid var(--border)" }}>{h}</th>
+                {["rs.col.seed", "rs.col.temp", "rs.col.ece", "rs.col.brier"].map((h) => (
+                  <th key={h} className="mono" style={{ textAlign: "left", fontSize: 11, color: "var(--text-3)", fontWeight: 400, padding: "8px 12px", borderBottom: "1px solid var(--border)" }}>{t(h)}</th>
                 ))}
               </tr>
             </thead>
@@ -148,12 +138,8 @@ export function Research() {
         {/* headline reproduction */}
         <div style={{ marginTop: 70, borderTop: "1px solid var(--border-soft)", paddingTop: 30, display: "flex", flexWrap: "wrap", gap: 40 }}>
           <div style={{ maxWidth: 480 }}>
-            <span className="eyebrow">Headline</span>
-            <p style={{ marginTop: 12 }}>
-              Biological identity carried predictive information that transferred to unseen drugs
-              and was not explained by annotation quantity — under one frozen drug partition, on a
-              curated {frozen.dataset.n_drugs}-drug subset. Not clinically validated.
-            </p>
+            <span className="eyebrow">{t("rs.headline")}</span>
+            <p style={{ marginTop: 12 }}>{fill(t("rs.headlinep"), { n: frozen.dataset.n_drugs })}</p>
           </div>
           <div className="mono" style={{ fontSize: 12, color: "var(--text-2)", lineHeight: 1.9 }}>
             <div>M4 pooled &nbsp;{meanSd(model("BIO-GINE M4").pooled_mean, model("BIO-GINE M4").pooled_std)}</div>

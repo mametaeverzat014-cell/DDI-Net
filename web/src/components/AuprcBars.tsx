@@ -4,6 +4,8 @@
 // A 95% CI bracket is drawn on each bar when a std is available.
 import type { ModelRow } from "../data/frozen";
 import { auprc } from "../lib/format";
+import { useI18n } from "../i18n";
+import { gloss } from "../data/labels";
 
 const CAT_COLOR: Record<string, string> = {
   primary: "var(--cyan)",
@@ -30,6 +32,7 @@ export function AuprcBars({
   metric: "pooled" | "s3";
   title?: string;
 }) {
+  const { lang } = useI18n();
   return (
     <div>
       {title && <span className="eyebrow" style={{ display: "block", marginBottom: 14 }}>{title}</span>}
@@ -43,7 +46,7 @@ export function AuprcBars({
           const ciHi = sd !== null ? x(mean + 1.96 * sd) : null;
           return (
             <div key={r.label + metric} style={{ display: "grid", gridTemplateColumns: "minmax(150px, 230px) 1fr auto", gap: 16, alignItems: "center" }}>
-              <span style={{ fontSize: 13, color: "var(--text-2)" }}>{r.label}</span>
+              <span style={{ fontSize: 13, color: "var(--text-2)" }} title={r.label}>{gloss(r.label, lang)}</span>
               <div
                 role="img"
                 aria-label={`${r.label}: ${auprc(mean)} AUPRC`}
@@ -62,7 +65,7 @@ export function AuprcBars({
         })}
       </div>
       <div className="mono" style={{ display: "flex", justifyContent: "space-between", marginTop: 10, fontSize: 10, color: "var(--text-3)" }}>
-        <span>AUPRC {DOMAIN_MIN.toFixed(2)} (random at prevalence 0.5)</span>
+        <span>AUPRC {DOMAIN_MIN.toFixed(2)} ({lang === "ru" ? "случайное ранжирование при доле положительных 0,5" : "random at prevalence 0.5"})</span>
         <span>{DOMAIN_MAX.toFixed(2)}</span>
       </div>
     </div>

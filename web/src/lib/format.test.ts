@@ -28,6 +28,10 @@ describe("scientific number formatting is deterministic", () => {
   it("count always uses comma thousands separators", () => {
     expect(count(191392)).toBe("191,392");
     expect(count(1705)).toBe("1,705");
+    // Russian groups with a no-break space; the digits are identical.
+    expect(count(191392, "ru")).toBe("191\u00a0392");
+    expect(count(1705, "ru")).toBe("1\u00a0705");
+    expect(count(1705, "ru").replace(/\u00a0/g, "")).toBe(count(1705).replace(/,/g, ""));
   });
 
   it("fixed respects requested precision", () => {
