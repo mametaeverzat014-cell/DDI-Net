@@ -23,8 +23,8 @@ interactions and sampled unlabelled pairs — not verified clinical outcomes.
 
 from __future__ import annotations
 
+import os
 import sys
-import time
 from pathlib import Path
 from typing import Literal
 
@@ -35,7 +35,14 @@ from pydantic import BaseModel, Field
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from .engine import DrugNotInUniverse, FrozenBioGineEngine, IdenticalDrugs  # noqa: E402
+#: Which engine backs this process.
+#:   "lean" (default) — numpy over the precomputed artifact, ~34 MiB RSS.
+#:   "full"           — the torch pipeline, ~1.15 GiB RSS, re-encodes from the
+#:                      checkpoint. Slower and much heavier, kept because it is
+#:                      the path the parity test validates and the one that
+#:                      regenerates the artifact.
+#: Both return the same numbers within the served tolerance; tests assert it.
+ENGINE_MODE = os.environ.get("DDINET_ENGINE", "lean").lower()
 
 DISCLAIMER_RU = (
     "Это вычислительный исследовательский прототип. Результат модели не "
@@ -123,11 +130,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-_engine: FrozenBioGineEngine | None = None
-_documented: set[tuple[str, str]] = set()
+_engine = None
 
 
-def get_engine() -> FrozenBioGineEngine:
+def get_engine():
     if _engine is None:
         raise HTTPException(503, "model not loaded")
     return _engine
@@ -136,33 +142,67 @@ def get_engine() -> FrozenBioGineEngine:
 @app.on_event("startup")
 def _startup() -> None:
     """Load once. A request must never pay for the checkpoint or the dataset."""
-    global _engine, _documented
-    from ddinet.data.v2_dataset import load_universe
+    global _engine
+    if ENGINE_MODE == "full":
+        from .engine import FrozenBioGineEngine
 
-    _engine = FrozenBioGineEngine()
-    # Documented-pair lookup for dataset_record only. Deliberately built AFTER
-    # the engine and kept off the engine, so it cannot be reached from any code
-    # path that computes a representation.
-    universe = load_universe()
-    _documented = {
-        tuple(sorted(p))
-        for p in zip(universe.pairs["drug_a"], universe.pairs["drug_b"])
-    }
+        _engine = FrozenBioGineEngine()
+    else:
+        from .lean import LeanEngine
+
+        _engine = LeanEngine()
 
 
 @app.get("/api/health")
 def health() -> dict:
     if _engine is None:
         return {"status": "loading", "model_available": False}
-    return {
+    out = {
         "status": "ok",
         "model_available": True,
+        "engine": ENGINE_MODE,
         "n_drugs": len(_engine.ordered_ids),
-        "n_parameters": _engine.n_parameters,
-        "startup_seconds": round(_engine.startup_seconds, 3),
-        "frozen_tag": _engine.integrity.frozen_tag,
-        "checkpoint_sha256": _engine.integrity.checkpoint_sha256,
+        "frozen_tag": _frozen_tag(),
+        "checkpoint_sha256": _checkpoint_sha(),
     }
+    if ENGINE_MODE == "full":
+        out["n_parameters"] = _engine.n_parameters
+        out["startup_seconds"] = round(_engine.startup_seconds, 3)
+    return out
+
+
+def _frozen_tag() -> str:
+    return (getattr(_engine, "integrity", None).frozen_tag
+            if ENGINE_MODE == "full" else _engine.meta["frozen_tag"])
+
+
+def _checkpoint_sha() -> str:
+    return (getattr(_engine, "integrity", None).checkpoint_sha256
+            if ENGINE_MODE == "full" else _engine.meta["source_checkpoint_sha256"])
+
+
+def _frozen_commit() -> str:
+    """The lean artifact records its source tag; the commit comes from the manifest."""
+    from .integrity import load_manifest
+
+    return load_manifest()["frozen_commit"]
+
+
+def _documented(engine, a: str, b: str) -> bool:
+    """Dataset metadata lookup, on whichever engine backs this process."""
+    if hasattr(engine, "is_documented"):
+        return engine.is_documented(a, b)
+    from ddinet.data.v2_dataset import load_universe
+
+    global _doc_cache
+    if _doc_cache is None:
+        u = load_universe()
+        _doc_cache = {tuple(sorted(p))
+                      for p in zip(u.pairs["drug_a"], u.pairs["drug_b"])}
+    return tuple(sorted((a, b))) in _doc_cache
+
+
+_doc_cache: set[tuple[str, str]] | None = None
 
 
 @app.post("/api/analyze", response_model=AnalyzeResponse)
@@ -187,7 +227,7 @@ def analyze(req: AnalyzeRequest) -> AnalyzeResponse:
 
     try:
         s = engine.score(a, b)
-    except (DrugNotInUniverse, IdenticalDrugs) as exc:  # pragma: no cover
+    except (KeyError, ValueError) as exc:  # pragma: no cover
         raise HTTPException(422, str(exc)) from exc
 
     def info(drug: str) -> DrugInfo:
@@ -216,13 +256,17 @@ def analyze(req: AnalyzeRequest) -> AnalyzeResponse:
             ),
         },
         dataset_record=DatasetRecord(
-            documented_in_frozen_dataset=tuple(sorted((a, b))) in _documented
+            documented_in_frozen_dataset=_documented(engine, a, b)
         ),
         provenance=Provenance(
-            frozen_tag=engine.integrity.frozen_tag,
-            frozen_commit=engine.integrity.frozen_commit,
-            checkpoint_sha256=engine.integrity.checkpoint_sha256,
-            calibration_source=engine.temperature_source,
+            frozen_tag=_frozen_tag(),
+            frozen_commit=_frozen_commit(),
+            checkpoint_sha256=_checkpoint_sha(),
+            calibration_source=(
+                engine.temperature_source if ENGINE_MODE == "full"
+                else "reports/v2_calibration/m4_temperature_scaling.csv @ "
+                     + engine.meta["frozen_tag"]
+            ),
             temperature=engine.temperature,
             parity_tolerance_prob=PROB_TOLERANCE,
         ),

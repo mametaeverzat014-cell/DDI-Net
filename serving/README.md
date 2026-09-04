@@ -93,20 +93,62 @@ correction: the published number stands on its own frozen predictions, and
 2.0e-03 is 0.22× the across-seed SD of 9.1e-03 the hypothesis tests used.
 Recorded in `LIMITATIONS.md`.
 
-## Performance
+## Two serving paths
 
-| | |
-|---|---|
-| startup (load + encode all 1,705 drugs) | ~7.7 s |
-| warm request, median | 2.3 ms |
-| warm request, p95 | 2.8 ms |
-| process RSS | ~1.15 GiB |
+`DDINET_ENGINE` picks which one backs the process. Both return the same numbers
+within the served tolerance, and tests assert it.
 
-The checkpoint, drug index, molecular graphs, biological vocabularies and the
-**full drug encoding** are built once at startup. A request is one decoder pass.
-Caching the encoding is exact, not an approximation: the molecular encoder uses
-LayerNorm rather than BatchNorm and dropout is inactive under `eval()`, so no
-drug's vector depends on its batch.
+| | `lean` (default) | `full` |
+|---|---|---|
+| dependencies | numpy | torch, torch_geometric, rdkit, pandas |
+| startup | 0.1 s | 7.7 s |
+| warm request | 0.08 ms | 2.3 ms |
+| server RSS | **158 MiB** | 1.15 GiB |
+| can re-encode a drug | no | yes |
 
-RSS rules out Vercel/Lambda-style serverless (256 MB–1 GB). Any CPU container
-host with **≥2 GB RAM** works: Fly.io, Render, Railway, Hugging Face Spaces.
+The split follows from a property of the model rather than a shortcut. Every
+drug's representation is fixed — the molecular encoder uses LayerNorm rather
+than BatchNorm and dropout is inactive under `eval()`, so no drug's vector
+depends on its batch — which means the encoders can run **once** and their
+output be reused exactly. After that, a request needs only the pair decoder
+(132,609 of the model's 1,122,804 parameters) and the cached encodings (0.89 MB).
+torch, torch_geometric and rdkit are then pure import weight: 843 MiB of RSS
+doing no work.
+
+`python -m serving.precompute` runs the full verified pipeline once and writes
+`runtime/model_assets/lean_decoder_v1.npz` (1.6 MB: encodings, decoder weights,
+the temperature, and the documented-pair table as int16 index pairs so the lean
+server needs no pandas). `serving/lean.py` then answers from that alone.
+
+This is a deployment shape, not a second model: the weights are copied from the
+checkpoint unchanged and the encodings are the frozen model's own output. Lean
+vs torch over all 92,448 frozen rows: max |Δ| 4.5e-06 in probability space —
+numpy's BLAS against torch's oneDNN, the same class of difference as the CPU/GPU
+gap and two orders below it. Against the frozen predictions themselves the lean
+path scores max |Δ| **6.05e-06**, marginally closer than the torch path's
+8.37e-06.
+
+## Deploying
+
+The lean image fits a 512 MB host, which rules the memory question out
+entirely. `render.yaml` is a ready blueprint:
+
+```bash
+# Render → New → Blueprint → point at this repo
+# or build locally:
+docker build -f serving/Dockerfile.lean -t ddinet-api .
+docker run -p 8000:8000 ddinet-api
+```
+
+The Dockerfile is two-stage: stage one installs torch and friends, fetches the
+checkpoint, hash-checks it and runs `precompute`; stage two carries numpy, the
+1.6 MB artifact and nothing else.
+
+| host | works | note |
+|---|---|---|
+| Render free | yes | spins down after 15 min idle, ~1 min cold start |
+| Render Starter, $7/mo | yes | always-on; what `render.yaml` sets |
+| Fly.io / Railway / HF Spaces | yes | any 512 MB CPU container |
+| Vercel / Lambda functions | no | no long-lived process to hold the artifact |
+
+Then set `VITE_ANALYZE_API` to the service URL and rebuild the frontend.

@@ -1,0 +1,12 @@
+# Runtime dependencies for the LEAN serving path — numpy and a web server.
+#
+# No torch, no torch_geometric, no rdkit, no pandas: the encoders already ran,
+# and their output plus the pair decoder live in the precomputed artifact. That
+# is what takes the server from ~1.15 GiB of RSS to ~158 MiB and makes a 512 MB
+# host viable.
+#
+# Building the artifact needs the full set — see serving/requirements.txt.
+numpy==2.4.6
+fastapi==0.141.1
+uvicorn[standard]
+pydantic>=2

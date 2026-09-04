@@ -208,3 +208,116 @@ def test_identical_biology_gives_identical_scores_regardless_of_label(engine, fr
     """
     a, b = "DB00331", "DB00682"
     assert engine.score(a, b).raw_logit == engine.score(a, b).raw_logit
+
+
+# -- lean serving path -----------------------------------------------------
+#
+# The lean path answers requests from a precomputed artifact with numpy alone
+# (~34 MiB RSS against the full pipeline's ~1.15 GiB). It is a deployment shape,
+# not a second model, and these tests are what stop the two drifting apart.
+
+from serving.lean import ARTIFACT as LEAN_ARTIFACT  # noqa: E402
+from serving.lean import LeanEngine  # noqa: E402
+
+lean_only = pytest.mark.skipif(
+    not LEAN_ARTIFACT.exists(),
+    reason="lean artifact not built; run `python -m serving.precompute`",
+)
+
+
+@pytest.fixture(scope="module")
+def lean() -> LeanEngine:
+    return LeanEngine()
+
+
+@lean_only
+def test_lean_artifact_records_its_source_checkpoint(lean):
+    assert lean.meta["source_checkpoint_sha256"] == (
+        "b828a471fcb8d38e0b29d9c67eddec76c1428bc996cc0d4e5b10c026bf659d6f"
+    )
+    assert lean.meta["frozen_tag"] == "v2-final-github-safe-2026-09-03"
+    assert lean.meta["n_drugs"] == 1705
+    assert lean.temperature == pytest.approx(7.200316619603008, abs=1e-12)
+
+
+@lean_only
+def test_lean_agrees_with_the_torch_path(lean, engine, frozen_seed0):
+    """Both paths must land inside the served tolerance of each other.
+
+    Not bit-identical: numpy's BLAS and torch's oneDNN accumulate a matmul
+    differently, which is the same class of difference as the CPU/GPU gap and
+    two orders below it. Measured max |Δ| 4.5e-06 in probability space.
+    """
+    pairs = list(zip(frozen_seed0.drug_a, frozen_seed0.drug_b))
+    lp = np.array([s.raw_model_score for s in lean.score_many(pairs)])
+    fp = np.array([s.raw_model_score for s in engine.score_many(pairs)])
+    assert np.abs(lp - fp).max() < parity.PROB_TOLERANCE
+    assert np.abs(lp - fp).mean() < 1e-6
+
+
+@lean_only
+def test_lean_parity_against_the_frozen_predictions(lean, frozen_seed0):
+    """The claim that matters: lean output reproduces the frozen artifact."""
+    result = parity.check(lean, frozen_seed0)
+    assert result.n_pairs == 92_448
+    assert result.passed, result.summary()
+    assert result.mean_abs_diff < 1e-6
+
+
+@lean_only
+def test_lean_decoder_is_exactly_symmetric(lean, frozen_seed0):
+    pairs = list(zip(frozen_seed0.drug_a.head(500), frozen_seed0.drug_b.head(500)))
+    ab = np.array([s.raw_logit for s in lean.score_many(pairs)])
+    ba = np.array([s.raw_logit for s in lean.score_many([(b, a) for a, b in pairs])])
+    assert np.array_equal(ab, ba)
+
+
+@lean_only
+def test_lean_documented_lookup_matches_the_universe(lean, frozen_seed0):
+    """Dataset metadata must agree with the frozen label table it came from."""
+    from ddinet.data.v2_dataset import load_universe
+
+    universe = load_universe()
+    truth = {tuple(sorted(p))
+             for p in zip(universe.pairs["drug_a"], universe.pairs["drug_b"])}
+    sub = frozen_seed0.head(3000)
+    for a, b in zip(sub.drug_a, sub.drug_b):
+        assert lean.is_documented(a, b) == (tuple(sorted((a, b))) in truth)
+
+
+@lean_only
+def test_lean_label_lookup_cannot_reach_the_decoder(lean):
+    """The documented-pair set must not be an input to scoring.
+
+    Emptying it changes the metadata answer and must leave every score
+    untouched; if the label leaked into the representation, it could not.
+    """
+    before = lean.score("DB00006", "DB00564").raw_logit
+    saved, lean._documented = lean._documented, set()
+    try:
+        assert lean.score("DB00006", "DB00564").raw_logit == before
+    finally:
+        lean._documented = saved
+
+
+@lean_only
+def test_lean_refuses_unknown_and_identical_drugs(lean):
+    with pytest.raises(KeyError):
+        lean.score("DB99999", "DB00682")
+    with pytest.raises(ValueError):
+        lean.score("DB00682", "DB00682")
+
+
+@lean_only
+def test_lean_artifact_hash_is_checked(tmp_path):
+    from serving.lean import ArtifactError
+
+    with pytest.raises(ArtifactError, match="SHA-256 mismatch"):
+        LeanEngine(LEAN_ARTIFACT, expect_sha256="0" * 64)
+
+
+def test_lean_missing_artifact_says_how_to_build_it(tmp_path):
+    from serving.lean import ArtifactError
+
+    with pytest.raises(ArtifactError, match="serving.precompute"):
+        LeanEngine(tmp_path / "absent.npz")

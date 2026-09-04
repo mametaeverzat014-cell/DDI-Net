@@ -1,0 +1,21 @@
+# Render blueprint for the DDI-Net research inference API.
+#
+# plan: starter ($7/mo) rather than free, deliberately. A free Render service
+# spins down after 15 minutes idle and takes about a minute to wake, and a judge
+# opening the Analyze page would meet a dead endpoint. The lean image needs
+# ~158 MiB, so it fits either plan; the $7 buys always-on, not memory.
+#
+# Switch `plan` to `free` for a demo you will warm up by hand.
+services:
+  - type: web
+    name: ddinet-api
+    runtime: docker
+    dockerfilePath: ./serving/Dockerfile.lean
+    dockerContext: .
+    plan: starter
+    region: frankfurt
+    healthCheckPath: /api/health
+    autoDeploy: false
+    envVars:
+      - key: DDINET_ENGINE
+        value: lean
