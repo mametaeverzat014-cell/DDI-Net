@@ -1,0 +1,20 @@
+# Inference-only dependencies for the DDI-Net research API.
+#
+# Pinned to the versions the frozen research environment used
+# (requirements.txt at the repo root), because the checkpoint is interpreted by
+# this code: a torch or torch_geometric upgrade could change an operator's
+# numerics and move the served score away from the frozen predictions. The
+# parity test is what would catch that, and it should never have to.
+#
+# Training-only packages are deliberately absent.
+numpy==2.4.6
+pandas==3.0.5
+pyarrow
+rdkit==2026.3.5
+scikit-learn==1.9.0
+torch==2.13.0
+torch_geometric==2.8.0.post1
+
+fastapi==0.141.1
+uvicorn[standard]
+pydantic>=2

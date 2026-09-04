@@ -1,0 +1,34 @@
+{
+  "frozen_tag": "v2-final-github-safe-2026-09-03",
+  "frozen_commit": "92c481eeaba8faff991ced850e1c4de418ea31b0",
+  "note": "SHA-256 of every file the inference path depends on, taken from the frozen tag. serving/integrity.py asserts the working copies still match. Regenerate only by re-reading the tag.",
+  "checkpoint": {
+    "run_id": "bd45f84e3c1b2c33",
+    "filename": "bd45f84e3c1b2c33.pt",
+    "sha256": "b828a471fcb8d38e0b29d9c67eddec76c1428bc996cc0d4e5b10c026bf659d6f",
+    "release_tag": "v2-final-github-safe-2026-09-03",
+    "source": "GitHub Release asset"
+  },
+  "modules": {
+    "src/ddinet/data/v2_dataset.py": "896f30abf35cc9910232998ecbaec9a6a3e674b9de21151ca6d0a26b9c43d86c",
+    "src/ddinet/data/biology.py": "29b979f61e4fa1f6a54c36c812c2bec92ecdd2807e230c0847896a1a8149d523",
+    "src/ddinet/features/molgraph.py": "72f727f4c1af6660a360210d54daa3ee7f5b49fcf4b921340267e62877134efb",
+    "src/ddinet/models/bio_gine.py": "8e7b9122be78e7d0149837ef31a956a472822cdd02fb5198b2f15849db7d1a13",
+    "src/ddinet/models/encoders.py": "c2b775022684a47848e11402e940b7eab6b6867dcc02a31ef16b8bb805d03284",
+    "src/ddinet/eval/calibration.py": "8761dfb2121654b8bef5bf577c64b97faa9050a96a81402d166a5eab29e57c5a"
+  },
+  "data": {
+    "data/mechanism_v1/drugs.parquet": "d7cb2032e94f6465de43b44f3083ee4fa62a798322f9975425bc6acba3a49c06",
+    "data/mechanism_v1/drug_protein_edges.parquet": "e8ef9cc5a6e8c7ca927d18ec227d6838a9cef75a82fd92f9daefabd530c161e2",
+    "data/mechanism_v1/protein_pathway_edges.parquet": "ff3949e13c4f56bda4f2dde5257c31e02e53c48982501c3a56f40cd5b3111983",
+    "data/mechanism_v1/proteins.parquet": "3fbf129c0afa6c08e7ff2e1332bbd0381584ac73409fac9d6e621dd1a9e75520",
+    "data/mechanism_v1/MANIFEST.json": "1b83ceb8f1aab63bfc3f6fd99baa0f6579d3ab3beea815a3d55a333da48b9a32"
+  },
+  "vendored_artifacts": {
+    "serving/frozen_artifacts/m4_temperature_scaling.csv": {
+      "sha256": "39c7521b5cacc01eac8fc6851be75ff6d736ee071dae6b81c8f774b6994b180a",
+      "copied_from": "reports/v2_calibration/m4_temperature_scaling.csv",
+      "why": "Runtime needs the seed-0 temperature, but the deploy branch is not a descendant of the frozen commit so reports/ is absent here. Byte-for-byte copy, never edited; the hash is checked against the tag at startup."
+    }
+  }
+}

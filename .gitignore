@@ -101,3 +101,7 @@ reports/*/duty_cycle.log
 # переписывается раннером каждые несколько минут
 reports/v2_grid/progress.json
 reports/v2_grid/GRID_PROGRESS.md
+
+# Runtime model assets: frozen checkpoints fetched from GitHub Releases.
+# Never committed — verified by SHA-256 at load time instead.
+runtime/
