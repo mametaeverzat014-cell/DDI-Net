@@ -118,6 +118,11 @@ const DICT: Dict = {
   // ── analyze ──────────────────────────────────────────────────
   "an.eyebrow": { ru: "Анализ пары препаратов", en: "Analyze a drug pair" },
   "an.badge": { ru: "Обученная модель на этом развёртывании не подключена", en: "No trained model connected on this deployment" },
+  "an.badge.live": { ru: "Замороженный чекпоинт seed 0 · SHA-256 проверен", en: "Frozen seed-0 checkpoint · SHA-256 verified" },
+  "an.lede2.live": {
+    ru: " препаратов. Биологические данные ниже — настоящие, из замороженного датасета, а оценка считается замороженным чекпоинтом BIO-GINE M4 (сид 0), чей SHA-256 проверяется при загрузке.",
+    en: "-drug experimental universe. The biological evidence below is real, read from the frozen dataset, and the score is computed by the frozen seed-0 BIO-GINE M4 checkpoint, whose SHA-256 is verified at load time.",
+  },
   "an.title": { ru: "Выберите два препарата.", en: "Select two drugs." },
   "an.lede1": { ru: "Выберите два препарата из вселенной в", en: "Choose two drugs from the" },
   "an.lede2": {
@@ -148,6 +153,41 @@ const DICT: Dict = {
   "an.prov3": { ru: "Ни одно ребро графа взаимодействий не входит в представление препарата.", en: "No edge of the interaction graph enters the drug representation." },
   "an.evidence": { ru: "Данные о белках (показано из", en: "Protein evidence (preview of" },
   "an.loadfail": { ru: "Не удалось загрузить датасет препаратов:", en: "Could not load the drug dataset:" },
+
+  // ── analyze: live inference ──────────────────────────────────
+  "an.score.title": { ru: "Исследовательская оценка модели", en: "Research model score" },
+  "an.score.calibrated": { ru: "калиброванная оценка", en: "calibrated score" },
+  "an.score.raw": { ru: "сырая оценка модели", en: "raw model score" },
+  "an.score.what": {
+    ru: "Это уверенность модели в классе «задокументированное взаимодействие», а не вероятность вреда, не клинический риск и не рекомендация. Модель оценивалась на препаратах, отложенных из обучения.",
+    en: "This is the model's confidence in the documented-DDI class — not a probability of harm, not a clinical risk, and not a recommendation. The model was evaluated on drugs held out of training.",
+  },
+  "an.score.ceiling": {
+    ru: "Калиброванная шкала насыщается: при T = 7,2003 и клиппинге логита она не достигает 0 и 1 (диапазон ≈ 0,023…0,979). Потолок — свойство преобразования, а не предел уверенности модели.",
+    en: "The calibrated scale saturates: at T = 7.2003 with logit clipping it never reaches 0 or 1 (range ≈ 0.023–0.979). The ceiling is a property of the transform, not a limit on the model's confidence.",
+  },
+  "an.score.loading": { ru: "считаю…", en: "scoring…" },
+  "an.record.title": { ru: "Запись в датасете", en: "Dataset record" },
+  "an.record.yes": { ru: "Пара задокументирована в замороженном датасете", en: "Pair is documented in the frozen dataset" },
+  "an.record.no": { ru: "Пара не задокументирована в замороженном датасете", en: "Pair is not documented in the frozen dataset" },
+  "an.record.note": {
+    ru: "Метка из датасета — не используется как признак при инференсе. Отсутствие записи не означает отсутствия взаимодействия: ~86,8% пространства пар не размечено, а не отрицательно.",
+    en: "Recorded dataset label — not used as an inference feature. Absence of a record does not mean absence of interaction: ~86.8% of the pair space is unlabelled, not negative.",
+  },
+  "an.state.unconfigured": {
+    ru: "Инференс-API не подключён на этом развёртывании. Биологические данные ниже — настоящие; оценка модели не показывается, потому что подставлять число вместо неё было бы фабрикацией результата.",
+    en: "The inference API is not connected on this deployment. The biological evidence below is real; no model score is shown, because inventing one would fabricate a research result.",
+  },
+  "an.state.unavailable": {
+    ru: "Backend отвечает, но модель не загружена. Оценка не показывается.",
+    en: "The backend is reachable but no model is loaded. No score is shown.",
+  },
+  "an.state.error": { ru: "Backend недоступен:", en: "Backend unavailable:" },
+  "an.parity": { ru: "паритет с замороженными предсказаниями", en: "parity with frozen predictions" },
+  "an.disclaimer": {
+    ru: "Это вычислительный исследовательский прототип. Результат модели не является медицинской рекомендацией и не предназначен для принятия клинических решений.",
+    en: "This is a computational research prototype. The model output is not medical advice and is not validated for clinical decision-making.",
+  },
 
   // ── drug explorer ────────────────────────────────────────────
   "dx.eyebrow": { ru: "Каталог препаратов", en: "Drug explorer" },

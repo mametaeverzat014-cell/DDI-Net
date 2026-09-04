@@ -10,7 +10,8 @@ import { PairCanvas } from "../canvas/PairCanvas";
 import { count } from "../lib/format";
 import { useI18n, type Lang } from "../i18n";
 import { relationLabel, evidenceLabel } from "../data/vocab";
-import { gloss } from "../data/labels";
+import { PredictionPanel } from "../components/PredictionPanel";
+import { analyzePair, apiConfigured, type AnalyzeState } from "../data/analyze";
 
 // Six real high-degree DrugBank IDs from the frozen extract, used as quick
 // picks. The DrugBank ID is the canonical identifier; the name beside it comes
@@ -40,16 +41,34 @@ export function Analyze() {
   const drugA = byId.get(a);
   const drugB = byId.get(b);
 
+  // Score the pair whenever the selection changes. An in-flight request is
+  // aborted so a slow earlier pair can never overwrite a newer result.
+  const [analysis, setAnalysis] = useState<AnalyzeState>(
+    apiConfigured() ? { kind: "idle" } : { kind: "unconfigured" },
+  );
+  useEffect(() => {
+    if (!apiConfigured() || a === b) return;
+    const ctl = new AbortController();
+    setAnalysis({ kind: "loading" });
+    analyzePair(a, b, ctl.signal)
+      .then(setAnalysis)
+      .catch((e) => { if (!(e instanceof DOMException && e.name === "AbortError")) throw e; });
+    return () => ctl.abort();
+  }, [a, b]);
+
+  //: True only when a real score came back — never when the API is merely configured.
+  const live = analysis.kind === "ok";
+
   return (
     <section className="section" style={{ paddingTop: "16vh" }}>
       <div className="wrap">
         <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
           <span className="eyebrow">{t("an.eyebrow")}</span>
-          <Badge kind="demo">{t("an.badge")}</Badge>
+          <Badge kind={live ? "measured" : "demo"}>{live ? t("an.badge.live") : t("an.badge")}</Badge>
         </div>
         <h1 style={{ marginTop: 18, maxInlineSize: "14ch" }}>{t("an.title")}</h1>
         <p style={{ marginTop: 18, maxWidth: 640 }}>
-          {t("an.lede1")} {count(frozen.dataset.n_drugs, lang)}{t("an.lede2")}
+          {t("an.lede1")} {count(frozen.dataset.n_drugs, lang)}{t(live ? "an.lede2.live" : "an.lede2")}
         </p>
 
         {err && (
@@ -95,29 +114,9 @@ export function Analyze() {
             <BiologyPanel drug={drugB} accent="var(--cyan)" />
           </div>
 
-          {/* RIGHT — prediction (disabled) + provenance */}
+          {/* RIGHT — research model score, or why there is none */}
           <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
-            <div style={{ border: "1px solid rgba(255,196,120,0.3)", background: "rgba(255,196,120,0.05)", borderRadius: "var(--radius-lg)", padding: 22 }}>
-              <span className="eyebrow" style={{ color: "var(--amber)" }}>{t("an.prediction")}</span>
-              <div className="mono" style={{ fontSize: 40, color: "var(--amber)", marginTop: 12, letterSpacing: "-0.02em" }}>—</div>
-              <p style={{ fontSize: 13, marginTop: 8 }}>{gloss(frozen.checkpoint.note, lang)}</p>
-              <div className="mono" style={{ fontSize: 11, color: "var(--text-3)", marginTop: 16, lineHeight: 1.9 }}>
-                <div>model &nbsp;&nbsp;&nbsp;BIO-GINE M4 · seed 0</div>
-                <div>run id &nbsp;&nbsp;{frozen.checkpoint.seed0_run_id}</div>
-                <div style={{ wordBreak: "break-all" }}>sha256 &nbsp;{frozen.checkpoint.seed0_sha256.slice(0, 24)}…</div>
-                <div>{t("an.uncertainty")} &nbsp;{t("an.notestimated")}</div>
-              </div>
-              <p style={{ fontSize: 12, color: "var(--text-3)", marginTop: 16 }}>{t("an.whenInstalled")}</p>
-            </div>
-
-            <div style={{ border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", background: "var(--surface)", padding: 20 }}>
-              <span className="eyebrow">{t("an.provenance")}</span>
-              <ul style={{ margin: "12px 0 0", paddingLeft: 16, display: "flex", flexDirection: "column", gap: 7 }}>
-                <li style={{ fontSize: 13, color: "var(--text-2)" }}>{t("an.prov1")} <span className="mono" style={{ fontSize: 11 }}>data/mechanism_v1/</span></li>
-                <li style={{ fontSize: 13, color: "var(--text-2)" }}>{t("an.prov2")} <span className="mono" style={{ fontSize: 11 }}>{frozen.config.selected_config_id as string}</span></li>
-                <li style={{ fontSize: 13, color: "var(--text-2)" }}>{t("an.prov3")}</li>
-              </ul>
-            </div>
+            <PredictionPanel state={analysis} />
           </div>
         </div>
       </div>
