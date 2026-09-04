@@ -14,6 +14,11 @@ export interface PathwayPreview { reactome_id: string; name: string; }
 
 export interface Drug {
   id: string;
+  /** Real INN from DrugCentral, matched on InChIKey. null when unmatched. */
+  inn: string | null;
+  /** Rule-based transliteration of the INN — a UI label, not sourced data. */
+  inn_ru: string | null;
+  name_source: string | null;
   formula: string | null;
   mol_weight: number | null;
   n_heavy_atoms: number | null;
@@ -29,8 +34,36 @@ export interface Drug {
 }
 
 export interface DrugDataset {
-  meta: { n_drugs: number; note: string; preview_caps: { proteins: number; pathways: number }; source: string };
+  meta: {
+    n_drugs: number;
+    note: string;
+    preview_caps: { proteins: number; pathways: number };
+    names: {
+      n_with_inn: number; coverage_pct: number;
+      en_source: string; ru_source: string;
+      ru_is_transliteration: boolean; ru_warning: string;
+    };
+    source: string;
+  };
   drugs: Drug[];
+}
+
+/** Search across ID, English INN, Russian transliteration and formula. */
+export function matchesQuery(d: Drug, q: string): boolean {
+  const s = q.trim().toLowerCase();
+  if (!s) return false;
+  return (
+    d.id.toLowerCase().includes(s) ||
+    (d.inn ?? "").toLowerCase().includes(s) ||
+    (d.inn_ru ?? "").toLowerCase().includes(s) ||
+    (d.formula ?? "").toLowerCase().includes(s)
+  );
+}
+
+/** Display label for a drug in the given UI language; ID is always kept. */
+export function drugLabel(d: Drug, lang: "ru" | "en"): string {
+  const name = lang === "ru" ? d.inn_ru ?? d.inn : d.inn;
+  return name ? `${name} · ${d.id}` : d.id;
 }
 
 let cache: Promise<DrugDataset> | null = null;
