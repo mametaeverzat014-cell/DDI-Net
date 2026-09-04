@@ -44,8 +44,11 @@ WORKDIR /app
 COPY serving/requirements-lean.txt serving/requirements-lean.txt
 RUN pip install --no-cache-dir -r serving/requirements-lean.txt
 
-COPY serving/__init__.py serving/api.py serving/lean.py serving/integrity.py \
-     serving/frozen_manifest.json serving/
+# The whole package, not a hand-listed subset. Listing files individually is
+# how serving/parity.py came to be missing from the image while api.py imported
+# it — a 500 on every request that /api/health could not see. The directory is
+# a few tens of KB; the artifact lives under runtime/ and is copied separately.
+COPY serving/ serving/
 COPY --from=build /build/runtime/model_assets/lean_decoder_v1.npz \
                   /build/runtime/model_assets/lean_decoder_v1.json \
                   /app/runtime/model_assets/

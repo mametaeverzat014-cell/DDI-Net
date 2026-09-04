@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import os
 import sys
+from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
@@ -34,6 +35,8 @@ from pydantic import BaseModel, Field
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
+
+from .constants import PROB_TOLERANCE  # noqa: E402
 
 #: Which engine backs this process.
 #:   "lean" (default) — numpy over the precomputed artifact, ~34 MiB RSS.
@@ -181,6 +184,7 @@ def _checkpoint_sha() -> str:
             if ENGINE_MODE == "full" else _engine.meta["source_checkpoint_sha256"])
 
 
+@lru_cache(maxsize=1)
 def _frozen_commit() -> str:
     """The lean artifact records its source tag; the commit comes from the manifest."""
     from .integrity import load_manifest
@@ -207,8 +211,6 @@ _doc_cache: set[tuple[str, str]] | None = None
 
 @app.post("/api/analyze", response_model=AnalyzeResponse)
 def analyze(req: AnalyzeRequest) -> AnalyzeResponse:
-    from serving.parity import PROB_TOLERANCE
-
     engine = get_engine()
     a, b = req.drug_a.strip().upper(), req.drug_b.strip().upper()
 

@@ -72,13 +72,9 @@ FROZEN_TAG = "v2-final-github-safe-2026-09-03"
 FROZEN_PREDICTIONS = "reports/v2_final/v2_final_pair_predictions.csv"
 FROZEN_RUN_ID = "bd45f84e3c1b2c33"
 
-#: Probability-space tolerance. Justified in this module's docstring; it is a
-#: measured GPU-vs-CPU arithmetic bound, not a slackened target.
-PROB_TOLERANCE = 1e-5
-
-#: The value the target would be on identical hardware. Kept visible so a future
-#: GPU deployment can tighten the assertion rather than inherit this one.
-IDEAL_TOLERANCE = 1e-6
+#: Defined in serving/constants.py, which imports nothing — the request path
+#: needs this value and must not pull pandas in to get it.
+from .constants import IDEAL_TOLERANCE, PROB_TOLERANCE  # noqa: F401,E402
 
 
 @dataclass(frozen=True)
