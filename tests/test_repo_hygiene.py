@@ -11,6 +11,7 @@ else - CJK, Arabic, emoji outside the allowed set, invisible formatting
 characters - fails with the file and line named.
 """
 import pathlib
+import subprocess
 import unicodedata
 
 import pytest
@@ -32,6 +33,14 @@ ALLOWED_SYMBOLS = set(
                            # MECHANISM_ONTOLOGY.md ("серум-концентрация ↑").
                            # Semantic, not decorative: the ontology's
                            # `direction` field is exactly this distinction.
+    "₀₁₂₃₄₅₆₇₈₉"           # subscripts. ECE₁₅ is the expected calibration error
+                           # at 15 bins, which is the binning the calibration
+                           # tables report; the bin count belongs in the name.
+                           # Whole range allowed at once, as for superscripts.
+    "∧≫"                   # ∧ joins falsification criteria (F1 ∧ F2) alongside
+                           # the ⇒ ∈ ≡ already listed; ≫ states that an effect
+                           # is not near its threshold (dz = 7.72 ≫ 0.2), which
+                           # ">" would understate.
     "⁰¹²³⁴⁵⁶⁷⁸⁹⁻"          # superscripts. R² appears throughout (degree-shortcut
                            # probe, adversarial debiasing); the digits and the
                            # superscript minus carry scientific notation for
@@ -46,15 +55,36 @@ ALLOWED_SYMBOLS = set(
 ALLOWED_COMBINING = {"́"}
 
 TEXT_SUFFIXES = {".py", ".md", ".txt", ".csv", ".json", ".yaml", ".yml", ".cfg", ".toml"}
-SKIP_DIRS = {".git", "__pycache__", ".pytest_cache", "external", "data"}
+
+#: Tracked directories whose text is not ours to police: `external` is vendored
+#: upstream code and `data` is generated. Untracked trees need no entry here —
+#: see _text_files().
+SKIP_DIRS = {"external", "data"}
 
 
 def _text_files() -> list[pathlib.Path]:
+    """Files git tracks, which is what "committed" in this module's name means.
+
+    Previously this walked the filesystem and skipped a hand-listed set of
+    directories. That broke the moment an untracked directory of third-party
+    text appeared: installing the frontend's dependencies put ~600 emoji- and
+    CJK-bearing READMEs under web/node_modules, and the test failed on other
+    people's changelogs. Asking git is both the correct question and immune to
+    every future case of it — node_modules, virtualenvs, build output, the
+    gitignored runtime/ tree carrying the model artifact.
+    """
+    listing = subprocess.run(
+        ["git", "ls-files", "-z"],
+        cwd=REPO, capture_output=True, check=True,
+    ).stdout.decode()
     out = []
-    for path in REPO.rglob("*"):
-        if not path.is_file():
+    for rel in listing.split("\0"):
+        if not rel:
             continue
-        if SKIP_DIRS & set(path.relative_to(REPO).parts):
+        path = REPO / rel
+        if SKIP_DIRS & set(pathlib.PurePosixPath(rel).parts):
+            continue
+        if not path.is_file():          # deleted-but-staged, or a submodule
             continue
         if path.suffix in TEXT_SUFFIXES or path.name in (".gitignore", "requirements.txt"):
             out.append(path)
