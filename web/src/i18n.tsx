@@ -189,6 +189,12 @@ const DICT: Dict = {
     en: "This is a computational research prototype. The model output is not medical advice and is not validated for clinical decision-making.",
   },
 
+  // ── analyze: plain-language explainer ────────────────────────
+  "ex.open": { ru: "Что здесь показано и что означает каждое число →", en: "What am I looking at? What each number means →" },
+  "ex.drug": { ru: "Числа про каждый препарат", en: "The numbers about each drug" },
+  "ex.score": { ru: "Числа про пару", en: "The numbers about the pair" },
+  "ex.caveats": { ru: "Чего это не значит", en: "What this does not mean" },
+
   // ── drug explorer ────────────────────────────────────────────
   "dx.eyebrow": { ru: "Каталог препаратов", en: "Drug explorer" },
   "dx.title": { ru: "Экспериментальная вселенная.", en: "Browse the experimental universe." },

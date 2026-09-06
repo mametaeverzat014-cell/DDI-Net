@@ -11,6 +11,7 @@ import { count } from "../lib/format";
 import { useI18n, type Lang } from "../i18n";
 import { relationLabel, evidenceLabel } from "../data/vocab";
 import { PredictionPanel } from "../components/PredictionPanel";
+import { Explainer } from "../components/Explainer";
 import { analyzePair, apiConfigured, type AnalyzeState } from "../data/analyze";
 
 // Six real high-degree DrugBank IDs from the frozen extract, used as quick
@@ -70,6 +71,8 @@ export function Analyze() {
         <p style={{ marginTop: 18, maxWidth: 640 }}>
           {t("an.lede1")} {count(frozen.dataset.n_drugs, lang)}{t(live ? "an.lede2.live" : "an.lede2")}
         </p>
+
+        <Explainer />
 
         {err && (
           <div style={{ marginTop: 24, border: "1px solid rgba(255,158,158,0.4)", background: "rgba(255,158,158,0.06)", borderRadius: "var(--radius)", padding: 18 }}>
