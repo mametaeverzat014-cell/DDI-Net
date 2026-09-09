@@ -9,6 +9,35 @@ import type { Bi } from "../i18n";
 
 export interface Entry { term: Bi; body: Bi }
 
+/** Plain sentence for the score, chosen by band. The bands are presentational
+ *  only — the model outputs a continuous number and no threshold is claimed to
+ *  separate anything. Deliberately about RESEMBLANCE to documented pairs, never
+ *  about danger: the dataset holds documented interactions and sampled
+ *  unlabelled pairs, not clinical outcomes. */
+export function scoreSentence(calibrated: number): Bi {
+  if (calibrated >= 0.66) {
+    return {
+      ru: "Модель считает, что эта пара сильно похожа на те, что уже описаны как взаимодействующие.",
+      en: "The model finds this pair strongly resembles those already recorded as interacting.",
+    };
+  }
+  if (calibrated >= 0.40) {
+    return {
+      ru: "Модель считает, что эта пара умеренно похожа на те, что уже описаны как взаимодействующие.",
+      en: "The model finds this pair moderately resembles those already recorded as interacting.",
+    };
+  }
+  return {
+    ru: "Модель считает, что эта пара мало похожа на те, что уже описаны как взаимодействующие.",
+    en: "The model finds this pair bears little resemblance to those already recorded as interacting.",
+  };
+}
+
+export const SCORE_NOT_RISK: Bi = {
+  ru: "Это сходство, а не риск: модель училась отличать задокументированные взаимодействия от случайно набранных пар и ничего не знает об исходах у людей.",
+  en: "This is resemblance, not risk: the model learned to tell documented interactions from randomly drawn pairs and knows nothing about outcomes in people.",
+};
+
 export const HOW_IT_WORKS: Bi = {
   ru: "Ты выбираешь два препарата. Модель смотрит только на них самих — из чего состоит молекула, на какие белки в организме она действует и в каких биологических процессах эти белки участвуют. Список уже известных взаимодействий модель НЕ видит: именно поэтому её можно честно проверять на препаратах, которых она никогда не встречала. Дальше она говорит, насколько эта пара похожа на те пары, что задокументированы как взаимодействующие.",
   en: "You pick two drugs. The model looks only at the drugs themselves — what the molecule is made of, which proteins in the body it acts on, and which biological processes those proteins take part in. It never sees the list of known interactions: that is exactly what makes it fair to test on drugs it has never met. It then says how much this pair resembles the pairs that are documented as interacting.",

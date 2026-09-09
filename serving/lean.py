@@ -85,11 +85,18 @@ class LeanEngine:
         self.has_pathway = [n > 0 for n in self.n_pathways]
         self._w = [z[f"w{i}"] for i in range(3)]
         self._b = [z[f"b{i}"] for i in range(3)]
+        from .shared_biology import SharedBiologyIndex
+
+        self.biology = SharedBiologyIndex.from_arrays(z, len(self.ordered_ids))
         # Display metadata, held as a set of ordered index pairs. Deliberately
         # NOT reachable from _decode: the label is never an inference feature.
         self._documented = {
             (int(a), int(b)) for a, b in z["documented_pairs"]
         }
+
+    def shared_biology(self, a: str, b: str) -> dict:
+        """Curated annotations both drugs share. Facts, never a prediction."""
+        return self.biology.shared(self.index[a], self.index[b])
 
     def is_documented(self, a: str, b: str) -> bool:
         """Retrospective dataset metadata. Never touched during scoring."""

@@ -321,3 +321,86 @@ def test_lean_missing_artifact_says_how_to_build_it(tmp_path):
 
     with pytest.raises(ArtifactError, match="serving.precompute"):
         LeanEngine(tmp_path / "absent.npz")
+
+
+# -- shared biology --------------------------------------------------------
+#
+# Documented annotations, not a prediction. The tests below pin the two things
+# that make the block trustworthy: that it uses DrugBank only, and that the
+# clinically classic pairs come out right.
+
+from serving.shared_biology import SharedBiologyIndex  # noqa: E402
+
+
+@pytest.fixture(scope="module")
+def biology(engine) -> SharedBiologyIndex:
+    return SharedBiologyIndex.from_parquet(engine.ordered_ids)
+
+
+@lean_only
+def test_shared_biology_reproduces_textbook_pairs(biology, engine):
+    """Three pairs whose mechanism is in every pharmacology textbook."""
+    ix = engine.index
+
+    # Warfarin + phenytoin: the classic CYP2C9 competition.
+    warf_phen = biology.shared(ix["DB00682"], ix["DB00252"])
+    assert "CYP2C9" in {p.gene for p in warf_phen["enzyme"]}
+
+    # Simvastatin + clarithromycin: CYP3A4 plus the SLCO1B1 transporter that
+    # carries statins into the liver — the route behind statin myopathy.
+    simva_clari = biology.shared(ix["DB00641"], ix["DB01211"])
+    assert "CYP3A4" in {p.gene for p in simva_clari["enzyme"]}
+    assert "SLCO1B1" in {p.gene for p in simva_clari["transporter"]}
+
+
+@lean_only
+def test_metformin_warfarin_share_nothing(biology, engine):
+    """A true negative, and the reason ChEMBL rows are excluded.
+
+    Metformin is cleared renally and shares no metabolic route with warfarin.
+    In the raw edge table they share 95 "targets" — all ChEMBL bioactivity
+    rows, an artifact of both having been run through the same assay panel.
+    DrugBank gives zero, which is the true answer.
+    """
+    assert biology.shared(engine.index["DB00331"], engine.index["DB00682"]) == {}
+
+
+@lean_only
+def test_shared_biology_never_reads_chembl(biology):
+    """The index must be built from curated annotations only."""
+    import pandas as pd
+
+    from serving.shared_biology import SOURCE
+
+    assert SOURCE == "DrugBank_v5.1"
+    edges = pd.read_parquet(ROOT / "data" / "mechanism_v1" / "drug_protein_edges.parquet")
+    n_drugbank = len(
+        edges[edges.evidence_source == SOURCE]
+        .drop_duplicates(["drugbank_id", "uniprot_id", "relation_type"])
+    )
+    # Never more rows than DrugBank has; ChEMBL would multiply this tenfold.
+    assert len(biology.edge_drug) <= n_drugbank
+
+
+@lean_only
+def test_shared_biology_is_symmetric(biology, engine, frozen_seed0):
+    """Order of the two drugs cannot change what they have in common."""
+    for a, b in zip(frozen_seed0.drug_a.head(300), frozen_seed0.drug_b.head(300)):
+        ia, ib = engine.index[a], engine.index[b]
+        assert biology.shared(ia, ib) == biology.shared(ib, ia)
+
+
+@lean_only
+def test_lean_engine_exposes_shared_biology(lean):
+    found = lean.shared_biology("DB00682", "DB00252")
+    assert "CYP2C9" in {p.gene for p in found["enzyme"]}
+    assert lean.shared_biology("DB00331", "DB00682") == {}
+
+
+@lean_only
+def test_every_shared_protein_carries_a_readable_label(biology, engine, frozen_seed0):
+    """A blank gene symbol would render as an unlookup-able empty chip."""
+    for a, b in zip(frozen_seed0.drug_a.head(400), frozen_seed0.drug_b.head(400)):
+        for proteins in biology.shared(engine.index[a], engine.index[b]).values():
+            for p in proteins:
+                assert p.gene and p.name and p.uniprot

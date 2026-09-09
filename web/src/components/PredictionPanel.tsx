@@ -11,6 +11,8 @@
 import { useI18n } from "../i18n";
 import type { AnalyzeState } from "../data/analyze";
 import { Badge } from "./Badge";
+import { SCORE_NOT_RISK, scoreSentence } from "./explainerContent";
+import { pick } from "../i18n";
 
 export function PredictionPanel({ state }: { state: AnalyzeState }) {
   const { t, lang } = useI18n();
@@ -50,7 +52,15 @@ function Scored({ data }: { data: NonNullable<Extract<AnalyzeState, { kind: "ok"
           <span className="eyebrow" style={{ color: "var(--cyan)" }}>{t("an.score.title")}</span>
           <Badge kind="measured">{data.status.replace(/_/g, " ")}</Badge>
         </div>
-        <div className="mono" style={{ fontSize: 46, color: "var(--cyan)", marginTop: 10, letterSpacing: "-0.02em", lineHeight: 1 }}>
+        {/* Human sentence first, the number second: the figure is precise but
+            meaningless to a reader who does not already know the scale. */}
+        <p style={{ fontSize: 16, color: "var(--text)", marginTop: 12, lineHeight: 1.5, maxWidth: 460 }}>
+          {pick(scoreSentence(cal), lang)}
+        </p>
+        <p style={{ fontSize: 12.5, color: "var(--text-3)", marginTop: 8, lineHeight: 1.6 }}>
+          {pick(SCORE_NOT_RISK, lang)}
+        </p>
+        <div className="mono" style={{ fontSize: 38, color: "var(--cyan)", marginTop: 16, letterSpacing: "-0.02em", lineHeight: 1 }}>
           {cal.toFixed(3)}
         </div>
         <div className="eyebrow" style={{ marginTop: 6 }}>{t("an.score.calibrated")}</div>

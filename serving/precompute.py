@@ -61,7 +61,15 @@ def build(out: Path = ARTIFACT) -> dict:
         dtype=np.int16,
     )
 
+    # Shared-biology index: 13,043 curated DrugBank edges over 1,880 proteins,
+    # ~183 KB. Ships in the artifact so the lean server can answer "what do
+    # these two drugs have in common" without pandas or the parquet files.
+    from .shared_biology import SharedBiologyIndex
+
+    bio = SharedBiologyIndex.from_parquet(engine.ordered_ids)
+
     payload = {
+        **bio.to_arrays(),
         "documented_pairs": documented,
         "h": engine._h.detach().cpu().numpy().astype(np.float32),
         "mask": engine._mask.detach().cpu().numpy().astype(np.float32),
@@ -88,6 +96,8 @@ def build(out: Path = ARTIFACT) -> dict:
         "frozen_tag": engine.integrity.frozen_tag,
         "temperature": float(engine.temperature),
         "n_documented_pairs": int(len(documented)),
+        "n_biology_edges": int(len(bio.edge_drug)),
+        "n_biology_proteins": len(bio.uniprot),
     }
     (out.with_suffix(".json")).write_text(json.dumps(meta, indent=2) + "\n")
     return meta

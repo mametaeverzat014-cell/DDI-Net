@@ -20,6 +20,26 @@ export interface AnalyzeDrug {
   pathways_available: boolean;
 }
 
+export interface SharedProtein { uniprot: string; gene: string; name: string }
+
+/** Curated DrugBank annotations both drugs are recorded against. Not a prediction. */
+export interface SharedBiology {
+  target: SharedProtein[];
+  enzyme: SharedProtein[];
+  transporter: SharedProtein[];
+  carrier: SharedProtein[];
+  any_shared: boolean;
+  source: string;
+  note_ru: string;
+  note_en: string;
+}
+
+export type Relation = "enzyme" | "transporter" | "target" | "carrier";
+
+/** Relation order for display: metabolic route first — it is where
+ *  interactions most often arise and the one a reader can act on. */
+export const RELATION_ORDER: Relation[] = ["enzyme", "transporter", "carrier", "target"];
+
 export interface AnalyzeResponse {
   drug_a: AnalyzeDrug;
   drug_b: AnalyzeDrug;
@@ -33,6 +53,7 @@ export interface AnalyzeResponse {
     biology_available_b: boolean;
     evaluation: string;
   };
+  shared_biology: SharedBiology;
   dataset_record: {
     documented_in_frozen_dataset: boolean;
     note_en: string;

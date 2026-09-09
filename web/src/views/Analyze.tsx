@@ -6,12 +6,12 @@ import { useEffect, useMemo, useState } from "react";
 import { Badge } from "../components/Badge";
 import { frozen } from "../data/frozen";
 import { loadDrugs, matchesQuery, type Drug } from "../data/drugs";
-import { PairCanvas } from "../canvas/PairCanvas";
 import { count } from "../lib/format";
 import { useI18n, type Lang } from "../i18n";
 import { relationLabel, evidenceLabel } from "../data/vocab";
 import { PredictionPanel } from "../components/PredictionPanel";
 import { Explainer } from "../components/Explainer";
+import { SharedBiologyPanel } from "../components/SharedBiologyPanel";
 import { analyzePair, apiConfigured, type AnalyzeState } from "../data/analyze";
 
 // Six real high-degree DrugBank IDs from the frozen extract, used as quick
@@ -102,16 +102,14 @@ export function Analyze() {
         <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 22, marginTop: 42, alignItems: "start" }} className="collapse">
           {/* LEFT — schematic pair + biology evidence */}
           <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
-            <div style={{ border: "1px solid var(--border)", borderRadius: "var(--radius-lg)", background: "var(--surface)", backdropFilter: "var(--blur)", padding: 20 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-                <span className="eyebrow">{t("an.schematic")}</span>
-                <Badge kind="specified">{t("an.illustrative")}</Badge>
-              </div>
-              <PairCanvas seedA={hash(a)} seedB={hash(b)} />
-              <p className="mono" style={{ fontSize: 10.5, color: "var(--text-3)", marginTop: 8 }}>
-                {t("an.schematicnote")} {a} / {b}.
-              </p>
-            </div>
+
+            {analysis.kind === "ok" && (
+              <SharedBiologyPanel
+                data={analysis.data}
+                nameA={nameOf(drugA, lang) ?? a}
+                nameB={nameOf(drugB, lang) ?? b}
+              />
+            )}
 
             <BiologyPanel drug={drugA} accent="var(--blue)" />
             <BiologyPanel drug={drugB} accent="var(--cyan)" />
@@ -221,8 +219,3 @@ function Stat({ n, label }: { n: number; label: string }) {
   );
 }
 
-function hash(s: string): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (Math.imul(h, 31) + s.charCodeAt(i)) | 0;
-  return Math.abs(h) % 100000;
-}

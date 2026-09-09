@@ -81,6 +81,40 @@ class DrugInfo(BaseModel):
     pathways_available: bool
 
 
+class SharedProteinOut(BaseModel):
+    uniprot: str
+    gene: str
+    name: str
+
+
+class SharedBiologyOut(BaseModel):
+    """Curated annotations both drugs are recorded against.
+
+    Facts from DrugBank, not a prediction — which is why this block needs no
+    validation and is computable for pairs with no documented interaction at
+    all. ChEMBL bioactivity rows are excluded on purpose: shared assay panels
+    make arbitrary drugs look biologically related. See serving/shared_biology.py.
+
+    An empty object means "no shared annotation recorded". It does NOT mean the
+    drugs do not interact, and the UI must not render it as reassurance.
+    """
+
+    target: list[SharedProteinOut] = []
+    enzyme: list[SharedProteinOut] = []
+    transporter: list[SharedProteinOut] = []
+    carrier: list[SharedProteinOut] = []
+    any_shared: bool = False
+    source: str = "DrugBank v5.1, curated drug-protein annotations"
+    note_ru: str = (
+        "Задокументированные аннотации, а не предсказание модели. "
+        "Отсутствие общих записей не означает отсутствия взаимодействия."
+    )
+    note_en: str = (
+        "Documented annotations, not a model prediction. No shared record does "
+        "not mean the drugs do not interact."
+    )
+
+
 class DatasetRecord(BaseModel):
     """Retrospective dataset metadata. NOT an input to the model."""
 
@@ -111,6 +145,7 @@ class AnalyzeResponse(BaseModel):
     calibrated_model_score: float
     experimental_context: dict
     dataset_record: DatasetRecord
+    shared_biology: SharedBiologyOut
     provenance: Provenance
     status: Literal["research_prediction"] = "research_prediction"
     disclaimer_ru: str = DISCLAIMER_RU
@@ -207,6 +242,27 @@ def _documented(engine, a: str, b: str) -> bool:
 
 
 _doc_cache: set[tuple[str, str]] | None = None
+_bio_cache = None
+
+
+def _shared_biology(engine, a: str, b: str) -> SharedBiologyOut:
+    """Shared annotations, on whichever engine backs this process."""
+    global _bio_cache
+    if hasattr(engine, "shared_biology"):
+        found = engine.shared_biology(a, b)
+    else:
+        from .shared_biology import SharedBiologyIndex
+
+        if _bio_cache is None:
+            _bio_cache = SharedBiologyIndex.from_parquet(engine.ordered_ids)
+        found = _bio_cache.shared(engine.index[a], engine.index[b])
+
+    fields = {
+        rel: [SharedProteinOut(uniprot=p.uniprot, gene=p.gene, name=p.name)
+              for p in proteins]
+        for rel, proteins in found.items()
+    }
+    return SharedBiologyOut(**fields, any_shared=bool(found))
 
 
 @app.post("/api/analyze", response_model=AnalyzeResponse)
@@ -260,6 +316,7 @@ def analyze(req: AnalyzeRequest) -> AnalyzeResponse:
         dataset_record=DatasetRecord(
             documented_in_frozen_dataset=_documented(engine, a, b)
         ),
+        shared_biology=_shared_biology(engine, a, b),
         provenance=Provenance(
             frozen_tag=_frozen_tag(),
             frozen_commit=_frozen_commit(),
