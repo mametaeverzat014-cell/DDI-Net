@@ -190,6 +190,22 @@ which is highly redundant (median 52 pathways per drug, many nested) and can
 dilute a set-mean. We did not preregister a prediction about the ladder's shape,
 so that explanation is a hypothesis, not a finding.
 
+Since then we measured one part of that hypothesis instead of asserting it.
+Metformin and warfarin share 95 ChEMBL targets and zero DrugBank proteins. On
+6,000 random pairs (seed 0), 54.7% share a ChEMBL target against 3.0% by
+DrugBank — 18-fold — and the shared-target count tracks how sparsely annotated
+the less-studied drug of the pair is at Spearman ρ = +0.832. Compounds get
+screened against the same assay panels, so ChEMBL overlap largely records which
+assays were run.
+
+That makes the "noisier evidence" half of the explanation concrete: M3's added
+edges come from a source whose pair overlap partly encodes screening volume. It
+still does **not** show this caused the decline — we did not rerun M3 with the
+channel removed, and it says nothing about the M4 redundancy argument. The
+measurement is post-hoc, describes an input source rather than a model result,
+and changed no frozen artefact. See `reports/chembl_panel_artifact.md` and
+LIMITATIONS.md §6e.
+
 ### 18. Your SUM control beat your primary model. Doesn't that undermine the whole design?
 
 It is a real qualification and we report it in the results, the discussion and the

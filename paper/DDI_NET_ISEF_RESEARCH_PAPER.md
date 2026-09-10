@@ -809,6 +809,32 @@ nested — so both can dilute a set-mean rather than sharpen it. We did not
 preregister a prediction about the *shape* of the ladder, so this reading is
 post-hoc and should be treated as a hypothesis for future work.
 
+**Half of that reading is now measured, after the fact.** Building the
+shared-biology display for the web demonstration surfaced a concrete case:
+metformin and warfarin share 95 ChEMBL targets — out of 102 and 109
+respectively — and zero DrugBank proteins across all four relation types.
+Measured properly on 6,000 random unordered pairs (seed 0,
+`reports/chembl_panel_artifact.md`), 54.7% of pairs share at least one ChEMBL
+target against 3.0% by DrugBank, an 18-fold inflation, and DrugBank confirms
+only 3.5% of the ChEMBL overlaps. The number of shared ChEMBL targets tracks how
+sparsely annotated the *less*-studied drug of the pair is at Spearman
+ρ = +0.832. Compounds are screened against overlapping assay panels, so panel
+co-occurrence — the fact that an assay was run — dominates the overlap rather
+than shared biology.
+
+This is a third channel of the same confound the study measures elsewhere with
+CONTROL A (annotation count alone reaches 0.6504) and CONTROL F (destroying
+identity at fixed degree costs 0.1195). It makes the "experimental bioactivity
+is noisier" half of the reading above concrete and testable rather than merely
+plausible: the edges M3 adds over M2 come from a source whose pair-level overlap
+partly encodes screening volume. **It does not establish that this caused the
+M2 → M3 decline.** Separating evidence quality from set-size dilution still
+requires the experiment named in §6, which was not run, and the redundancy
+argument for M3 → M4 is untouched by this measurement. The measurement was taken
+after test evaluation; it describes a property of an input source, not a model
+result, and no frozen artefact was read, retrained or altered to obtain it. It
+is recorded in LIMITATIONS.md §6e.
+
 **CONTROL C outperformed the primary model.** M4 with SUM aggregation reached
 0.8265 pooled and 0.7485 on S3, above MEAN's 0.8117 and 0.7372. The
 preregistration fixed the interpretation in advance: *if SUM wins, counting was
