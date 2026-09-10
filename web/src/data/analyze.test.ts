@@ -11,6 +11,7 @@ const ok = {
   raw_model_score: 0.1650189137760003, calibrated_model_score: 0.4439423027276109,
   experimental_context: { in_frozen_universe: true, biology_available_a: true, biology_available_b: true, evaluation: "" },
   dataset_record: { documented_in_frozen_dataset: false, note_en: "", note_ru: "" },
+  shared_biology: { target: [], enzyme: [], transporter: [], carrier: [], any_shared: false, source: "", note_ru: "", note_en: "" },
   provenance: { frozen_tag: "v2-final-github-safe-2026-09-03", frozen_commit: "92c481eeaba8", checkpoint_sha256: "b828a471", calibration_source: "", temperature: 7.200316619603008, parity_tolerance_prob: 1e-5 },
   status: "research_prediction" as const, disclaimer_ru: "", disclaimer_en: "",
 };
@@ -85,3 +86,31 @@ describe("analyze client with an API configured", () => {
     }
   });
 });
+
+// A page deployed ahead of its backend must degrade, not crash. Vercel deploys
+// on push; Render is deployed by hand. Between the two, the live site runs a
+// new frontend against an older API — which is exactly what happened when
+// shared_biology was added as a required field.
+describe("tolerates an API older than the page", () => {
+  async function withBase(body: unknown) {
+    vi.resetModules();
+    vi.stubEnv("VITE_ANALYZE_API", "https://api.example");
+    vi.stubGlobal("fetch", vi.fn(() =>
+      Promise.resolve(new Response(JSON.stringify(body), { status: 200 }))));
+    return await import("./analyze");
+  }
+
+  it("parses a response with no shared_biology field", async () => {
+    const { shared_biology, ...older } = ok;
+    void shared_biology;
+    const m = await withBase(older);
+    const s = await m.analyzePair("DB00331", "DB00682");
+    expect(s.kind).toBe("ok");
+    if (s.kind === "ok") {
+      expect(s.data.shared_biology).toBeUndefined();
+      // the parts that matter most still arrive
+      expect(s.data.calibrated_model_score).toBeCloseTo(0.4439423, 6);
+      expect(s.data.dataset_record).toBeTruthy();
+    }
+  });
+})

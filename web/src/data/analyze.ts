@@ -53,7 +53,10 @@ export interface AnalyzeResponse {
     biology_available_b: boolean;
     evaluation: string;
   };
-  shared_biology: SharedBiology;
+  /** Added after the first deployment. Optional on purpose: the frontend
+   *  auto-deploys while the API is deployed by hand, so a new page must
+   *  tolerate an older backend instead of crashing on a missing field. */
+  shared_biology?: SharedBiology;
   dataset_record: {
     documented_in_frozen_dataset: boolean;
     note_en: string;

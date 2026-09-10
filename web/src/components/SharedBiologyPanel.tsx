@@ -16,7 +16,11 @@ export function SharedBiologyPanel({ data, nameA, nameB }: {
 }) {
   const { lang } = useI18n();
   const bio = data.shared_biology;
-  const present = RELATION_ORDER.filter((r) => bio[r].length > 0);
+  // An API older than this block sends no shared_biology at all. Render
+  // nothing rather than throwing: the score and the rest of the page still
+  // work, and the block appears by itself once the backend catches up.
+  if (!bio) return null;
+  const present = RELATION_ORDER.filter((r) => bio[r]?.length);
 
   return (
     <section style={{ marginTop: 28 }}>
@@ -46,7 +50,8 @@ function RelationCard({ relation, data, nameA, nameB }: {
 }) {
   const { lang } = useI18n();
   const copy = RELATION_COPY[relation];
-  const proteins = data.shared_biology[relation];
+  const proteins = data.shared_biology?.[relation] ?? [];
+  if (proteins.length === 0) return null;
   // No "headline" protein. Picking one would mean ranking them, and the data
   // carries no basis for that: sorting alphabetically once put CYP1A2 in front
   // of CYP2C9 for warfarin + phenytoin, presenting an incidental member as the
@@ -92,7 +97,7 @@ function RelationCard({ relation, data, nameA, nameB }: {
         {proteins.map((p) => (
           <div key={p.uniprot}>{p.gene} · {p.name} · {p.uniprot}</div>
         ))}
-        <div style={{ marginTop: 4 }}>{data.shared_biology.source}</div>
+        <div style={{ marginTop: 4 }}>{data.shared_biology?.source}</div>
       </div>
     </div>
   );
