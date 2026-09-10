@@ -1,0 +1,10 @@
+metric,value
+drugs_total,1705.0
+drugs_without_any_drugbank_annotation,99.0
+pairs_sampled,6000.0
+seed,0.0
+frac_pairs_with_empty_block,0.7286666666666667
+frac_pairs_sharing_target,0.024666666666666667
+frac_pairs_sharing_enzyme,0.2065
+frac_pairs_sharing_transporter,0.06783333333333333
+frac_pairs_sharing_carrier,0.04416666666666667
