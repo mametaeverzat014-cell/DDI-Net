@@ -197,6 +197,24 @@ def test_leaky_split_counts_match_the_split_report() -> None:
                     f"{SPLITS}:test_S1_fraction")
 
 
+# ── покрытие блока общей биологии ───────────────────────────────────────────
+# Эти два числа на сайте изначально были поставлены по памяти («примерно 71 %»),
+# и измерение дало 72,9 %. Поэтому они тоже под сверкой.
+
+COVERAGE = "reports/shared_biology_coverage.csv"
+
+
+def test_shared_biology_coverage_matches_the_measurement() -> None:
+    m = {r["metric"]: float(r["value"]) for r in _rows(COVERAGE)}
+    _assert_on_page(_ru(m["frac_pairs_with_empty_block"] * 100, 1),
+                    f"{COVERAGE}:frac_pairs_with_empty_block")
+    for key in ("drugs_without_any_drugbank_annotation", "drugs_total"):
+        shown = f"{int(m[key]):,}".replace(",", "\u00a0")
+        assert shown in _html(), (
+            f"на сайте нет числа {shown}, хотя {COVERAGE}:{key} даёт именно его"
+        )
+
+
 # ── ярлык шага, а не только число ───────────────────────────────────────────
 
 def test_no_number_is_shown_without_a_source_line() -> None:
