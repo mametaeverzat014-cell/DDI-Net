@@ -1,0 +1,13 @@
+metric,value
+pairs_sampled,6000.0
+seed,0.0
+frac_pairs_sharing_target_chembl,0.547333
+frac_pairs_sharing_target_drugbank,0.029667
+mean_shared_targets_chembl,10.3133
+mean_shared_targets_drugbank,0.0533
+median_shared_targets_chembl,1.0
+median_shared_targets_drugbank,0.0
+spearman_shared_chembl_vs_min_annotation_count,0.832294
+frac_chembl_overlaps_confirmed_by_drugbank,0.035323
+n_chembl_target_edges,81045.0
+n_drugbank_target_edges,6306.0
