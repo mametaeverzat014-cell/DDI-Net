@@ -119,6 +119,32 @@ table { border-collapse: collapse; width: 100%; min-width: 560px; font-size: 14p
 th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); }
 th { font-family: var(--mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-3); font-weight: 400; }
 td.mono { font-family: var(--mono); font-size: 13px; }
+/* пререгистрированная строка: её выделяем, потому что она НЕ лучшая — ровно это и надо увидеть */
+.row-primary td { background: rgba(111, 227, 245, 0.06); }
+.row-primary td:first-child { box-shadow: inset 2px 0 0 var(--accent); }
+
+/* На телефоне таблица раскладывается в карточки. Судьи смотрят с телефона, а
+   числа — главное на странице: горизонтальный свайп их бы спрятал. */
+@media (max-width: 640px) {
+  .table-scroll { overflow-x: visible; }
+  table { min-width: 0; display: block; }
+  thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  tbody, tr, td { display: block; }
+  tr { padding: 14px 0; border-bottom: 1px solid var(--border); }
+  tr:last-child { border-bottom: none; }
+  td { border: none; padding: 3px 0; }
+  td:first-child { font-weight: 600; margin-bottom: 6px; }
+  td[data-label]:not(:first-child)::before {
+    content: attr(data-label);
+    display: block;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--text-3); margin-bottom: 2px;
+  }
+  td.mono { font-size: 15px; }
+  .row-primary { background: rgba(111, 227, 245, 0.06); border-left: 2px solid var(--accent); padding-left: 12px; }
+  .row-primary td { background: none; }
+  .row-primary td:first-child { box-shadow: none; }
+}
 
 /* ── списки ────────────────────────────────────────────────── */
 ul { margin: 16px 0 0; padding-left: 20px; }
@@ -138,3 +164,9 @@ footer p { font-size: 14px; color: var(--text-3); }
 a:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
 
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+/* ── научная фигура: светлая по природе, поэтому в своей карточке ── */
+.figure { margin: 32px 0 0; }
+.figure img { width: 100%; height: auto; display: block; background: #fcfcfb; border-radius: var(--radius); border: 1px solid var(--border); }
+.figure figcaption { margin-top: 12px; font-size: 13px; color: var(--text-3); line-height: 1.6; }
+.mono { font-family: var(--mono); }
