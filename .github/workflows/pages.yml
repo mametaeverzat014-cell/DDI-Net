@@ -1,0 +1,46 @@
+# Публикация site/ на GitHub Pages.
+#
+# ПОЧЕМУ ЧЕРЕЗ ACTIONS, А НЕ «Deploy from a branch». Ветковый режим Pages умеет
+# отдавать только корень репозитория или папку /docs — произвольную папку там
+# выбрать нельзя. Сайт лежит в site/ по условию задачи, поэтому он собирается
+# сюда как артефакт Pages: папка остаётся на месте, переименовывать её не надо.
+#
+# Сборки нет: site/ — это статический HTML+CSS, который открывается двойным
+# кликом. Шаг сборки отсутствует намеренно, чтобы опубликованное совпадало с
+# тем, что лежит в репозитории, байт в байт.
+name: Deploy site to GitHub Pages
+
+on:
+  push:
+    branches: [claude/ddi-net-drug-interaction-hxrqii]
+    # Пересобирать только когда изменился сам сайт или этот файл.
+    paths:
+      - 'site/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Публикации не должны наезжать друг на друга; начатую не отменяем, чтобы не
+# оставить Pages в половинчатом состоянии.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4
