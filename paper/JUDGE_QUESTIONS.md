@@ -49,6 +49,21 @@ the negative degree distribution match the positive one, removing that shortcut.
 It makes our numbers lower, which is the intent. Degree is computed from training
 pairs only, so the sampler never consults test edges.
 
+**One honest caveat, found after the study was frozen.** Because degree comes
+from *training* pairs, and because every S3 drug has zero training degree by
+construction, the sampling weights on S3 collapse to `0 + 1 = 1` for every
+candidate — uniform. So on S3 the two negative schemes are the same scheme, and
+the S3 column was never actually evaluated under degree matching. The numbers are
+what they are; only the label was wrong. Matching does work as intended on pooled
+and S2, where one endpoint of each pair has non-zero training degree. Confirmed by
+reading the sampler and by the numbers: on S3 the two schemes differ by
+0.000–0.023 AUPRC, on S2 by 0.055–0.183. Recorded in LIMITATIONS.md §6f.
+
+The lesson generalises: under a drug-disjoint split, *training* degree cannot
+control studiedness on S3 at all. A future protocol needs a quantity with non-zero
+variance on held-out drugs — annotation count, assay count, or degree in a
+reference graph held out of training.
+
 ### 5. What is S3?
 
 The subset of drug-disjoint test pairs in which **both** drugs are test drugs, so

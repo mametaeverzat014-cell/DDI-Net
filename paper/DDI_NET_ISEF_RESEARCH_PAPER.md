@@ -802,12 +802,25 @@ before any test evaluation; it is the preregistered model, not the best test
 performer. Constructing a rising narrative from M0 to M4 would misrepresent the
 data.
 
-Additional evidence is not automatically additional signal. Experimental
-bioactivity is noisier than curated mechanism-of-action assignment, and pathway
-membership is highly redundant — the median drug maps to 52 pathways, many
-nested — so both can dilute a set-mean rather than sharpen it. We did not
-preregister a prediction about the *shape* of the ladder, so this reading is
-post-hoc and should be treated as a hypothesis for future work.
+Additional evidence is not automatically additional signal. But the two
+declines need **separate** explanations, because they act on different set means.
+
+*M2 → M3* adds elements to the **protein** set, so dilution of the protein mean
+is available as an explanation: experimental bioactivity is noisier than curated
+mechanism-of-action assignment, and it enlarges the denominator the curated
+elements are averaged into.
+
+*M3 → M4* does **not**. Proteins and pathways pass through separate Deep Sets
+encoders whose outputs are concatenated at fusion, not averaged together, so
+adding Reactome cannot enlarge the protein mean's denominator. What M4 changes is
+the appearance of a second, highly redundant set mean — the median drug maps to
+52 pathways, many nested — and an extra branch entering the fusion layer.
+
+An earlier version of this section attributed both declines to dilution of a
+single set mean. That conflated two different means and was wrong for M3 → M4;
+the correction is recorded in LIMITATIONS.md §6g. We did not preregister a
+prediction about the *shape* of the ladder, so both readings above remain
+post-hoc hypotheses for future work, and neither has been tested.
 
 **Half of that reading is now measured, after the fact.** Building the
 shared-biology display for the web demonstration surfaced a concrete case:
