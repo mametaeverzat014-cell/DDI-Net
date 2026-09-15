@@ -64,6 +64,7 @@ data-loading logic is what keeps that enforceable elsewhere.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass
 
 import numpy as np
@@ -119,6 +120,34 @@ class BioGineConfig:
     #: on validation, it is reported as a control.
     aggregation: str = "mean"
 
+    # -- V3 factorial design over how evidence types enter the set mean -----
+    #
+    # WHY THESE TWO FLAGS EXIST. V2 measured a non-monotonic ladder: adding
+    # ChEMBL experimental bioactivity (M2 -> M3) COST accuracy. Two explanations
+    # were offered post hoc and neither was tested - the added elements dilute
+    # the curated ones in a common mean, or experimental evidence is simply less
+    # useful per element. One global mean cannot separate them, because a source
+    # with more elements gets both more mass AND its own per-element quality
+    # folded into the same number.
+    #
+    # These flags cross the two factors, giving the four cells A00/A10/A01/A11:
+    #
+    #   group_means=False, learned_evidence_weights=False -> A00 (= V2 exactly)
+    #   group_means=True,  learned_evidence_weights=False -> A10 (mass equalised)
+    #   group_means=False, learned_evidence_weights=True  -> A01 (quality only)
+    #   group_means=True,  learned_evidence_weights=True  -> A11 (both)
+    #
+    # A00 MUST reproduce V2 bit for bit. If it does not, the factorial contrast
+    # measures the refactor rather than the factors; tests/test_bio_gine.py
+    # enforces this.
+    #
+    #: Average within each evidence type first, then combine the types. Removes
+    #: the advantage a numerous source gets purely from element count.
+    group_means: bool = False
+    #: Give each evidence type a learned positive weight, shared across all
+    #: drugs. Does NOT depend on any one drug's annotation counts.
+    learned_evidence_weights: bool = False
+
     # -- fusion and decoder -------------------------------------------------
     hidden_dim: int = 128
     dropout_pair: float = 0.1
@@ -131,6 +160,13 @@ class BioGineConfig:
     def __post_init__(self) -> None:
         if self.aggregation not in {"mean", "sum"}:
             raise ValueError(f"aggregation must be 'mean' or 'sum', got {self.aggregation!r}")
+        if (self.group_means or self.learned_evidence_weights) and self.aggregation != "mean":
+            # Grouping normalises away element count; SUM exists precisely to
+            # keep it. Combining them would make the control uninterpretable.
+            raise ValueError(
+                "group_means / learned_evidence_weights require aggregation='mean'; "
+                f"got {self.aggregation!r}"
+            )
         if not (self.use_molecular_branch or self.use_protein_level or self.use_pathway_level):
             raise ValueError("At least one branch must be enabled")
 
@@ -144,6 +180,10 @@ class BioGineConfig:
             parts.append("no-path")
         if self.aggregation != "mean":
             parts.append(self.aggregation)
+        if self.group_means or self.learned_evidence_weights:
+            parts.append(
+                f"A{int(self.group_means)}{int(self.learned_evidence_weights)}"
+            )
         return "+".join(parts)
 
 
@@ -326,9 +366,27 @@ class DeepSetsEncoder(nn.Module):
         *,
         dropout: float,
         aggregation: str,
+        n_groups: int = 0,
+        group_means: bool = False,
+        learned_group_weights: bool = False,
     ) -> None:
         super().__init__()
         self.aggregation = aggregation
+        self.n_groups = n_groups
+        self.group_means = group_means
+        self.learned_group_weights = learned_group_weights
+        if (group_means or learned_group_weights) and n_groups <= 0:
+            raise ValueError("grouped aggregation needs n_groups > 0")
+        if learned_group_weights:
+            # softplus keeps the weight positive without a hard clamp, whose
+            # zero gradient at the boundary would freeze a source out
+            # permanently. Init at softplus(x)=1 so the untrained model starts
+            # from equal weights and any departure is something it learned.
+            self.group_weight_raw = nn.Parameter(
+                torch.full((n_groups,), math.log(math.e - 1.0))
+            )
+        else:
+            self.group_weight_raw = None
         self.phi = nn.Sequential(
             nn.Linear(element_dim, hidden_dim),
             nn.ReLU(),
@@ -347,6 +405,65 @@ class DeepSetsEncoder(nn.Module):
         self.missing = nn.Parameter(torch.zeros(out_dim))
         nn.init.normal_(self.missing, std=0.02)
 
+    def _group_weights(self) -> torch.Tensor:
+        """Positive weight per group, one vector shared by every drug.
+
+        Deliberately NOT a function of any drug's annotation counts. A weight
+        that could read n_{d,e} would let the model recover set size through the
+        weighting itself, which is the confound the whole design is trying to
+        keep testable.
+        """
+        if self.group_weight_raw is None:
+            return torch.ones(
+                self.n_groups,
+                device=self.missing.device,
+                dtype=self.missing.dtype,
+            )
+        return nn.functional.softplus(self.group_weight_raw)
+
+    def _grouped(
+        self,
+        h: torch.Tensor,
+        owner: torch.Tensor,
+        group: torch.Tensor,
+        n_drugs: int,
+    ) -> torch.Tensor:
+        """Aggregate per (drug, group), then combine groups.
+
+        Two paths, because the two factors are separable and the experiment
+        needs them apart:
+
+        ``group_means=False`` - one weighted mean over all of a drug's elements,
+        each element carrying its group's weight. A group with more elements
+        still contributes proportionally more mass. With equal weights this is
+        the plain mean, which is why A00 and A01 differ only in the weights.
+
+        ``group_means=True`` - normalise inside each group first, then combine
+        the groups that are present. Element count no longer buys mass; only
+        the weights decide. Absent groups are excluded rather than counted as
+        zero, so a drug with one source is not pulled toward the origin by the
+        sources it simply does not have.
+        """
+        w = self._group_weights()
+        seg = owner * self.n_groups + group
+        n_seg = n_drugs * self.n_groups
+        ones = h.new_ones(h.shape[0], 1)
+        counts = h.new_zeros((n_seg, 1)).index_add_(0, seg, ones)
+
+        if not self.group_means:
+            wj = w[group].unsqueeze(-1)
+            num = h.new_zeros((n_drugs, h.shape[-1])).index_add_(0, owner, wj * h)
+            den = h.new_zeros((n_drugs, 1)).index_add_(0, owner, wj)
+            return num / den.clamp(min=1e-12)
+
+        sums = h.new_zeros((n_seg, h.shape[-1])).index_add_(0, seg, h)
+        mu = (sums / counts.clamp(min=1.0)).view(n_drugs, self.n_groups, -1)
+        present = (counts.view(n_drugs, self.n_groups) > 0).to(h.dtype)
+        gw = present * w.unsqueeze(0)
+        num = (gw.unsqueeze(-1) * mu).sum(dim=1)
+        den = gw.sum(dim=1, keepdim=True)
+        return num / den.clamp(min=1e-12)
+
     def forward(
         self,
         elements: torch.Tensor,
@@ -355,6 +472,7 @@ class DeepSetsEncoder(nn.Module):
         sizes: torch.Tensor,
         empty: torch.Tensor,
         inverse: torch.Tensor | None = None,
+        group: torch.Tensor | None = None,
     ) -> torch.Tensor:
         """``inverse``, when given, says ``elements`` holds the UNIQUE element
         features and ``elements[inverse]`` reconstructs the full sequence.
@@ -377,9 +495,14 @@ class DeepSetsEncoder(nn.Module):
         h = self.phi(elements)
         if inverse is not None:
             h = h[inverse]
-        pooled = _segment_reduce(
-            h, owner, n_drugs, aggregation=self.aggregation, sizes=sizes,
-        )
+        if self.group_means or self.learned_group_weights:
+            if group is None:
+                raise ValueError("grouped aggregation needs a per-element group index")
+            pooled = self._grouped(h, owner, group, n_drugs)
+        else:
+            pooled = _segment_reduce(
+                h, owner, n_drugs, aggregation=self.aggregation, sizes=sizes,
+            )
         out = self.rho(pooled)
         # torch.where, not indexed assignment: keeps the graph intact for
         # autograd and lets the MISSING token receive gradient from the drugs
@@ -440,6 +563,9 @@ class BioGine(nn.Module):
                 out_dim=b,
                 dropout=config.dropout_bio,
                 aggregation=config.aggregation,
+                n_groups=len(EVIDENCE_TYPES),
+                group_means=config.group_means,
+                learned_group_weights=config.learned_evidence_weights,
             )
 
         self.pathway_embedding = None
@@ -581,8 +707,11 @@ class BioGine(nn.Module):
                 ],
                 dim=-1,
             )
+            # ``ev`` is per-element in the SAME order as ``owner``; the encoder
+            # gathers phi over unique codes via ``inverse``, so the group index
+            # must stay in the full ordering, not the unique one.
             prot = self.protein_encoder(elements, owner, n, size, empty_prot,
-                                        inverse=inverse)
+                                        inverse=inverse, group=ev)
 
         if self.pathway_encoder is not None:
             if full:
