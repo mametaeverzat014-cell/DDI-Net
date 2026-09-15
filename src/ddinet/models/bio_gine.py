@@ -104,6 +104,20 @@ class BioGineConfig:
     # measured Phase A-2 configuration. See docs/V2_IMPLEMENTATION_NOTES.md.
     atom_dim: int = 0
     bond_dim: int = 0
+    #: ``"gine"`` - the graph network over the atom graph, as in V2.
+    #: ``"fingerprint"`` - an MLP over ECFP4 bits instead.
+    #:
+    #: WHY THIS SWITCH EXISTS. The project's own question is whether a GNN beats
+    #: simpler baselines under honest evaluation. V2 cannot answer it: the
+    #: non-neural baseline (BIO-RF) differs from BIO-GINE in TWO ways at once -
+    #: it is not neural AND it is not a graph - so a gap between them is
+    #: unattributable. Swapping only the molecular encoder, keeping the same
+    #: biology branches, the same fusion and the same symmetric decoder, isolates
+    #: graph-ness as the single changed factor.
+    molecular_encoder: str = "gine"
+    #: ECFP4 width. 2048 is what `features/pair_encoding.py` builds and what the
+    #: comparable literature uses; changing it would break that comparison.
+    fp_bits: int = 2048
     mol_dim: int = 64
     mol_layers: int = 3
     mol_pooling: str = "sum"
@@ -169,6 +183,11 @@ class BioGineConfig:
             )
         if not (self.use_molecular_branch or self.use_protein_level or self.use_pathway_level):
             raise ValueError("At least one branch must be enabled")
+        if self.molecular_encoder not in {"gine", "fingerprint"}:
+            raise ValueError(
+                "molecular_encoder must be 'gine' or 'fingerprint', got "
+                f"{self.molecular_encoder!r}"
+            )
 
     def ablation_name(self) -> str:
         parts = ["bio-gine"]
@@ -178,6 +197,8 @@ class BioGineConfig:
             parts.append("no-prot")
         if not self.use_pathway_level:
             parts.append("no-path")
+        if self.use_molecular_branch and self.molecular_encoder != "gine":
+            parts.append(self.molecular_encoder)
         if self.aggregation != "mean":
             parts.append(self.aggregation)
         if self.group_means or self.learned_evidence_weights:
@@ -510,6 +531,67 @@ class DeepSetsEncoder(nn.Module):
         return torch.where(empty.unsqueeze(-1), self.missing.unsqueeze(0), out)
 
 
+class FingerprintEncoder(nn.Module):
+    """ECFP4 bits -> drug vector. A drop-in for the molecular branch.
+
+    EXISTS TO ISOLATE ONE FACTOR. Replacing the GINE encoder with this one, and
+    changing nothing else, makes "does the graph network earn its place?" a
+    one-factor comparison. The biology branches, the fusion and the symmetric
+    decoder stay identical, so a gap between the two models is attributable to
+    the molecular encoder and to nothing else. BIO-RF cannot play this role: it
+    differs from BIO-GINE both in being non-neural and in being non-graph.
+
+    Indexed by drug, not fed a batch of molecules. The fingerprint of a drug is
+    a fixed property of its structure - there is nothing to recompute per batch
+    - so the table is a buffer and the forward pass is a gather. This also keeps
+    the vector batch-independent, the same property that lets the served model
+    precompute encodings.
+
+    The output LayerNorm mirrors the GINE encoder's ``pool_norm`` and is there
+    for the same reason: an ECFP bit count grows with molecule size, so without
+    it the vector's magnitude would again encode size rather than chemistry.
+    Dropping it here would hand the fingerprint model a disadvantage that has
+    nothing to do with graphs, and the comparison would measure that instead.
+    """
+
+    def __init__(
+        self, n_bits: int, hidden_dim: int, *, dropout: float, pool_norm: bool = True
+    ) -> None:
+        super().__init__()
+        self.n_bits = n_bits
+        self.mlp = nn.Sequential(
+            nn.Linear(n_bits, 2 * hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(2 * hidden_dim, hidden_dim),
+            nn.ReLU(),
+        )
+        self.pool_norm = nn.LayerNorm(hidden_dim) if pool_norm else nn.Identity()
+        self.register_buffer("table", torch.zeros(0, n_bits), persistent=False)
+
+    def set_fingerprints(self, table: torch.Tensor) -> None:
+        """Install the [n_drugs, n_bits] ECFP table. Required before any forward.
+
+        Raises rather than defaulting to zeros: a model that silently scored
+        every drug from an all-zero fingerprint would train, report a number,
+        and have seen no chemistry at all.
+        """
+        if table.ndim != 2 or table.shape[1] != self.n_bits:
+            raise ValueError(
+                f"fingerprint table must be [n_drugs, {self.n_bits}], "
+                f"got {tuple(table.shape)}"
+            )
+        self.table = table.to(dtype=torch.float32)
+
+    def forward(self, node_idx: torch.Tensor | None) -> torch.Tensor:
+        if self.table.numel() == 0:
+            raise ValueError(
+                "fingerprints not installed; call set_fingerprints() before scoring"
+            )
+        bits = self.table if node_idx is None else self.table[node_idx]
+        return self.pool_norm(self.mlp(bits))
+
+
 @dataclass
 class BioPairPrediction:
     interaction_logit: torch.Tensor
@@ -533,22 +615,33 @@ class BioGine(nn.Module):
         self.config = config
         h = config.hidden_dim
 
+        # Exactly one of these is ever non-None. Both emit [B, mol_dim], so
+        # everything downstream - fusion, decoder - is untouched by the choice.
         self.mol_encoder = None
+        self.fp_encoder = None
         if config.use_molecular_branch:
-            if config.atom_dim <= 0 or config.bond_dim <= 0:
-                raise ValueError(
-                    "use_molecular_branch requires atom_dim and bond_dim from "
-                    "the feature bundle; they have no sensible default"
+            if config.molecular_encoder == "fingerprint":
+                self.fp_encoder = FingerprintEncoder(
+                    n_bits=config.fp_bits,
+                    hidden_dim=config.mol_dim,
+                    dropout=config.dropout_mol,
+                    pool_norm=config.mol_pool_norm,
                 )
-            self.mol_encoder = MolecularEncoder(
-                atom_dim=config.atom_dim,
-                bond_dim=config.bond_dim,
-                hidden_dim=config.mol_dim,
-                n_layers=config.mol_layers,
-                dropout=config.dropout_mol,
-                pooling=config.mol_pooling,
-                pool_norm=config.mol_pool_norm,
-            )
+            else:
+                if config.atom_dim <= 0 or config.bond_dim <= 0:
+                    raise ValueError(
+                        "use_molecular_branch requires atom_dim and bond_dim from "
+                        "the feature bundle; they have no sensible default"
+                    )
+                self.mol_encoder = MolecularEncoder(
+                    atom_dim=config.atom_dim,
+                    bond_dim=config.bond_dim,
+                    hidden_dim=config.mol_dim,
+                    n_layers=config.mol_layers,
+                    dropout=config.dropout_mol,
+                    pooling=config.mol_pooling,
+                    pool_norm=config.mol_pool_norm,
+                )
 
         b = config.bio_dim
         self.protein_embedding = None
@@ -618,6 +711,20 @@ class BioGine(nn.Module):
             self.register_buffer(name, tensor.clone(), persistent=False)
 
     # -- biology installation ---------------------------------------------
+    def set_fingerprints(self, table: torch.Tensor) -> None:
+        """Install the ECFP table for the fingerprint variant.
+
+        Refuses on the GINE variant rather than ignoring the call: silently
+        accepting fingerprints for a model that will never read them is how a
+        run ends up comparing something other than what was intended.
+        """
+        if self.fp_encoder is None:
+            raise ValueError(
+                "this model has no fingerprint branch; set "
+                "molecular_encoder='fingerprint' to use one"
+            )
+        self.fp_encoder.set_fingerprints(table)
+
     def set_biology(self, sets: BiologicalSets) -> None:
         """Install the drug biology this model scores against.
 
@@ -743,6 +850,14 @@ class BioGine(nn.Module):
         parts: list[torch.Tensor] = []
         prot, path, mask = self.encode_biology(node_idx)
         expected = mask.shape[0]
+        if self.fp_encoder is not None:
+            pooled = self.fp_encoder(node_idx)
+            if pooled.shape[0] != expected:
+                raise ValueError(
+                    f"fingerprint table gave {pooled.shape[0]} rows but "
+                    f"{expected} drugs were selected"
+                )
+            parts.append(pooled)
         if self.mol_encoder is not None:
             if mol_batch is None:
                 raise ValueError("use_molecular_branch is on but mol_batch is None")
