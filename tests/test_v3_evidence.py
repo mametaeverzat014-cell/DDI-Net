@@ -391,3 +391,21 @@ def test_multi_drug_is_pairwise_and_bounded(engine):
         engine.multi(["warfarin"] * 9, include_labels=False)
     with pytest.raises(ValueError):
         engine.multi(["warfarin", "DB00682"], include_labels=False)
+
+
+def test_modality_parity_constant_equals_its_report():
+    from serving.evidence.model_context import MODALITY_PARITY
+    rep = json.loads((ROOT / "reports" / "v3_modality_parity.json").read_text())
+    assert MODALITY_PARITY["n_rows"] == rep["n_rows"]
+    assert MODALITY_PARITY["max_abs_diff"] == rep["max_abs_diff_overall"]
+    assert rep["max_abs_diff_overall"] < 1e-5, "readout must reproduce the frozen analysis within the served tolerance"
+
+
+def test_reliance_is_withheld_when_the_label_was_seen():
+    r = {"baseline": 0.9, "without_molecular": 0.8, "without_protein": 0.2, "without_pathway": 0.85}
+    seen = model_block(score=_Score(), split_a="train", split_b="train", documented=True,
+                       has_protein_a=True, has_protein_b=True, reliance=r)
+    assert seen.modality_reliance is None
+    held = model_block(score=_Score(), split_a="test", split_b="train", documented=False,
+                       has_protein_a=True, has_protein_b=True, reliance=r)
+    assert abs(held.modality_reliance.delta_protein - 0.7) < 1e-12

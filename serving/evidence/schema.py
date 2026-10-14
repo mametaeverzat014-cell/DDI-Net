@@ -169,6 +169,26 @@ class MeasuredPerformance(BaseModel):
     source: str
 
 
+class ModalityReliance(BaseModel):
+    """How much the frozen model's score moves when one branch is zeroed.
+
+    Same post-hoc perturbation as the frozen V2 analysis, reproduced for any
+    pair and checked against that analysis on all of its test pairs. It
+    describes the model's reliance, not a biological cause.
+    """
+
+    baseline_raw: float
+    without_molecular_raw: float
+    without_protein_raw: float
+    without_pathway_raw: float
+    delta_molecular: float
+    delta_protein: float
+    delta_pathway: float
+    method: str
+    validation: dict
+    interpretation: Bi
+
+
 class ModelBlock(BaseModel):
     available: bool
     unavailable_reason: str | None = None
@@ -187,6 +207,7 @@ class ModelBlock(BaseModel):
     biology_available_b: bool
     notes: list[Bi] = []
     abstain: bool = Field(False, description="True when the score should not be read as a signal for this pair.")
+    modality_reliance: ModalityReliance | None = None
 
 
 # ----------------------------------------------------------- explanation ----

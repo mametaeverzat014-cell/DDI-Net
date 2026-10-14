@@ -28,7 +28,7 @@ to it by tests/test_v3_evidence.py.
 
 from __future__ import annotations
 
-from .schema import Bi, MeasuredPerformance, ModelBlock
+from .schema import Bi, MeasuredPerformance, ModalityReliance, ModelBlock
 
 #: paper/FACTS.json -> models.M4_pooled / models.M4_s3
 FROZEN_AUPRC = {
@@ -46,6 +46,16 @@ COVERAGE_AUROC = {
     ("S3", "at_least_one_unannotated"): (0.6543828715365239, 0.03741580548526296),
 }
 COVERAGE_SOURCE = "reports/v3_coverage_reliability.json"
+
+#: reports/v3_modality_parity.json — the readout is shown only because the lean
+#: path reproduces the frozen analysis on all of its test pairs.
+MODALITY_PARITY = {"n_rows": 84690, "max_abs_diff": 6.051126069828161e-06,
+                   "source": "reports/v3_modality_parity.json (vs reports/v2_interpretability/seed0_modality_contribution.csv @ frozen tag)"}
+
+RELIANCE_NOTE = Bi(
+    ru="Это показывает, на какие данные модель опирается для этой пары, а не почему препараты взаимодействуют: модель никогда не видела «обнулённые» данные при обучении.",
+    en="This shows which data the model leans on for this pair, not why the drugs interact: the model never saw zeroed inputs in training.",
+)
 
 #: Presentational bands, identical to web/src/components/explainerContent.ts.
 BAND_HIGH, BAND_MODERATE = 0.66, 0.40
@@ -76,9 +86,27 @@ CALIBRATION_NOTE = Bi(
 )
 
 
+def reliance_block(r: dict[str, float]) -> ModalityReliance:
+    b = r["baseline"]
+    return ModalityReliance(
+        baseline_raw=b,
+        without_molecular_raw=r["without_molecular"],
+        without_protein_raw=r["without_protein"],
+        without_pathway_raw=r["without_pathway"],
+        delta_molecular=b - r["without_molecular"],
+        delta_protein=b - r["without_protein"],
+        delta_pathway=b - r["without_pathway"],
+        method="branch zeroed before the frozen fusion layer for both drugs; mask unchanged "
+               "(as scripts/49_v2_interpretability.py at the frozen tag)",
+        validation=dict(MODALITY_PARITY),
+        interpretation=RELIANCE_NOTE,
+    )
+
+
 def model_block(*, score, split_a: str, split_b: str, documented: bool,
                 has_protein_a: bool, has_protein_b: bool,
-                unavailable_reason: str | None = None) -> ModelBlock:
+                unavailable_reason: str | None = None,
+                reliance: dict[str, float] | None = None) -> ModelBlock:
     reg = regime(split_a, split_b)
     seen = reg == "S1" and documented
     reliability = ("training_label_seen" if seen
@@ -133,5 +161,6 @@ def model_block(*, score, split_a: str, split_b: str, documented: bool,
         calibrated_model_score=cal,
         band=band(cal),
         abstain=seen,
+        modality_reliance=reliance_block(reliance) if reliance and not seen else None,
         **common,
     )

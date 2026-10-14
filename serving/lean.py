@@ -85,6 +85,10 @@ class LeanEngine:
         self.has_pathway = [n > 0 for n in self.n_pathways]
         self._w = [z[f"w{i}"] for i in range(3)]
         self._b = [z[f"b{i}"] for i in range(3)]
+        # Branch-zeroed encodings (DDI-Net 3.0 model-reliance readout). Absent
+        # from artifacts built before it existed; the API then omits the block.
+        self._h_zero = {name: z[f"h_no_{name}"] for name in ("molecular", "protein", "pathway")
+                        if f"h_no_{name}" in z.files}
         from .shared_biology import SharedBiologyIndex
 
         self.biology = SharedBiologyIndex.from_arrays(z, len(self.ordered_ids))
@@ -104,8 +108,27 @@ class LeanEngine:
         return (min(i, j), max(i, j)) in self._documented
 
     # -- the symmetric pair decoder, term for term -------------------------
-    def _decode(self, ia: np.ndarray, ib: np.ndarray) -> np.ndarray:
-        ha, hb = self._h[ia], self._h[ib]
+    @property
+    def has_modality_reliance(self) -> bool:
+        return len(self._h_zero) == 3
+
+    def modality_reliance(self, a: str, b: str) -> dict[str, float]:
+        """Raw probabilities with each branch zeroed for BOTH drugs of the pair.
+
+        Model reliance under a post-hoc perturbation — not a causal or
+        mechanistic attribution (the frozen analysis's own interpretation rule).
+        """
+        if not self.has_modality_reliance:
+            raise ArtifactError("artifact has no branch-zeroed encodings; rebuild with serving.precompute")
+        ia = np.array([self.index[a]]); ib = np.array([self.index[b]])
+        out = {"baseline": float(_sigmoid(self._decode(ia, ib).astype(np.float64))[0])}
+        for name, hz in self._h_zero.items():
+            out[f"without_{name}"] = float(_sigmoid(self._decode(ia, ib, h=hz).astype(np.float64))[0])
+        return out
+
+    def _decode(self, ia: np.ndarray, ib: np.ndarray, h: np.ndarray | None = None) -> np.ndarray:
+        h = self._h if h is None else h
+        ha, hb = h[ia], h[ib]
         ma, mb = self._mask[ia], self._mask[ib]
         # Exactly BioGine.score_pairs: every term commutative, masks reduced by
         # elementwise min/max rather than concatenated, so f(A,B) = f(B,A).

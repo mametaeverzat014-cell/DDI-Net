@@ -138,3 +138,16 @@ def test_v3_runs_in_the_lean_image_shape(real_artifact):  # noqa: F811
     assert res["status"] == "documented_no_severity"
     assert res["pairs"] == 3
     assert res["blocked_loaded"] == []
+
+
+@pytest.mark.skipif(not LEAN.exists(), reason="lean model artifact not built")
+def test_report_carries_validated_modality_reliance(client):
+    body = client.post("/api/v3/report", json={"drug_a": "warfarin", "drug_b": "fluconazole"}).json()
+    m = body["model"]
+    if not m["available"]:
+        pytest.skip("model not loaded in this environment")
+    r = m["modality_reliance"]
+    assert r is not None, "artifact predates branch-zeroed encodings; rerun serving.precompute"
+    assert abs(r["delta_protein"] - (r["baseline_raw"] - r["without_protein_raw"])) < 1e-12
+    assert r["validation"]["n_rows"] == 84690 and r["validation"]["max_abs_diff"] < 1e-5
+    assert abs(r["baseline_raw"] - m["raw_model_score"]) < 1e-9

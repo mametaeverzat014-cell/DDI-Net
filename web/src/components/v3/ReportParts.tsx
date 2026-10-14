@@ -12,6 +12,7 @@ import {
   CATEGORY_LABEL, KIND_TIER, PATTERN_LABEL, RELATION_LABEL, ROLE_LABEL, SOURCE_NAME, SOURCE_STATUS, STATUS_TIER,
 } from "./evidenceStyle";
 import { buildRefIndex, scrollToAnchor, type RefIndex } from "./refs";
+import { RelianceBars } from "./RelianceBars";
 
 const T = {
   notSeverity: { ru: "Это вид найденной документации, а не степень опасности.", en: "This is the kind of documentation found, not a level of danger." },
@@ -256,6 +257,11 @@ export function ModelPanelV3({ model }: { model: ModelBlock }) {
               </li>
             ))}
           </ul>
+        </div>
+      )}
+      {model.modality_reliance && !model.abstain && (
+        <div style={{ marginTop: 16, borderTop: "1px solid var(--border-soft)", paddingTop: 14 }}>
+          <RelianceBars r={model.modality_reliance} />
         </div>
       )}
       <ul style={{ margin: "12px 0 0", paddingLeft: 18, fontSize: 12.5, color: "var(--text-3)", lineHeight: 1.65 }}>

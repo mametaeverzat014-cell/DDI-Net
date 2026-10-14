@@ -263,6 +263,17 @@ def _ai(model: ModelBlock) -> list[Statement]:
         out.append(Statement(kind="model", refs=["model"], text=Bi(
             ru=s.ru + " Это сходство с уже описанными парами, а не оценка вреда.",
             en=s.en + " This is resemblance to recorded pairs, not an estimate of harm.")))
+    r = model.modality_reliance
+    if model.available and not model.abstain and r is not None:
+        deltas = {"protein": r.delta_protein, "molecular": r.delta_molecular, "pathway": r.delta_pathway}
+        top = max(deltas, key=lambda k: abs(deltas[k]))
+        what = {"protein": Bi(ru="данных о белках", en="the protein data"),
+                "molecular": Bi(ru="строения молекул", en="the molecular structure"),
+                "pathway": Bi(ru="данных о биологических путях", en="the pathway data")}[top]
+        out.append(Statement(kind="model", refs=["model"], text=Bi(
+            ru=f"Сильнее всего оценка модели для этой пары зависит от {what.ru}: без них она меняется на {abs(deltas[top]):.2f}. Это говорит о том, на что опирается модель, а не о том, почему препараты взаимодействуют.",
+            en=f"For this pair the model's score depends most on {what.en}: without it the score moves by {abs(deltas[top]):.2f}. This says what the model leans on, not why the drugs interact.",
+        )))
     for note in model.notes:
         out.append(Statement(kind="caveat", refs=["model"], text=note))
     return out

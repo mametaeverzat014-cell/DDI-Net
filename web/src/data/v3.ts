@@ -124,6 +124,19 @@ export interface MechanismBlock {
 
 export interface MeasuredPerformance { view: string; metric: string; mean: number; sd: number; n_seeds: number; source: string }
 
+export interface ModalityReliance {
+  baseline_raw: number;
+  without_molecular_raw: number;
+  without_protein_raw: number;
+  without_pathway_raw: number;
+  delta_molecular: number;
+  delta_protein: number;
+  delta_pathway: number;
+  method: string;
+  validation: { n_rows: number; max_abs_diff: number; source: string };
+  interpretation: Bi;
+}
+
 export interface ModelBlock {
   available: boolean;
   unavailable_reason: string | null;
@@ -142,6 +155,8 @@ export interface ModelBlock {
   biology_available_b: boolean;
   notes: Bi[];
   abstain: boolean;
+  /** Absent from APIs older than the reliance readout. */
+  modality_reliance?: ModalityReliance | null;
 }
 
 export type StatementKind = "documented" | "annotation" | "hypothesis" | "model" | "missing" | "caveat";

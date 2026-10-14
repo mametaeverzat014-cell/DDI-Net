@@ -133,16 +133,20 @@ class EvidenceEngine:
     def _model(self, ea: DrugEntry, eb: DrugEntry, documented: bool):
         has_a, has_b = ea.has_protein_any, eb.has_protein_any
         score, reason = None, self.model_unavailable_reason or "model not loaded"
+        reliance = None
         if self.model is not None:
             try:
                 score = self.model.score(ea.id, eb.id)
+                if getattr(self.model, "has_modality_reliance", False):
+                    reliance = self.model.modality_reliance(ea.id, eb.id)
                 has_a = bool(self.model.has_protein[self.model.index[ea.id]])
                 has_b = bool(self.model.has_protein[self.model.index[eb.id]])
             except (KeyError, ValueError) as exc:     # pragma: no cover - universe mismatch
                 score, reason = None, f"model could not score this pair: {exc}"
         return model_block(score=score, split_a=ea.split_seed0, split_b=eb.split_seed0,
                            documented=documented, has_protein_a=has_a, has_protein_b=has_b,
-                           unavailable_reason=None if score is not None else reason)
+                           unavailable_reason=None if score is not None else reason,
+                           reliance=reliance)
 
     def _evidence(self, ea: DrugEntry, eb: DrugEntry, include_labels: bool):
         db, conflicts = database_evidence(self.store, ea.index, eb.index)

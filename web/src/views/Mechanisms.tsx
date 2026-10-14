@@ -14,6 +14,7 @@ import { useI18n, pick, type Bi } from "../i18n";
 import { MechanismGraphView } from "../components/v3/MechanismGraphView";
 import { RemoteNotice } from "../components/v3/ReportParts";
 import { PATTERN_LABEL } from "../components/v3/evidenceStyle";
+import { RelianceBars } from "../components/v3/RelianceBars";
 
 const T = {
   eyebrow: { ru: "DDI-Net 3.0 · Биологические механизмы", en: "DDI-Net 3.0 · Biological mechanisms" },
@@ -26,9 +27,10 @@ const T = {
   none: { ru: "Задокументированные роли не складываются ни в одну из проверяемых конфигураций.", en: "The documented roles form none of the configurations checked." },
   modelTitle: { ru: "Объяснения модели", en: "Model explanations" },
   modelBody: {
-    ru: "Для этой пары объяснение со стороны модели не показывается. В замороженном исследовании вклад отдельных белков (удаление по одному) измерен только для 20 пар, а вклад модальностей — только для тестовых пар. Связность графа и веса внимания не доказывают причинность, поэтому мы не рисуем «модельные» связи.",
-    en: "No model-side explanation is shown for this pair. The frozen study measured per-protein contribution (leave-one-out) for 20 pairs only, and modality contribution for test pairs only. Graph connectivity and attention weights do not establish causality, so no 'model' links are drawn.",
+    ru: "Вклад отдельных белков в оценку модели (удаление по одному) замороженное исследование измерило только для 20 пар, поэтому «модельные» связи на графе не рисуются: связность графа и веса внимания не доказывают причинность. Ниже — вклад целых видов данных, воспроизведённый тем же методом, что в исследовании.",
+    en: "The frozen study measured per-protein contribution to the model's score (leave-one-out) for 20 pairs only, so no 'model' links are drawn on the graph: connectivity and attention weights do not establish causality. Below is the contribution of whole kinds of data, reproduced with the study's own method.",
   },
+  seen: { ru: "Модель обучалась на записи об этой паре — её опора здесь не показывается.", en: "The model was trained on this pair's record — its reliance is not shown here." },
 } satisfies Record<string, Bi>;
 
 export function Mechanisms({ pair, setPair }: { pair: [string, string]; setPair: (p: [string, string]) => void }) {
@@ -104,6 +106,10 @@ export function Mechanisms({ pair, setPair }: { pair: [string, string]; setPair:
         <div className="v3-card" style={{ marginTop: 22, borderColor: "rgba(159,179,204,0.3)" }}>
           <span className="eyebrow" style={{ color: "var(--ev-model)" }}>{pick(T.modelTitle, lang)}</span>
           <p style={{ marginTop: 10, fontSize: 13.5 }}>{pick(T.modelBody, lang)}</p>
+          {report.kind === "ok" && report.data.model.abstain && <p style={{ marginTop: 10, fontSize: 13, color: "var(--ev-missing)" }}>{pick(T.seen, lang)}</p>}
+          {report.kind === "ok" && report.data.model.modality_reliance && !report.data.model.abstain && (
+            <div style={{ marginTop: 14, maxWidth: 560 }}><RelianceBars r={report.data.model.modality_reliance} /></div>
+          )}
         </div>
       </div>
     </section>
