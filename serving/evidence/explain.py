@@ -208,10 +208,13 @@ def _why(n: Names, mech: MechanismBlock, has_documented: bool) -> list[Statement
     shown = (strong or mech.findings)[:3]
     for f in shown:
         out.append(Statement(kind="hypothesis", refs=[f.id, *f.annotation_ids], text=_finding_text(n, f)))
-        if f.consistent_with_records:
-            out.append(Statement(kind="caveat", refs=[f.id, *f.consistent_with_records], text=Bi(
-                ru="Эта гипотеза согласуется с записью DrugBank о взаимодействии. Но это не независимое подтверждение: DrugBank мог составить запись по тем же сведениям о белках.",
-                en="This hypothesis agrees with a DrugBank interaction record. That is not independent confirmation: DrugBank may have derived the record from the same protein annotations.")))
+    consistent = [f for f in shown if f.consistent_with_records]
+    if consistent:
+        recs = sorted({r for f in consistent for r in f.consistent_with_records})
+        one = len(consistent) == 1
+        out.append(Statement(kind="caveat", refs=[*(f.id for f in consistent), *recs], text=Bi(
+            ru=("Эта гипотеза согласуется" if one else "Эти гипотезы согласуются") + " с записью DrugBank о взаимодействии. Но это не независимое подтверждение: DrugBank мог составить запись по тем же сведениям о белках.",
+            en=("This hypothesis agrees" if one else "These hypotheses agree") + " with a DrugBank interaction record. That is not independent confirmation: DrugBank may have derived the record from the same protein annotations.")))
     if shown:
         out.append(Statement(kind="caveat", refs=[f.id for f in shown], text=Bi(
             ru="Базы не указывают, насколько сильно препарат подавляет или усиливает белок и какую долю работы с препаратом этот белок выполняет. Поэтому это гипотезы, а не вывод о том, что взаимодействие произойдёт.",

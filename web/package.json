@@ -5,9 +5,9 @@
   "type": "module",
   "description": "DDI-Net research site — presentation layer over the frozen V2 scientific state. All numbers are generated from the frozen tag by tools/build_frozen_data.py; nothing here is hand-typed.",
   "scripts": {
-    "predev": "python3 tools/build_frozen_data.py",
+    "predev": "python3 tools/build_frozen_data.py && python3 tools/build_v3_facts.py",
     "dev": "vite",
-    "prebuild": "python3 tools/build_frozen_data.py",
+    "prebuild": "python3 tools/build_frozen_data.py && python3 tools/build_v3_facts.py",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",

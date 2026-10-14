@@ -5,6 +5,7 @@ import { frozen, hypothesis, model } from "../data/frozen";
 import { auprc, delta, meanSd, pValue } from "../lib/format";
 import { useI18n, fill } from "../i18n";
 import { gloss } from "../data/labels";
+import { V3Findings } from "../components/v3/V3Findings";
 
 export function Research() {
   const { t, lang } = useI18n();
@@ -147,6 +148,8 @@ export function Research() {
             <div>H-V2-1 Holm p = {pValue(hypothesis("H-V2-1").holm_p)}</div>
           </div>
         </div>
+
+        <V3Findings />
       </div>
     </section>
   );

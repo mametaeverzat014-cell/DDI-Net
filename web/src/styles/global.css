@@ -81,3 +81,54 @@ p { margin: 0; color: var(--text-2); font-size: clamp(15px, 1.15vw, 18px); line-
 @media (max-width: 760px) {
   .collapse { grid-template-columns: 1fr !important; }
 }
+
+/* ── DDI-Net 3.0 evidence layer ─────────────────────────────────────────── */
+.v3-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  backdrop-filter: var(--blur);
+  padding: clamp(16px, 2.2vw, 24px);
+}
+.v3-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  border-radius: 5px; padding: 2px 7px; white-space: nowrap; border: 1px solid currentColor;
+}
+.v3-ref {
+  font-family: var(--font-mono); font-size: 10.5px; color: var(--text-3);
+  background: none; border: 1px solid var(--border-strong); border-radius: 4px;
+  padding: 0 5px; margin-left: 4px; cursor: pointer; line-height: 1.6;
+}
+.v3-ref:hover { color: var(--text); border-color: var(--text-3); }
+.v3-toggle { display: inline-flex; border: 1px solid var(--border-strong); border-radius: 22px; padding: 3px; gap: 2px; }
+.v3-toggle button {
+  font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+  background: none; border: none; color: var(--text-3); padding: 7px 14px; border-radius: 18px; cursor: pointer;
+  transition: background 0.25s var(--ease), color 0.25s var(--ease);
+}
+.v3-toggle button[aria-pressed="true"] { background: rgba(111, 227, 245, 0.1); color: var(--cyan); }
+.v3-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.v3-table th { text-align: left; font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); font-weight: 400; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--border); }
+.v3-table td { padding: 9px 10px 9px 0; border-bottom: 1px solid var(--border-soft); color: var(--text-2); vertical-align: top; }
+.v3-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+@keyframes v3-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: no-preference) { .v3-in { animation: v3-in 0.45s var(--ease) both; } }
+@keyframes v3-pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 0.8; } }
+.v3-skeleton { border-radius: var(--radius); background: var(--surface-strong); animation: v3-pulse 1.6s ease-in-out infinite; }
+
+/* ── navigation: eight sections inline on wide screens, a menu on narrow ones ── */
+.ddi-nav-items { display: flex; gap: 0; align-items: center; flex-wrap: nowrap; justify-content: center; }
+.ddi-nav-menu { display: none; }
+@media (max-width: 1240px) {
+  .ddi-nav-menu { display: inline-block; }
+  .ddi-nav-repo { display: none; }
+  .ddi-nav-items {
+    display: none; position: absolute; top: 100%; left: 0; right: 0;
+    flex-direction: column; align-items: stretch; gap: 4px;
+    padding: 12px clamp(16px, 4vw, 48px) 18px; background: rgba(6, 16, 31, 0.97);
+    border-bottom: 1px solid var(--border);
+  }
+  .ddi-nav-items.open { display: flex; }
+  .ddi-nav-items button { text-align: left; }
+}
