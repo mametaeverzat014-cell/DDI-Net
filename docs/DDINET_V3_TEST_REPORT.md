@@ -10,8 +10,8 @@ passing that was not run. Commands are given so each line can be reproduced.
 
 | Check | Before (baseline at `aa04493`) | After |
 |---|---|---|
-| Python test suite (`pytest tests/`) | 613 passed, 21 skipped, **2 failed, 11 errors** | **719 passed, 3 skipped, 1 failed** |
-| Web unit tests (`npx vitest run`) | 66 passed | **82 passed** |
+| Python test suite (`pytest tests/`) | 613 passed, 21 skipped, **2 failed, 11 errors** | **743 passed, 3 skipped, 1 failed** |
+| Web unit tests (`npx vitest run`) | 66 passed | **84 passed** |
 | TypeScript (`npx tsc --noEmit`) | clean | clean |
 | ESLint (`--max-warnings 0`) | clean | clean |
 | Production build (`npm run build`) | — | succeeds; regenerating `frozen.json` from the tag gives no diff |
@@ -40,7 +40,7 @@ DDI-Net 3.0, and caused by data the repository deliberately does not track.
 
 ## 4. New tests (DDI-Net 3.0)
 
-### Python — 76 new tests
+### Python — 100 new tests
 
 | File | Tests | What they establish |
 |---|---|---|
@@ -50,17 +50,20 @@ DDI-Net 3.0, and caused by data the repository deliberately does not track.
 | `tests/test_v3_frozen_vendor.py` | 3 | vendored module hash = manifest hash; bytes = the tag's `bio_gine.py`; the engine builds the model from the vendored module |
 | `tests/test_v3_site_facts.py` | 2 | `web/src/data/v3facts.json` equals a fresh regeneration; the direction report equals the audit the API applies |
 | `tests/test_serving.py` (one added) | 1 | lean branch-zeroed rescoring equals the torch path |
+| `tests/test_v3_ratelimit.py` | 16 | route classes, multi-drug strictest; sliding windows and `Retry-After`; a refused request does not consume quota; the global window spans clients; client table bounded; a prepended `X-Forwarded-For` cannot change the client key; HTTP 429 keeps CORS headers; 411/413 body limits; `/api/analyze` and health not limited; daily external-source budget; `/api/health/ready` 200/503; `DDINET_REQUIRE_EVIDENCE=1` stops startup without the artifact |
+| `tests/test_v3_direction_integrity.py` | 4 | every one of the 191,798 records: the exported order is used only for verified types (counts pinned: 115,920 not verified, 14,481 verified, 61,397 symmetric); for 150 sampled unverified pairs plus two reference pairs, reports and graphs in both request orders and both languages contain no orientation-filled statement; verified types give directed edges; the same through HTTP for report, graph and multi. Mutation-checked: reverting the graph fix makes the tests fail |
+| `tests/test_docker_context.py` | 4 | `.dockerignore` applied with Docker's matching rules to the tracked files: every `COPY` source of both Dockerfiles survives; every integrity-checked file and every evidence-build input is in the context; nothing outside `serving/`, `src/`, `data/mechanism_v1/` and two input files is sent; context under 25 MiB (16 MiB) |
 
 External sources were tested only against recorded response **shapes** with
 synthetic content (all-zero set IDs, "SYNTHETIC TEST FIXTURE" manufacturer,
 fictional drug names in logic fixtures). No live call to openFDA or RxNorm was
 possible from this container (network policy; see the audit).
 
-### Web — 16 new tests
+### Web — 18 new tests
 
 | File | Tests | What they establish |
 |---|---|---|
-| `src/data/v3.test.ts` | 6 | unconfigured build never calls the network; 200/503/404/422 map to distinct states; an older API without `/api/v3` is "unavailable", not an empty report |
+| `src/data/v3.test.ts` | 8 | unconfigured build never calls the network; 200/503/404/422/429 map to distinct states; an older API without `/api/v3` is "unavailable", not an empty report; 429 carries the server's retry delay (body, then `Retry-After`, then 60 s) |
 | `src/lib/route.test.ts` | 3 | hash routes round-trip; malformed IDs, unknown views and same-drug pairs are ignored |
 | `src/components/v3/evidence.test.tsx` | 7 | no evidence tier token has a green hue; no green literal in v3 views; "nothing found" says it is not safe in both languages; no advice or safety wording in v3 copy and the Limitations page; every tier labelled in both languages; the banner never shows the model score; five sections render and a statement links to its numbered source |
 
@@ -80,6 +83,8 @@ sources enabled but unreachable from the container):
 | 390 px wide, English | no horizontal overflow; menu button replaces the nav |
 | Default build without `VITE_ANALYZE_API` | "evidence service not connected" notice, no status banner, static per-drug data shown, no API requests |
 | Console errors across all scenarios | 0 |
+| After rate limiting (second run): Multi-drug, repeated clicks | 5th request within a minute shows "Слишком много запросов … через 59 с." (`role=alert`), never an empty report; the only console message is the browser's own 429 resource error |
+| After the edge-direction fix: Mechanisms, simvastatin + clarithromycin and fluconazole + warfarin | documented arc has no arrowhead; its tooltip is the label in Russian and the direction-neutral statement in English |
 
 ## 6. Reproducing
 
@@ -95,6 +100,13 @@ cd web && npm ci && npx vitest run && npx tsc --noEmit \
 ## 7. Not tested
 
 * Live openFDA and RxNorm responses (blocked here).
-* The Docker images (`docker` is not available in this container); the changed
-  Dockerfile steps were exercised as plain commands.
+* An actual `docker build` (`docker` is not available in this container). The
+  build stage was reproduced inside a directory holding exactly the
+  `.dockerignore`-filtered context (111 files): integrity gate, precompute
+  (peak 1.3 GB resident) and evidence build succeed, and the artifacts equal
+  those built from the full tree. The runtime stage was reproduced under Python
+  3.11.15 with only `serving/requirements-lean.txt`: the `HEALTHCHECK` command
+  exits 0, `/api/health/ready` 200, v2 and v3 endpoints answer, resident memory
+  219 MB; without the evidence artifact the server refuses to start. Details:
+  `docs/DDINET_V3_DEPLOYMENT.md` §9.
 * Usability of the plain-language text with real readers.

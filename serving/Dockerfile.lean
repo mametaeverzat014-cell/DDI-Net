@@ -61,7 +61,15 @@ COPY --from=build /build/runtime/evidence/ /app/runtime/evidence/
 
 ENV PYTHONPATH=/app
 ENV DDINET_ENGINE=lean
+# The artifact is always built above, so failing to load it is a broken image:
+# stop at startup rather than serve /api/v3 as 503 behind a green health check.
+ENV DDINET_REQUIRE_EVIDENCE=1
 EXPOSE 8000
+
+# For `docker run`; Render uses its own check (render.yaml healthCheckPath).
+# 200 only when the model and the evidence layer are both loaded.
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD python -c "import os,urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:%s/api/health/ready' % os.environ.get('PORT','8000'), timeout=4).status == 200 else 1)"
 
 # $PORT is what Render and most PaaS hosts inject; 8000 is the local default.
 CMD ["sh", "-c", "uvicorn serving.api:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1"]

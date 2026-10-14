@@ -32,7 +32,7 @@ from .schema import (
     MechanismGraph, ProteinOut, SharedPathway,
 )
 from .direction import orientation_status
-from .records import PK_DIRECTION, record_id
+from .records import PK_DIRECTION, neutral_en, record_id
 from .store import Annotation, EvidenceStore
 
 PK_RELATIONS = ("enzyme", "transporter", "carrier")
@@ -393,10 +393,26 @@ def mechanism_graph(store: EvidenceStore, a: int, b: int, per_drug: int = 10, n_
                 ))
 
     for d1, d2, y in store.pair_records(a, b):
+        # Direction only where the export's order was verified for this type
+        # (direction.py). Otherwise the edge is undirected, drawn between the
+        # drugs in request order, and carries the neutral statement — an
+        # exported (source, target) would otherwise smuggle in a claim the
+        # data does not support.
+        status = orientation_status(y, store.direction_audit)
+        directed = status == "consistent"
+        tpl = store.ddi_types[y]
+        e1, e2 = store.lexicon.entries[d1], store.lexicon.entries[d2]
         edges.append(GraphEdge(
-            id=record_id(store, d1, d2, y), source=store.ids[d1], target=store.ids[d2],
-            kind="documented_interaction", established=True,
-            detail={"template": store.ddi_types[y], "source": store.sources["tdc_drugbank"]["name"]},
+            id=record_id(store, d1, d2, y),
+            source=store.ids[d1] if directed else ida,
+            target=store.ids[d2] if directed else idb,
+            kind="documented_interaction", established=True, directed=directed,
+            detail={
+                "statement": (tpl.replace("#Drug1", e1.inn or e1.id).replace("#Drug2", e2.inn or e2.id)
+                              if status != "unverified" else neutral_en(tpl)),
+                "direction": {"consistent": "as_exported_verified", "symmetric": "symmetric"}.get(status, "not_verified"),
+                "source": store.sources["tdc_drugbank"]["name"],
+            },
         ))
 
     return MechanismGraph(

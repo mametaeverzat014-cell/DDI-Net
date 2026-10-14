@@ -173,6 +173,16 @@ curl -s -X POST localhost:8000/api/v3/report -H 'content-type: application/json'
 | `OPENFDA_API_KEY` | unset | raises the openFDA daily quota; never returned to clients |
 | `DDINET_ALLOW_NO_MODEL` | `0` | `1` lets `/api/v3` start without the model artifact |
 | `DDINET_EVIDENCE_ARTIFACT` | `runtime/evidence/evidence_v1.json.gz` | artifact location |
+| `DDINET_REQUIRE_EVIDENCE` | `0` (`1` in both images) | a missing or stale evidence artifact stops startup instead of serving `/api/v3` as 503 |
+| `DDINET_RATE_LIMIT` | `on` | `off` disables the `/api/v3` rate limits (development only) |
+| `DDINET_PROXY_HOPS` | `1` | trusted proxies in front of the app; picks the `X-Forwarded-For` entry used as the client key |
+| `DDINET_OPENFDA_DAILY_BUDGET` | 800 without a key, 100,000 with | openFDA network calls per UTC day |
+| `DDINET_RXNORM_DAILY_BUDGET` | 20,000 | RxNorm network calls per UTC day |
+
+`GET /api/health/ready` returns 200 only when the model and the evidence layer
+are loaded (the images' `HEALTHCHECK` and Render's health check use it);
+`GET /api/v3/limits` shows the rate limits and the caller's client key.
+Deployment, step by step: `docs/DDINET_V3_DEPLOYMENT.md`.
 
 Serving imports the frozen BIO-GINE module from a byte-identical vendored copy
 (`serving/frozen_model.py`), so research changes to `src/ddinet/models/bio_gine.py`

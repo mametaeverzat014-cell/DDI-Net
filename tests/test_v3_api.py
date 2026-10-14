@@ -28,11 +28,15 @@ def client(real_artifact, monkeypatch):  # noqa: F811
     import serving.api as api
     import serving.evidence.store as store_mod
 
+    from serving.ratelimit import limiter
+
     monkeypatch.setattr(store_mod, "ARTIFACT", real_artifact)
     monkeypatch.setattr(api, "ALLOW_NO_MODEL", True)
     monkeypatch.setenv("DDINET_EXTERNAL_SOURCES", "off")
+    limiter.reset()        # each test starts with empty rate-limit windows
     with TestClient(api.app) as c:
         yield c
+    limiter.reset()
 
 
 def test_health_reports_both_layers(client):

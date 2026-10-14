@@ -5,6 +5,7 @@
     POST /api/v3/graph    {"drug_a": "...", "drug_b": "..."}
     POST /api/v3/multi    {"drugs": ["...", "..."], "include_labels": true}
     GET  /api/v3/sources
+    GET  /api/v3/limits   rate limits, and the client key the server sees for you
 
 /api/analyze is unchanged; existing clients keep working.
 
@@ -15,12 +16,13 @@ for it and would only acquire a duty to protect it.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Request
 from pydantic import BaseModel, Field
 
 from .evidence.engine import MAX_MULTI, EvidenceEngine, ResolutionFailed
 from .evidence.lexicon import ALLOWED_INPUT
 from .evidence.schema import MechanismGraph, MultiReport, PairReport, ResolveOut
+from .ratelimit import client_key, limiter
 
 router = APIRouter(prefix="/api/v3", tags=["DDI-Net 3.0 evidence"])
 
@@ -109,3 +111,14 @@ def multi(req: MultiRequest) -> MultiReport:
 @router.get("/sources")
 def sources() -> dict:
     return engine().sources()
+
+
+@router.get("/limits")
+def limits(request: Request) -> dict:
+    """Published limits, today's external-call budget, and the key this caller
+    is counted under — so a deployment's proxy setting can be checked."""
+    out = {"rate_limits": limiter.describe(),
+           "your_client_key": client_key(request.scope, limiter.proxy_hops)}
+    if _engine is not None:
+        out["external_daily_budget"] = _engine.http.budget_status()
+    return out

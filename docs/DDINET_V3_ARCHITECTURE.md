@@ -239,22 +239,43 @@ frozen hashes. All parity tests pass again.
 ## 3. API
 
 All endpoints are read-only and accept only drug names or DrugBank IDs. Nothing
-about the person asking is accepted, stored or logged.
+about the person asking is accepted or stored; the rate limiter keeps a request
+count per client address in memory only, and the host's access log (uvicorn)
+records address and path.
 
 | Method | Path | Body / query | Returns |
 |---|---|---|---|
 | GET | `/api/health` | — | model and evidence availability, artifact hashes |
+| GET | `/api/health/ready` | — | 200 only when model and evidence are loaded, else 503 (the health check) |
 | POST | `/api/analyze` | `{drug_a, drug_b}` (DrugBank IDs) | v2 response, unchanged |
 | GET | `/api/v3/resolve` | `q` | `ResolveOut` |
 | POST | `/api/v3/report` | `{drug_a, drug_b, include_labels=true}` | `PairReport` |
 | POST | `/api/v3/graph` | `{drug_a, drug_b}` | `MechanismGraph` |
 | POST | `/api/v3/multi` | `{drugs: [2..8], include_labels=true}` | `MultiReport` |
 | GET | `/api/v3/sources` | — | source metadata, artifact hash, direction audit |
+| GET | `/api/v3/limits` | — | rate-limit policy, the caller's client key, external-source daily budget |
 
 Errors: `422` with `{"detail": {"message", "resolutions": [ResolveOut…]}}` when a
 drug cannot be identified (candidates included, nothing guessed); `422` for
 invalid input or the same drug twice; `503` when the evidence artifact is
-missing. Schemas: `serving/evidence/schema.py`; TypeScript mirror:
+missing; `429` with `Retry-After` and `{"detail": {"message",
+"retry_after_seconds", "scope", "route_class"}}` when a rate limit is reached;
+`411`/`413` for a POST without `Content-Length` or with a body over 16 KiB.
+
+**Rate limiting** (`serving/ratelimit.py`, ASGI middleware inside CORS so
+refusals stay readable by the browser): sliding windows per client and for all
+clients together, by route class — `resolve` 60/min, `pair` (report, graph)
+30/min, `multi` 4/min and 30/h per client, 40/min for all clients. The client
+is the right-most `X-Forwarded-For` entry at `DDINET_PROXY_HOPS` (default 1:
+the entry Render's proxy appends), so a prefix the caller writes is ignored.
+State is in memory in the single worker. Separately, `HttpClient` caps network
+calls per external source per UTC day (openFDA 800 without a key, RxNorm
+20,000), so a public deployment stays inside those services' quotas.
+
+**Edge direction.** A `documented_interaction` edge carries `directed`. It is
+`true` only for the DrugBank types whose drug order the audit verified; for all
+others the edge runs in request order, `directed` is `false`, the site draws no
+arrowhead, and the statement is the direction-neutral rendering. Schemas: `serving/evidence/schema.py`; TypeScript mirror:
 `web/src/data/v3.ts`.
 
 ---
@@ -322,8 +343,11 @@ Reports are regenerated with `scripts/61`–`65` (they read the frozen tag with
 
 * **API (Render, `render.yaml`)**: `serving/Dockerfile.lean` now also builds
   the evidence artifact in the build stage and copies `runtime/evidence/` into
-  the runtime stage. The image must be rebuilt; nothing was deployed from this
-  session.
+  the runtime stage, sets `DDINET_REQUIRE_EVIDENCE=1` (a missing artifact stops
+  startup) and declares a `HEALTHCHECK` on `/api/health/ready`. The build
+  context is an allowlist (`.dockerignore`, checked by
+  `tests/test_docker_context.py`). Step-by-step instructions:
+  `docs/DDINET_V3_DEPLOYMENT.md`. Nothing was deployed from this session.
 * **Outbound network**: the API host must reach `api.fda.gov` and
   `rxnav.nlm.nih.gov` for label evidence and brand names. Without it, reports
   are complete from local sources and say that labels were not checked.

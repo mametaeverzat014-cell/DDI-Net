@@ -37,6 +37,17 @@ describe("v3 client", () => {
     if (r.kind === "unresolved") expect(r.resolutions[0].candidates[0].id).toBe("DB00682");
   });
 
+  it("maps 429 to rate_limited with the server's retry delay", async () => {
+    const r = await interpret(json(429, { detail: { message: "x", retry_after_seconds: 17, scope: "client", route_class: "multi" } }));
+    expect(r).toEqual({ kind: "rate_limited", retryAfter: 17 });
+  });
+
+  it("falls back to the Retry-After header, then to a minute", async () => {
+    const h = new Response("{}", { status: 429, headers: { "retry-after": "9" } });
+    expect(await interpret(h)).toEqual({ kind: "rate_limited", retryAfter: 9 });
+    expect(await interpret(new Response("not json", { status: 429 }))).toEqual({ kind: "rate_limited", retryAfter: 60 });
+  });
+
   it("maps a validation 422 to error with the message", async () => {
     const r = await interpret(json(422, { detail: [{ msg: "field required" }] }));
     expect(r).toEqual({ kind: "error", message: "field required" });

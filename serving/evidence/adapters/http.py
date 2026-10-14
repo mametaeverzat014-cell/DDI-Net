@@ -42,7 +42,8 @@ def urllib_transport(url: str, timeout: float) -> tuple[int, bytes]:
 class HttpClient:
     def __init__(self, transport: Transport | None = None, timeout: float = 6.0,
                  ttl_seconds: float = 24 * 3600, max_entries: int = 2048,
-                 cooldown_seconds: float = 60.0, enabled: bool | None = None) -> None:
+                 cooldown_seconds: float = 60.0, enabled: bool | None = None,
+                 daily_budget: dict[str, int] | None = None) -> None:
         self.transport = transport or urllib_transport
         self.timeout = timeout
         self.ttl = ttl_seconds
@@ -54,6 +55,12 @@ class HttpClient:
         self._cache: OrderedDict[str, tuple[float, int, object]] = OrderedDict()
         self._down_until: dict[str, float] = {}
         self._lock = threading.Lock()
+        #: Network calls (cache misses) allowed per source per UTC day. Keeps a
+        #: public deployment inside the external services' quotas no matter how
+        #: requests arrive; when spent, the source reports "unavailable".
+        self.daily_budget = dict(daily_budget or {})
+        self._spent: dict[str, int] = {}
+        self._spent_day = ""
 
     def get_json(self, source: str, url: str) -> tuple[int, object]:
         """Return (status, parsed JSON). 404 is a normal answer, not an error."""
@@ -67,6 +74,13 @@ class HttpClient:
                 return hit[1], hit[2]
             if self._down_until.get(source, 0) > now:
                 raise SourceUnavailable(f"{source}: recently unreachable; retrying after a cooldown")
+            today = time.strftime("%Y-%m-%d", time.gmtime())
+            if today != self._spent_day:
+                self._spent_day, self._spent = today, {}
+            budget = self.daily_budget.get(source)
+            if budget is not None and self._spent.get(source, 0) >= budget:
+                raise SourceUnavailable(f"{source}: today's request budget ({budget}) is used up")
+            self._spent[source] = self._spent.get(source, 0) + 1
         try:
             status, body = self.transport(url, self.timeout)
         except (OSError, TimeoutError) as exc:
@@ -88,6 +102,11 @@ class HttpClient:
                 while len(self._cache) > self.max_entries:
                     self._cache.popitem(last=False)
         return status, data
+
+    def budget_status(self) -> dict:
+        with self._lock:
+            return {"day_utc": self._spent_day or time.strftime("%Y-%m-%d", time.gmtime()),
+                    "budget": dict(self.daily_budget), "spent": dict(self._spent)}
 
     def _mark_down(self, source: str) -> None:
         with self._lock:

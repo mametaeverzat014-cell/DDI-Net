@@ -80,10 +80,17 @@ class EvidenceEngine:
         self.model_unavailable_reason = model_unavailable_reason
         if external is None:
             external = os.environ.get("DDINET_EXTERNAL_SOURCES", "on").lower() not in ("off", "0", "false")
-        self.http = http or HttpClient(enabled=external)
+        key = os.environ.get("OPENFDA_API_KEY")
+        # openFDA allows 1,000 requests/day per IP without a key and 120,000 per
+        # key; Render's egress IPs are shared, so stay well below either.
+        budget = {
+            "openfda_label": int(os.environ.get("DDINET_OPENFDA_DAILY_BUDGET", 100_000 if key else 800)),
+            "rxnorm": int(os.environ.get("DDINET_RXNORM_DAILY_BUDGET", 20_000)),
+        }
+        self.http = http or HttpClient(enabled=external, daily_budget=budget)
         self.rxnorm = RxNormAdapter(self.http) if self.http.enabled else None
         self.labels = LabelEvidence(
-            OpenFdaLabelAdapter(self.http, os.environ.get("OPENFDA_API_KEY")) if self.http.enabled else None,
+            OpenFdaLabelAdapter(self.http, key) if self.http.enabled else None,
             self.rxnorm)
 
     # -- resolution -------------------------------------------------------------

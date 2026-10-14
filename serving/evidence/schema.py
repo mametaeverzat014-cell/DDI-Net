@@ -301,6 +301,7 @@ class GraphEdge(BaseModel):
     target: str
     kind: Literal["annotation", "pathway_membership", "documented_interaction", "model_reliance"]
     established: bool
+    directed: bool = Field(True, description="False when source/target order carries no meaning (e.g. an interaction record whose drug order is not verified).")
     detail: dict = {}
 
 

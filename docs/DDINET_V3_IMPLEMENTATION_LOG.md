@@ -101,6 +101,27 @@ Issues found and fixed during this step:
 * `docs/DDINET_V3_ARCHITECTURE.md`, `DDINET_V3_SCIENTIFIC_LIMITATIONS.md`,
   `DDINET_V3_TEST_REPORT.md`, this log.
 
+## Step 8 — Preparing a public research demonstration
+
+* **Rate limiting** (`serving/ratelimit.py`): per-client and global sliding
+  windows on `/api/v3`, strictest on multi-drug requests (4/min, 30/h per
+  client); 429 with `Retry-After`; body-size cap; client key from the
+  right-most `X-Forwarded-For` entry so a caller cannot choose their bucket.
+  Daily per-source budgets for openFDA and RxNorm in `HttpClient`. The site
+  shows a distinct "too many requests" state, never an empty report.
+* **Docker**: allowlist `.dockerignore` (111 files, 16 MiB instead of the whole
+  repository); `/api/health/ready`; `HEALTHCHECK` in both Dockerfiles;
+  `DDINET_REQUIRE_EVIDENCE=1` in the images; Render health check path updated.
+  Verified without a Docker daemon by running the build stage inside exactly
+  the filtered context (artifacts identical to the full-tree build) and the
+  runtime stage under Python 3.11 with only the lean requirements.
+* **Drug-order integrity**: the mechanism graph no longer copied the DrugBank
+  export order into `documented_interaction` edges for unverified types; edges
+  now carry `directed` and the neutral statement. New integration tests check
+  every record, 150 sampled unverified pairs through the engine and the HTTP
+  API, in both languages and both request orders.
+* `docs/DDINET_V3_DEPLOYMENT.md`.
+
 ---
 
 ## What was not done, and why
@@ -108,8 +129,8 @@ Issues found and fixed during this step:
 | Item | Status | Reason |
 |---|---|---|
 | Live verification of openFDA / RxNorm | not done | blocked by this container's network policy; mocked tests only |
-| Deployment of the API and the site | not done | requires your authorization; images must be rebuilt (`Dockerfile.lean` changed) |
-| Push of `feature/ddinet-v3` | not done | requires your authorization |
+| Deployment of the API and the site | not done | requires your authorization; instructions in `docs/DDINET_V3_DEPLOYMENT.md` |
+| An actual `docker build` | not done | no Docker daemon in this container; the steps were reproduced command by command |
 | Per-protein model attribution for any pair | not done | the frozen method exists for 20 pairs; extending it needs per-drug re-encoding (torch at request time or a ~40 MB table) and a defensible validation plan |
 | Calibrated clinical probabilities | not done, deliberately | no outcome data; the negative labels are sampled unlabelled pairs |
 | Higher-order (3+ drug) modelling | not done, deliberately | no data or validated method |

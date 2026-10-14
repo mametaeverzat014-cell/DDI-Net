@@ -281,6 +281,10 @@ const STATE_TEXT = {
   error: { ru: "Ошибка запроса:", en: "Request error:" },
   unresolved: { ru: "Не удалось однозначно определить препарат. Ничего не подставлено автоматически.", en: "A drug could not be identified unambiguously. Nothing was substituted automatically." },
   loading: { ru: "Собираем записи источников…", en: "Gathering source records…" },
+  rateLimited: {
+    ru: "Слишком много запросов за короткое время. Сервис ограничивает частоту, чтобы оставаться доступным всем. Попробуйте снова через {s} с.",
+    en: "Too many requests in a short time. The service limits request rates to stay available to everyone. Try again in {s} s.",
+  },
 } satisfies Record<string, Bi>;
 
 export function RemoteNotice({ state }: { state: Remote<unknown> }) {
@@ -298,6 +302,9 @@ export function RemoteNotice({ state }: { state: Remote<unknown> }) {
   const box = { border: "1px solid rgba(255,196,120,0.35)", background: "rgba(255,196,120,0.05)", borderRadius: "var(--radius-lg)", padding: 20 } as const;
   if (state.kind === "unconfigured") return <div style={box}><p style={{ fontSize: 14 }}>{pick(STATE_TEXT.unconfigured, lang)}</p></div>;
   if (state.kind === "unresolved") return <Unresolved resolutions={state.resolutions} />;
+  if (state.kind === "rate_limited") {
+    return <div style={box} role="alert"><p style={{ fontSize: 14 }}>{pick(STATE_TEXT.rateLimited, lang).replace("{s}", String(state.retryAfter))}</p></div>;
+  }
   const head = state.kind === "unavailable" ? STATE_TEXT.unavailable : STATE_TEXT.error;
   return <div style={box}><p style={{ fontSize: 14 }}>{pick(head, lang)} <span className="mono" style={{ fontSize: 12 }}>{state.message}</span></p></div>;
 }

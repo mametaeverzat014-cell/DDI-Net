@@ -207,7 +207,14 @@ export interface MultiReport {
 }
 
 export interface GraphNode { id: string; kind: "drug" | "protein" | "pathway"; label: string; side: "a" | "b" | "shared" | "pathway"; detail: Record<string, unknown> }
-export interface GraphEdge { id: string; source: string; target: string; kind: "annotation" | "pathway_membership" | "documented_interaction" | "model_reliance"; established: boolean; detail: Record<string, unknown> }
+export interface GraphEdge {
+  id: string; source: string; target: string;
+  kind: "annotation" | "pathway_membership" | "documented_interaction" | "model_reliance";
+  established: boolean;
+  /** False when source/target order means nothing (unverified DrugBank drug order). Absent from older APIs. */
+  directed?: boolean;
+  detail: Record<string, unknown>;
+}
 export interface MechanismGraph { drug_a: string; drug_b: string; nodes: GraphNode[]; edges: GraphEdge[]; truncated: Record<string, number>; legend: Record<string, Bi> }
 
 export type Remote<T> =
@@ -216,6 +223,7 @@ export type Remote<T> =
   | { kind: "ok"; data: T }
   | { kind: "unresolved"; resolutions: ResolveOut[]; message: string }
   | { kind: "unavailable"; message: string }
+  | { kind: "rate_limited"; retryAfter: number }
   | { kind: "error"; message: string };
 
 async function post<T>(path: string, body: unknown, signal?: AbortSignal): Promise<Remote<T>> {
@@ -239,6 +247,15 @@ export async function interpret<T>(r: Response): Promise<Remote<T>> {
   if (r.ok) return { kind: "ok", data: (await r.json()) as T };
   const body = await r.json().catch(() => null);
   const detail = body?.detail;
+  if (r.status === 429) {
+    // The server's rate limit (serving/ratelimit.py). Seconds come from the JSON
+    // body, falling back to the Retry-After header, then to a minute.
+    const fromBody = Number(detail?.retry_after_seconds);
+    const fromHeader = Number(r.headers.get("retry-after"));
+    const retryAfter = Number.isFinite(fromBody) && fromBody > 0 ? fromBody
+      : Number.isFinite(fromHeader) && fromHeader > 0 ? fromHeader : 60;
+    return { kind: "rate_limited", retryAfter };
+  }
   if (r.status === 503) return { kind: "unavailable", message: typeof detail === "string" ? detail : `HTTP ${r.status}` };
   if (r.status === 404) return { kind: "unavailable", message: "this API does not provide the DDI-Net 3.0 evidence layer yet" };
   if (r.status === 422 && detail && typeof detail === "object" && Array.isArray(detail.resolutions)) {

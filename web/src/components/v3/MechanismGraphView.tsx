@@ -101,7 +101,12 @@ export function MechanismGraphView({ graph, findings, nameOf }: {
               const midX = (s.x + t.x) / 2;
               return (
                 <g key={e.id} opacity={edgeDim(e)}>
-                  <path d={`M ${s.x} ${s.y - 26} Q ${midX} ${8} ${t.x} ${t.y - 26}`} fill="none" stroke="var(--ev-documented)" strokeWidth={1.4} strokeDasharray="5 5" />
+                  {/* No arrowhead: most DrugBank records have an unverified drug order
+                      (serving/evidence/direction.py), so the arc never implies who affects whom. */}
+                  <path d={`M ${s.x} ${s.y - 26} Q ${midX} ${8} ${t.x} ${t.y - 26}`} fill="none" stroke="var(--ev-documented)" strokeWidth={1.4} strokeDasharray="5 5">
+                    {/* The statement is English only; Russian readers get the label (the RU text is in the report). */}
+                    <title>{lang === "en" ? String(e.detail.statement ?? "") : pick(T.documented, lang)}</title>
+                  </path>
                 </g>
               );
             }
