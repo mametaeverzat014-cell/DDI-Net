@@ -54,6 +54,8 @@ reports/*.json
 !reports/chembl_mapping_summary.json
 !reports/chembl_extraction_summary.json
 !reports/.gitkeep
+# DDI-Net 3.0 measured diagnostics: the API quotes them and tests read them.
+!reports/v3_*.json
 
 # Console logs of long runs. The substantive record is the JSON/CSV the run
 # writes, which is committed; the log is the same information with timestamps

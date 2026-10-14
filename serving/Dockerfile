@@ -22,6 +22,10 @@ RUN pip install --no-cache-dir --extra-index-url https://download.pytorch.org/wh
 COPY src/ /app/src/
 COPY serving/ /app/serving/
 COPY data/mechanism_v1/ /app/data/mechanism_v1/
+# DDI-Net 3.0 evidence artifact inputs, compiled once at build time.
+COPY data/raw/drugbank.tab.gz /app/data/raw/drugbank.tab.gz
+COPY web/public/data/drugs.json /app/web/public/data/drugs.json
+RUN cd /app && PYTHONPATH=/app:/app/src python -m serving.evidence.build
 
 # The 18 MB checkpoint is a GitHub Release asset, never a layer in git history.
 # Fetched at build time and verified by SHA-256 at startup by serving/integrity.py.

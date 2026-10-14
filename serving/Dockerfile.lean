@@ -24,6 +24,9 @@ RUN pip install --no-cache-dir --extra-index-url https://download.pytorch.org/wh
 COPY src/ src/
 COPY serving/ serving/
 COPY data/mechanism_v1/ data/mechanism_v1/
+# Inputs of the DDI-Net 3.0 evidence artifact (serving/evidence/build.py).
+COPY data/raw/drugbank.tab.gz data/raw/drugbank.tab.gz
+COPY web/public/data/drugs.json web/public/data/drugs.json
 
 ARG RELEASE_TAG=v2-final-github-safe-2026-09-03
 ARG CHECKPOINT=bd45f84e3c1b2c33.pt
@@ -36,6 +39,8 @@ RUN mkdir -p runtime/model_assets && \
 # Runs the integrity gate, loads the frozen model, encodes all 1,705 drugs once.
 ENV PYTHONPATH=/build:/build/src
 RUN python -m serving.precompute
+# Evidence layer: DrugBank records, curated roles, Reactome, split, names.
+RUN python -m serving.evidence.build
 
 # ------------------------------------------------------------- runtime stage
 FROM python:3.11-slim AS runtime
@@ -52,6 +57,7 @@ COPY serving/ serving/
 COPY --from=build /build/runtime/model_assets/lean_decoder_v1.npz \
                   /build/runtime/model_assets/lean_decoder_v1.json \
                   /app/runtime/model_assets/
+COPY --from=build /build/runtime/evidence/ /app/runtime/evidence/
 
 ENV PYTHONPATH=/app
 ENV DDINET_ENGINE=lean

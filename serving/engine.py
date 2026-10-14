@@ -69,7 +69,12 @@ from ddinet.features.molgraph import (  # noqa: E402
     BOND_FEATURE_DIM,
     build_mol_graphs,
 )
-from ddinet.models.bio_gine import BiologicalSets, BioGine, BioGineConfig  # noqa: E402
+# The frozen module, not the research tree's: see serving/frozen_model.py.
+from .frozen_model import load as _load_frozen_bio_gine  # noqa: E402
+
+_bio_gine = _load_frozen_bio_gine()
+BiologicalSets, BioGine, BioGineConfig = (
+    _bio_gine.BiologicalSets, _bio_gine.BioGine, _bio_gine.BioGineConfig)
 
 from .integrity import CHECKPOINT_PATH, IntegrityReport, verify_all  # noqa: E402
 
