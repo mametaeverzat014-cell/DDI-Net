@@ -152,3 +152,30 @@ checkpoint, hash-checks it and runs `precompute`; stage two carries numpy, the
 | Vercel / Lambda functions | no | no long-lived process to hold the artifact |
 
 Then set `VITE_ANALYZE_API` to the service URL and rebuild the frontend.
+
+## DDI-Net 3.0 evidence layer (`/api/v3`)
+
+`/api/analyze` is unchanged. Beside it, `serving/api_v3.py` serves pair reports
+that keep documented evidence, mechanism hypotheses and the model score in
+separate fields, with a deterministic RU/EN explanation. Details:
+`docs/DDINET_V3_ARCHITECTURE.md`.
+
+```bash
+python -m serving.evidence.build            # runtime/evidence/evidence_v1.json.gz
+uvicorn serving.api:app --port 8000
+curl -s -X POST localhost:8000/api/v3/report -H 'content-type: application/json' \
+  -d '{"drug_a": "warfarin", "drug_b": "fluconazole"}'
+```
+
+| Variable | Default | Effect |
+|---|---|---|
+| `DDINET_EXTERNAL_SOURCES` | `on` | `off` disables openFDA and RxNorm; reports say so |
+| `OPENFDA_API_KEY` | unset | raises the openFDA daily quota; never returned to clients |
+| `DDINET_ALLOW_NO_MODEL` | `0` | `1` lets `/api/v3` start without the model artifact |
+| `DDINET_EVIDENCE_ARTIFACT` | `runtime/evidence/evidence_v1.json.gz` | artifact location |
+
+Serving imports the frozen BIO-GINE module from a byte-identical vendored copy
+(`serving/frozen_model.py`), so research changes to `src/ddinet/models/bio_gine.py`
+no longer stop the integrity gate. The lean artifact also carries branch-zeroed
+encodings for the model-reliance readout (parity: `reports/v3_modality_parity.md`).
+

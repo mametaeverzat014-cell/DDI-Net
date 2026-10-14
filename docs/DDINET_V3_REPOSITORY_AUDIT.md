@@ -244,3 +244,17 @@ right source for name normalisation only.
    interaction type and a sentence, never a severity grade. DDI-Net 3.0 must
    not invent one.
 6. **Network policy of this container.** See §8.
+
+---
+
+## Addendum — found during implementation (same session)
+
+* **Pre-existing serving break.** Commits `911bed9` and `aa04493` edited
+  `src/ddinet/models/bio_gine.py`, one of the six hash-gated frozen modules.
+  With torch installed, `python -m serving.precompute` failed at the integrity
+  gate, 11 serving tests errored, and `serving/Dockerfile.lean` could not have
+  built from this HEAD. Fixed by serving a byte-identical vendored copy of the
+  frozen module (`serving/frozen_model.py`); see the implementation log.
+* **TDC drug order.** The export's (ID1, ID2) order does not consistently match
+  the template's `#Drug1/#Drug2` slots (`reports/v3_tdc_direction_audit.md`).
+  This does not affect the frozen model, which trains on unordered pairs.
