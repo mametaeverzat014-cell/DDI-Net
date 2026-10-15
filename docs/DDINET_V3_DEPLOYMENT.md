@@ -99,8 +99,33 @@ deduplication and metric wording of the report quality pass,
 4. Re-export the warfarin + fluconazole PDF from the Preview. With openFDA
    reachable, section 3 shows each FDA label once, with its distinct excerpts.
 
-Until step 3 succeeds, do not describe the Preview frontend and the test API as
-synchronised. The site and the PDF stay correct with the old API: they group
+**After the Clinical Outcome Engine commit** (`docs/DDINET_V3_CLINICAL_OUTCOMES_ARCHITECTURE.md`)
+the backend changed again: `serving/evidence/outcomes.py` is new, and
+`schema.py` and `engine.py` now add an `outcomes` block to every pair report and
+outcome fields to every multi-drug pair. Redeploy as in steps 1–2, then check:
+
+```bash
+API=https://ddinet-api-test.onrender.com
+# the pair report carries the outcome block:
+curl -s -X POST $API/api/v3/report -H 'Content-Type: application/json' \
+  -d '{"drug_a":"DB00682","drug_b":"DB00945"}' | grep -o '"interaction_status":"[a-z_]*"' | head -1
+# expected: "interaction_status":"documented_interaction"
+# multi-drug pairs carry outcome categories:
+curl -s -X POST $API/api/v3/multi -H 'Content-Type: application/json' \
+  -d '{"drugs":["DB00682","DB00196","DB00945"]}' | grep -o '"shared_outcome_categories"' | head -1
+# label outcomes, if openFDA answers, name the rule version:
+curl -s -X POST $API/api/v3/report -H 'Content-Type: application/json' \
+  -d '{"drug_a":"DB00682","drug_b":"DB00196"}' | grep -o 'label_lexicon/v2:term=[a-z_]*' | sort -u
+```
+
+The first two greps must print something. The third prints only when openFDA
+answered and a label sentence names an outcome. With the old API the site
+still works: it shows a notice that the outcome view needs the updated
+service, together with the previous evidence report. The Quick PDF then
+carries that notice as well.
+
+Until step 3 (and, after the outcome commit, the checks above) succeeds, do not
+describe the Preview frontend and the test API as synchronised. The site and the PDF stay correct with the old API: they group
 repeated label text themselves and annotate the old metric sentence. But the
 API's own explanation text remains the old version.
 

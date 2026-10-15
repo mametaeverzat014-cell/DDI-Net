@@ -1,0 +1,75 @@
+{"id": "p01", "sentence": "Concomitant use with warfarin increases the risk of bleeding.", "partner": "warfarin", "gold": ["bleeding"], "case": "positive", "constructed": true}
+{"id": "p02", "sentence": "Serious bleeding events, some fatal, have been reported in patients taking warfarin with this drug.", "partner": "warfarin", "gold": ["bleeding"], "case": "positive_serious", "constructed": true}
+{"id": "p03", "sentence": "Coadministration with ketoconazole increased plasma concentrations of the drug approximately 5-fold.", "partner": "ketoconazole", "gold": ["exposure_increase"], "case": "positive_pk", "constructed": true}
+{"id": "p04", "sentence": "Rifampin decreased the AUC of the drug by 80%.", "partner": "rifampin", "gold": ["exposure_decrease"], "case": "positive_pk", "constructed": true}
+{"id": "p05", "sentence": "QT prolongation and torsades de pointes have been reported when used with amiodarone.", "partner": "amiodarone", "gold": ["qt_arrhythmia"], "case": "positive", "constructed": true}
+{"id": "p06", "sentence": "Combined use with opioids such as morphine may result in profound sedation, respiratory depression, coma, and death.", "partner": "morphine", "gold": ["sedation", "respiratory_depression"], "case": "positive_class_list", "constructed": true}
+{"id": "p07", "sentence": "Serotonin syndrome has been reported with concomitant use of tramadol.", "partner": "tramadol", "gold": ["serotonin_syndrome"], "case": "positive", "constructed": true}
+{"id": "p08", "sentence": "Hyperkalemia may occur when used with spironolactone.", "partner": "spironolactone", "gold": ["hyperkalemia"], "case": "positive", "constructed": true}
+{"id": "p09", "sentence": "Rhabdomyolysis has occurred with concomitant gemfibrozil.", "partner": "gemfibrozil", "gold": ["myopathy"], "case": "positive", "constructed": true}
+{"id": "p10", "sentence": "Severe hypotension has been reported with sildenafil.", "partner": "sildenafil", "gold": ["hypotension"], "case": "positive", "constructed": true}
+{"id": "p11", "sentence": "Hypoglycemia may occur when combined with insulin.", "partner": "insulin", "gold": ["hypoglycemia"], "case": "positive", "constructed": true}
+{"id": "p12", "sentence": "Bradycardia and heart block have been observed with verapamil.", "partner": "verapamil", "gold": ["bradycardia_block"], "case": "positive", "constructed": true}
+{"id": "p13", "sentence": "Increases in INR have been reported in patients receiving warfarin.", "partner": "warfarin", "gold": ["coagulation_measure"], "case": "positive", "constructed": true}
+{"id": "p14", "sentence": "Monitor for signs of bleeding when used with apixaban.", "partner": "apixaban", "gold": ["bleeding"], "case": "positive_monitoring", "constructed": true}
+{"id": "p15", "sentence": "Cases of acute renal failure have been reported with concomitant use of tenofovir.", "partner": "tenofovir", "gold": ["nephrotoxicity"], "case": "positive", "constructed": true}
+{"id": "p16", "sentence": "Hepatotoxicity was more frequent when combined with isoniazid.", "partner": "isoniazid", "gold": ["hepatotoxicity"], "case": "positive", "constructed": true}
+{"id": "p17", "sentence": "Neutropenia may be potentiated by zidovudine.", "partner": "zidovudine", "gold": ["myelosuppression"], "case": "positive", "constructed": true}
+{"id": "p18", "sentence": "Concomitant use with phenytoin may result in reduced efficacy.", "partner": "phenytoin", "gold": ["reduced_effect"], "case": "positive", "constructed": true}
+{"id": "p19", "sentence": "Hypokalemia induced by furosemide may increase the risk of arrhythmia.", "partner": "furosemide", "gold": ["hypokalemia", "qt_arrhythmia"], "case": "positive_paraphrase", "constructed": true}
+{"id": "p20", "sentence": "Hyponatremia has been reported with concomitant carbamazepine.", "partner": "carbamazepine", "gold": ["hyponatremia"], "case": "positive", "constructed": true}
+{"id": "p21", "sentence": "Use with clarithromycin increased simvastatin exposure and the risk of myopathy.", "partner": "clarithromycin", "gold": ["exposure_increase", "myopathy"], "case": "positive_pk_and_outcome", "constructed": true}
+{"id": "p22", "sentence": "Excessive anticoagulation was observed with fluconazole.", "partner": "fluconazole", "gold": ["coagulation_measure"], "case": "paraphrase", "constructed": true}
+{"id": "p23", "sentence": "Patients taking diazepam with this drug experienced marked drowsiness.", "partner": "diazepam", "gold": ["sedation"], "case": "paraphrase", "constructed": true}
+{"id": "p24", "sentence": "Kidney damage has been reported with ibuprofen.", "partner": "ibuprofen", "gold": ["nephrotoxicity"], "case": "paraphrase", "constructed": true}
+{"id": "p25", "sentence": "Elevated liver enzymes were seen with acetaminophen.", "partner": "acetaminophen", "gold": ["hepatotoxicity"], "case": "paraphrase", "constructed": true}
+{"id": "p26", "sentence": "Irregular heartbeat has been reported with sotalol.", "partner": "sotalol", "gold": ["qt_arrhythmia"], "case": "paraphrase", "constructed": true}
+{"id": "p27", "sentence": "Breathing problems may occur with opioid co-use such as fentanyl.", "partner": "fentanyl", "gold": ["respiratory_depression"], "case": "paraphrase", "constructed": true}
+{"id": "p28", "sentence": "Blood levels of digoxin rise when given with this drug.", "partner": "digoxin", "gold": ["exposure_increase"], "case": "paraphrase_pk", "constructed": true}
+{"id": "p29", "sentence": "Low blood pressure was observed with nitroglycerin.", "partner": "nitroglycerin", "gold": ["hypotension"], "case": "paraphrase", "constructed": true}
+{"id": "p30", "sentence": "Low potassium levels may develop with hydrochlorothiazide.", "partner": "hydrochlorothiazide", "gold": ["hypokalemia"], "case": "paraphrase", "constructed": true}
+{"id": "n31", "sentence": "No bleeding events were reported with aspirin.", "partner": "aspirin", "gold": [], "case": "negated", "constructed": true}
+{"id": "n32", "sentence": "Coadministration with omeprazole did not result in QT prolongation.", "partner": "omeprazole", "gold": [], "case": "negated", "constructed": true}
+{"id": "n33", "sentence": "There was no evidence of serotonin syndrome with linezolid in this study.", "partner": "linezolid", "gold": [], "case": "negated", "constructed": true}
+{"id": "n34", "sentence": "Rifampin had no clinically significant effect on plasma concentrations.", "partner": "rifampin", "gold": [], "case": "no_effect", "constructed": true}
+{"id": "n35", "sentence": "Bleeding risk was not increased with clopidogrel.", "partner": "clopidogrel", "gold": [], "case": "negated_after_term", "constructed": true}
+{"id": "n36", "sentence": "Hypotension was not observed with amlodipine.", "partner": "amlodipine", "gold": [], "case": "negated_after_term", "constructed": true}
+{"id": "n37", "sentence": "Ketoconazole did not increase the AUC.", "partner": "ketoconazole", "gold": [], "case": "negated", "constructed": true}
+{"id": "o38", "sentence": "Use with caution in patients with renal failure taking metformin.", "partner": "metformin", "gold": [], "case": "population", "constructed": true}
+{"id": "o39", "sentence": "Patients with a history of bleeding should be monitored when warfarin is added.", "partner": "warfarin", "gold": [], "case": "population", "constructed": true}
+{"id": "o40", "sentence": "In patients with hypokalemia, digoxin toxicity may be more likely.", "partner": "digoxin", "gold": [], "case": "population", "constructed": true}
+{"id": "o41", "sentence": "Patients predisposed to QT prolongation require care with methadone.", "partner": "methadone", "gold": [], "case": "population", "constructed": true}
+{"id": "u42", "sentence": "Warfarin is an anticoagulant; this drug alone has caused hepatitis.", "partner": "warfarin", "gold": [], "case": "single_drug_effect", "constructed": true}
+{"id": "u43", "sentence": "Unlike ibuprofen, this drug does not cause bleeding.", "partner": "ibuprofen", "gold": [], "case": "negated", "constructed": true}
+{"id": "u44", "sentence": "Headache was the most common adverse reaction in the ketoconazole study.", "partner": "ketoconazole", "gold": [], "case": "unrelated", "constructed": true}
+{"id": "c45", "sentence": "Strong CYP3A4 inhibitors (e.g., ketoconazole, itraconazole, clarithromycin) increase plasma concentrations.", "partner": "ketoconazole", "gold": ["exposure_increase"], "case": "class_list", "constructed": true}
+{"id": "m46", "sentence": "Fluconazole is a strong inhibitor of CYP2C19 and a moderate inhibitor of CYP3A4.", "partner": "fluconazole", "gold": [], "case": "mechanism_only", "constructed": true}
+{"id": "m47", "sentence": "Dose adjustment of digoxin may be considered.", "partner": "digoxin", "gold": [], "case": "no_outcome", "constructed": true}
+{"id": "m48", "sentence": "See the warfarin prescribing information.", "partner": "warfarin", "gold": [], "case": "no_outcome", "constructed": true}
+{"id": "m49", "sentence": "Tacrolimus is metabolized by CYP3A4.", "partner": "tacrolimus", "gold": [], "case": "mechanism_only", "constructed": true}
+{"id": "m50", "sentence": "The interaction with cimetidine has not been studied.", "partner": "cimetidine", "gold": [], "case": "no_outcome", "constructed": true}
+{"id": "a51", "sentence": "Plasma concentrations increased with probenecid and decreased with rifampin.", "partner": "probenecid", "gold": ["exposure_increase"], "case": "ambiguous_pk", "constructed": true}
+{"id": "p52", "sentence": "Concomitant use with NSAIDs such as naproxen increases the risk of gastrointestinal bleeding.", "partner": "naproxen", "gold": ["bleeding"], "case": "positive_class_list", "constructed": true}
+{"id": "p53", "sentence": "Cases of torsade de pointes have been reported with haloperidol.", "partner": "haloperidol", "gold": ["qt_arrhythmia"], "case": "positive", "constructed": true}
+{"id": "p54", "sentence": "Co-administration with lithium may increase serum lithium concentrations.", "partner": "lithium", "gold": ["exposure_increase"], "case": "paraphrase_pk", "constructed": true}
+{"id": "p55", "sentence": "Severe respiratory depression has occurred with midazolam.", "partner": "midazolam", "gold": ["respiratory_depression"], "case": "positive", "constructed": true}
+{"id": "p56", "sentence": "Additive CNS depression may occur with alcohol.", "partner": "alcohol", "gold": ["sedation"], "case": "positive", "constructed": true}
+{"id": "p57", "sentence": "Hypertensive crisis has been reported with phenelzine.", "partner": "phenelzine", "gold": ["hypertension"], "case": "positive", "constructed": true}
+{"id": "p58", "sentence": "Increased risk of hyperkalemia with trimethoprim.", "partner": "trimethoprim", "gold": ["hyperkalemia"], "case": "positive", "constructed": true}
+{"id": "p59", "sentence": "The anticoagulant effect of warfarin may be increased.", "partner": "warfarin", "gold": ["coagulation_measure"], "case": "positive", "constructed": true}
+{"id": "p60", "sentence": "Myopathy, including rhabdomyolysis, was reported with colchicine.", "partner": "colchicine", "gold": ["myopathy"], "case": "positive", "constructed": true}
+{"id": "p61", "sentence": "Acute kidney injury has been reported with vancomycin.", "partner": "vancomycin", "gold": ["nephrotoxicity"], "case": "positive", "constructed": true}
+{"id": "p62", "sentence": "Liver failure has occurred when used with valproate.", "partner": "valproate", "gold": ["hepatotoxicity"], "case": "positive", "constructed": true}
+{"id": "p63", "sentence": "Syncope was reported in patients taking doxazosin with this drug.", "partner": "doxazosin", "gold": ["hypotension"], "case": "positive", "constructed": true}
+{"id": "p64", "sentence": "Agranulocytosis has been reported with clozapine.", "partner": "clozapine", "gold": ["myelosuppression"], "case": "positive", "constructed": true}
+{"id": "p65", "sentence": "Concomitant use with efavirenz may lead to loss of efficacy.", "partner": "efavirenz", "gold": ["reduced_effect"], "case": "positive", "constructed": true}
+{"id": "p66", "sentence": "The AUC of tacrolimus was doubled by voriconazole.", "partner": "voriconazole", "gold": ["exposure_increase"], "case": "positive_pk", "constructed": true}
+{"id": "p67", "sentence": "Exposure to the drug was reduced by 60% with carbamazepine.", "partner": "carbamazepine", "gold": ["exposure_decrease"], "case": "positive_pk", "constructed": true}
+{"id": "p68", "sentence": "Hypomagnesemia has been reported with proton pump inhibitors such as omeprazole.", "partner": "omeprazole", "gold": ["hypomagnesemia"], "case": "positive_class_list", "constructed": true}
+{"id": "p69", "sentence": "Concurrent use with metoprolol may cause AV block.", "partner": "metoprolol", "gold": ["bradycardia_block"], "case": "positive", "constructed": true}
+{"id": "p70", "sentence": "Serotonin toxicity may occur with fluoxetine.", "partner": "fluoxetine", "gold": ["serotonin_syndrome"], "case": "positive", "constructed": true}
+{"id": "n71", "sentence": "Bleeding time was unchanged when given with aspirin.", "partner": "aspirin", "gold": [], "case": "negated_unchanged", "constructed": true}
+{"id": "n72", "sentence": "No dose adjustment of warfarin is needed; INR was unaffected.", "partner": "warfarin", "gold": [], "case": "no_effect", "constructed": true}
+{"id": "n73", "sentence": "Hypoglycemia was not more frequent with metformin.", "partner": "metformin", "gold": [], "case": "negated_after_term", "constructed": true}
+{"id": "n74", "sentence": "The risk of QT prolongation with ondansetron is unknown.", "partner": "ondansetron", "gold": [], "case": "unknown", "constructed": true}
+{"id": "a75", "sentence": "Rifampin may decrease concentrations; however, no reduced efficacy was observed.", "partner": "rifampin", "gold": ["exposure_decrease"], "case": "mixed", "constructed": true}

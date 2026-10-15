@@ -182,6 +182,75 @@ export interface PairReport {
   limitations: Bi[];
   disclaimer: Bi;
   generated_at: string;
+  /** Clinical outcome block. Absent from API versions before the outcome engine. */
+  outcomes?: OutcomeReport | null;
+}
+
+// ------------------------------------------------------- clinical outcomes ---
+export type OutcomeEvidenceStatus = "documented" | "mechanistically_supported" | "hypothesized";
+export type EffectLevel = "clinical_outcome" | "pharmacodynamic_effect" | "pharmacokinetic_change" | "reduced_effectiveness" | "unspecified_adverse";
+export type SeriousnessClass = "documented_contraindication" | "explicit_serious_warning" | "documented_no_standard_severity" | "not_applicable";
+export type InteractionStatus = "documented_interaction" | "documented_outcome_unclear" | "research_prediction_only" | "insufficient_evidence" | "source_unavailable";
+export type LinkProvenance = "documented" | "verified_annotation" | "plausible_unconfirmed" | "unavailable";
+
+export interface OutcomeSupport {
+  evidence_record_id: string | null;
+  source_type: "fda_label" | "drugbank_tdc" | "annotation";
+  source_name: string;
+  source_document_id: string | null;
+  source_url: string | null;
+  section: string | null;
+  /** Verbatim: the label sentence or DrugBank's template. */
+  excerpt: string;
+  matched_terms: string[];
+  extraction_method: string;
+  direction: "symmetric" | "as_exported_verified" | "not_verified" | "from_annotation" | "as_stated_in_excerpt" | "not_applicable";
+  affected_drug_id: string | null;
+  source_seriousness: string | null;
+  retrieved_at: string | null;
+  qualifiers: string[];
+}
+
+export interface ClinicalOutcome {
+  id: string;
+  drug_a: string;
+  drug_b: string;
+  category: string;
+  effect: string;
+  effect_level: EffectLevel;
+  label: Bi;
+  explanation: Bi;
+  evidence_status: OutcomeEvidenceStatus;
+  supports: OutcomeSupport[];
+  n_source_documents: number;
+  affected_drug_id: string | null;
+  direction_note: Bi;
+  seriousness: SeriousnessClass;
+  seriousness_basis: Bi;
+  evidence_strength: "official_label_statement" | "database_standard_sentence" | "label_and_database" | "annotation_hypothesis";
+  evidence_strength_text: Bi;
+  extraction_note: Bi | null;
+  limitations: Bi[];
+  research_only: boolean;
+}
+
+export interface ChainNode { id: string; kind: "drug" | "protein" | "effect" | "outcome"; label: Bi; ref: string | null }
+export interface ChainLink { source: string; target: string; relation: string; provenance: LinkProvenance; text: Bi; refs: string[] }
+export interface MechanismChain { id: string; nodes: ChainNode[]; links: ChainLink[]; outcome_ids: string[]; research_only: boolean; summary: Bi }
+
+export interface OutcomeReport {
+  method: string;
+  interaction_status: InteractionStatus;
+  interaction_status_label: Bi;
+  interaction_status_hint: Bi;
+  outcomes: ClinicalOutcome[];
+  chains: MechanismChain[];
+  seriousness: SeriousnessClass;
+  seriousness_text: Bi;
+  coverage: Bi[];
+  no_outcome_text: Bi | null;
+  mechanism_without_outcome_text: Bi | null;
+  individual_limit: Bi;
 }
 
 export interface MultiPair {
@@ -199,6 +268,11 @@ export interface MultiPair {
   training_label_seen: boolean;
   needs_review: boolean;
   review_reasons: string[];
+  /** Outcome-engine fields; absent from older APIs. */
+  interaction_status?: InteractionStatus | null;
+  outcome_categories?: string[];
+  outcome_ids?: string[];
+  seriousness?: SeriousnessClass | null;
 }
 
 export interface MultiReport {
@@ -209,6 +283,9 @@ export interface MultiReport {
   scope_note: Bi;
   disclaimer: Bi;
   generated_at: string;
+  /** Documented outcome category -> pairs it was documented for (only categories shared by 2+ pairs). */
+  shared_outcome_categories?: Record<string, [string, string][]>;
+  outcome_categories?: Record<string, Bi>;
 }
 
 export interface GraphNode { id: string; kind: "drug" | "protein" | "pathway"; label: string; side: "a" | "b" | "shared" | "pathway"; detail: Record<string, unknown> }

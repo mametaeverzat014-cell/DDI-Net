@@ -35,6 +35,35 @@ there for their provenance).
   (≈0.9 MB); later exports reuse them. Measured in Chromium: about 6 s for the
   first two-drug report, including those downloads, against a local API.
 
+### Quick Report and the outcome sections (Clinical Outcome Engine)
+
+A **Quick PDF** button (pair reports only) produces a 1–2 page report built
+from the same API response as the site and the full report:
+
+* **A — Is there a documented interaction?** The interaction status.
+* **B — What could happen?** Each documented outcome with the source's own
+  words and its extraction method.
+* **C — Why could it happen?** The verified chain summaries.
+* **D — How certain is the information?** Seriousness as the source states
+  it, the source documents, coverage and key uncertainties.
+* **E — What does BIO-GINE add?**
+* **F — Important limitation.**
+
+File name: `DDI-Net_QuickReport_<A>_<B>_<date>.pdf`.
+
+The **full report** adds three things:
+* the outcome summary in section 1;
+* in section 3, an outcome table plus provenance for every outcome, with
+  every excerpt verbatim;
+* in section 4, a chain figure in which solid, dashed and dotted lines show
+  the provenance class.
+
+For multi-drug reports it adds the pairwise interaction status and the
+outcome categories shared by two or more pairs, with no combined score.
+
+The JSON machine summary (`machine_summary.outcomes`) carries the same
+records.
+
 ## 2. What the report contains
 
 Pair report:

@@ -13,7 +13,7 @@ declare const __DDINET_COMMIT__: string;
 
 export interface ExportFile { blob: Blob; filename: string; reportId: string }
 
-export function browserContext(lang: Lang, now = new Date()): ExportContext {
+export function browserContext(lang: Lang, now = new Date(), variant: "full" | "quick" = "full"): ExportContext {
   const commit = typeof __DDINET_COMMIT__ === "string" && __DDINET_COMMIT__ ? __DDINET_COMMIT__ : null;
   return {
     lang,
@@ -21,6 +21,7 @@ export function browserContext(lang: Lang, now = new Date()): ExportContext {
     timeZone: browserTimeZone(),
     siteOrigin: typeof window !== "undefined" ? window.location.origin : null,
     siteCommit: commit,
+    variant,
   };
 }
 
@@ -39,8 +40,8 @@ export async function renderPdf(prep: PreparedExport, resolveFont: (file: string
   return pdf(<ReportDocument prep={prep} />).toBlob();
 }
 
-export async function exportPdf(input: ExportInput, lang: Lang): Promise<ExportFile> {
-  const prep = await prepareExport(input, browserContext(lang));
+export async function exportPdf(input: ExportInput, lang: Lang, variant: "full" | "quick" = "full"): Promise<ExportFile> {
+  const prep = await prepareExport(input, browserContext(lang, new Date(), input.kind === "pair" ? variant : "full"));
   const blob = await renderPdf(prep, fontUrl);
   return { blob, filename: `${prep.fileBase}.pdf`, reportId: prep.reportId };
 }

@@ -65,12 +65,12 @@ async function parse(prep: PreparedExport, bytes: Uint8Array): Promise<Parsed> {
   };
 }
 
-const ctx = (lang: "ru" | "en"): ExportContext => ({
+const ctx = (lang: "ru" | "en", variant: "full" | "quick" = "full"): ExportContext => ({ variant,
   lang, now: new Date("2026-10-14T09:15:00.000Z"), timeZone: "Europe/Moscow", siteOrigin: "https://preview.example.test", siteCommit: "5e6781d",
 });
 
-async function make(input: ExportInput, lang: "ru" | "en"): Promise<Parsed> {
-  const prep = await prepareExport(input, ctx(lang));
+async function make(input: ExportInput, lang: "ru" | "en", variant: "full" | "quick" = "full"): Promise<Parsed> {
+  const prep = await prepareExport(input, ctx(lang, variant));
   const blob = await renderPdf(prep, font);
   return parse(prep, new Uint8Array(await blob.arrayBuffer()));
 }
@@ -127,9 +127,27 @@ const synthInputs: Record<string, [ExportInput, "en" | "ru"]> = {
   dupRu: [{ kind: "pair", origin: "analyzer", report: dup.report }, "ru"],
 };
 
+// Outcome-engine responses (captured from the current API; synMerged has SYNTHETIC label text).
+const owf = fx("pair_outcomes_warfarin_fluconazole.json");
+const omw = fx("pair_outcomes_metformin_warfarin.json");
+const synMerged = fx("pair_synthetic_merged_labels.json");
+const outcomeInputs: Record<string, [ExportInput, "en" | "ru", "full" | "quick"]> = {
+  oSynEn: [{ kind: "pair", origin: "analyzer", report: synMerged.report }, "en", "full"],
+  oSynRu: [{ kind: "pair", origin: "analyzer", report: synMerged.report }, "ru", "full"],
+  qSynRu: [{ kind: "pair", origin: "analyzer", report: synMerged.report }, "ru", "quick"],
+  qSynEn: [{ kind: "pair", origin: "analyzer", report: synMerged.report }, "en", "quick"],
+  qWfEn: [{ kind: "pair", origin: "analyzer", report: owf.report }, "en", "quick"],
+  qMwRu: [{ kind: "pair", origin: "analyzer", report: omw.report }, "ru", "quick"],
+};
+
 beforeAll(async () => {
   for (const [k, [input, lang]] of Object.entries({ ...realInputs, ...synthInputs })) {
     docs[k] = await make(input, lang);
+    // DDINET_PDF_DUMP=<dir> keeps the generated files for inspection.
+    if (process.env.DDINET_PDF_DUMP) writeFileSync(join(process.env.DDINET_PDF_DUMP, `${k}.pdf`), docs[k].bytes);
+  }
+  for (const [k, [input, lang, variant]] of Object.entries(outcomeInputs)) {
+    docs[k] = await make(input, lang, variant);
     // DDINET_PDF_DUMP=<dir> keeps the generated files for inspection.
     if (process.env.DDINET_PDF_DUMP) writeFileSync(join(process.env.DDINET_PDF_DUMP, `${k}.pdf`), docs[k].bytes);
   }
@@ -144,7 +162,7 @@ describe("PDF files", () => {
       expect(d.bytes.length, k).toBeGreaterThan(30_000);
       expect(d.raw.startsWith("%PDF-1."), k).toBe(true);
       expect(d.raw.trimEnd().endsWith("%%EOF"), k).toBe(true);
-      expect(d.numPages, k).toBeGreaterThanOrEqual(5);
+      expect(d.numPages, k).toBeGreaterThanOrEqual(d.prep.ctx.variant === "quick" ? 1 : 5);
       for (const v of d.sizes) expect(v.map((x) => Math.round(x)), k).toEqual([0, 0, 595, 842]);
       expect(String(d.info.Producer), k).toContain("react-pdf");
       expect(String(d.info.Title), k).toMatch(/Report|Отчёт|отчёт/i);
@@ -267,7 +285,7 @@ describe("content", () => {
       else if (v && typeof v === "object") Object.values(v).forEach((x) => numbers(x, out));
       return out;
     };
-    for (const k of ["wfEn", "wfRu", "scEn", "m8En", "synEn"] as const) {
+    for (const k of ["wfEn", "wfRu", "scEn", "m8En", "synEn", "oSynEn", "qWfEn", "qSynRu"] as const) {
       const d = docs[k];
       const input = d.prep.input;
       const pool = numbers(input.kind === "pair" ? [input.report.data, input.graph?.data] : input.report.data).map(Math.abs);
@@ -280,7 +298,7 @@ describe("content", () => {
         .replace(/https?:\S+/g, " ")                                        // URLs
         .replace(/"[a-z_]+":\s*-?[\d.e-]+/g, " ");                          // the JSON appendix copies values verbatim
       const tokens = text.match(/(?<![\d.\w-])[−+-]?\d+\.\d{2,6}(?![\d.])/g) ?? [];
-      expect(tokens.length, k).toBeGreaterThan(k === "synEn" ? 0 : input.kind === "pair" ? 5 : 10);
+      expect(tokens.length, k).toBeGreaterThan(k === "synEn" || d.prep.ctx.variant === "quick" ? 0 : input.kind === "pair" ? 5 : 10);
       for (const tok of tokens) {
         const v = tok.replace(/^[−+-]/, "");
         const bound = (v === "0.9999" || v === "0.0001") && bounds > 0;
@@ -430,5 +448,43 @@ describe("content", () => {
     expect(d.flat).not.toContain(m.raw_model_score!.toFixed(6));
     expect(nospace(d.text)).toContain(`"calibrated_score":${m.calibrated_model_score}`);
     expect(nospace(d.text)).toContain(`"raw_score":${m.raw_model_score}`);
+  });
+
+  it("quick report: 1–2 pages, the outcome view, sources' words verbatim, no hypothesis as an outcome", () => {
+    for (const k of ["qSynRu", "qSynEn", "qWfEn", "qMwRu"] as const) {
+      const d = docs[k];
+      const r = (d.prep.input as Extract<ExportInput, { kind: "pair" }>).report.data;
+      const lang = d.prep.ctx.lang;
+      const o = r.outcomes!;
+      expect(d.numPages, k).toBeLessThanOrEqual(2);
+      expect(d.prep.fileBase, k).toContain("QuickReport");
+      expect(d.flat, k).toContain(o.interaction_status_label[lang]);
+      expect(d.flat, k).toContain(o.individual_limit[lang]);
+      const shown = o.outcomes.filter((x) => !x.research_only);
+      for (const x of shown) {
+        expect(d.flat, `${k} ${x.id}`).toContain(x.label[lang]);
+        expect(nospace(d.text), `${k} excerpt`).toContain(nospace(x.supports[0].excerpt));
+      }
+      for (const x of o.outcomes.filter((y) => y.research_only)) expect(d.flat, k).not.toContain(x.label[lang]);
+      if (!shown.length) expect(d.flat, k).toContain(o.no_outcome_text![lang]);
+    }
+    expect(docs.qMwRu.flat).toContain("не означает, что сочетание безопасно");
+    expect(docs.qWfEn.flat).toContain("Severity not established from available evidence.");
+  });
+
+  it("full report: outcome table, per-outcome provenance with every excerpt, chains with link provenance", () => {
+    for (const k of ["oSynEn", "oSynRu"] as const) {
+      const d = docs[k];
+      const r = (d.prep.input as Extract<ExportInput, { kind: "pair" }>).report.data;
+      const lang = d.prep.ctx.lang;
+      expect(d.flat).toContain(lang === "en" ? "Clinical outcomes (as the sources state them)" : "Клинические последствия (по источникам)");
+      expect(d.flat).toContain(lang === "en" ? "From mechanism to outcome" : "От механизма к последствию");
+      expect(d.flat).toContain(lang === "en" ? "verified biological annotation" : "проверенная аннотация");
+      for (const x of r.outcomes!.outcomes) {
+        expect(nospace(d.text), x.id).toContain(nospace(x.id));
+        for (const s of x.supports) expect(nospace(d.text), `${x.id} support`).toContain(nospace(s.excerpt));
+      }
+      expect(nospace(d.text)).toContain(`"interaction_status":"${r.outcomes!.interaction_status}"`);
+    }
   });
 });

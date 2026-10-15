@@ -229,6 +229,98 @@ class Explanation(BaseModel):
     sections: list[Section]
 
 
+# ------------------------------------------------------ clinical outcomes ----
+OutcomeEvidenceStatus = Literal["documented", "mechanistically_supported", "hypothesized"]
+EffectLevel = Literal["clinical_outcome", "pharmacodynamic_effect", "pharmacokinetic_change",
+                      "reduced_effectiveness", "unspecified_adverse"]
+SeriousnessClass = Literal["documented_contraindication", "explicit_serious_warning",
+                           "documented_no_standard_severity", "not_applicable"]
+LinkProvenance = Literal["documented", "verified_annotation", "plausible_unconfirmed", "unavailable"]
+
+
+class OutcomeSupport(BaseModel):
+    """One source statement supporting an outcome, in the source's own words."""
+
+    evidence_record_id: str | None = Field(None, description="The EvidenceRecord this support was read from; None for annotation-only support.")
+    source_type: Literal["fda_label", "drugbank_tdc", "annotation"]
+    source_name: str
+    source_document_id: str | None = Field(None, description="SPL set ID for a label; the DrugBank record key for the database.")
+    source_url: str | None = None
+    section: str | None = None
+    excerpt: str = Field(description="Verbatim: the label sentence, or DrugBank's template as stored in the record. Never paraphrased.")
+    matched_terms: list[str] = []
+    extraction_method: str = Field(description="Versioned deterministic rule that produced this support, e.g. 'drugbank_type_map/v1:type=66'.")
+    direction: Literal["symmetric", "as_exported_verified", "not_verified", "from_annotation", "as_stated_in_excerpt", "not_applicable"]
+    affected_drug_id: str | None = Field(None, description="Only when the direction is verified, symmetric-irrelevant, or stated by annotations.")
+    source_seriousness: str | None = Field(None, description="Seriousness in the source's own terms (section or quoted wording); None when the source gives none.")
+    retrieved_at: str | None = None
+    qualifiers: list[str] = []
+
+
+class ClinicalOutcome(BaseModel):
+    id: str = Field(description="Stable: outcome:<drug ids sorted>:<category>:<effect>.")
+    drug_a: str
+    drug_b: str
+    category: str
+    effect: str
+    effect_level: EffectLevel
+    label: Bi = Field(description="What the sources state, in plain words. Project wording; the excerpts are the evidence.")
+    explanation: Bi
+    evidence_status: OutcomeEvidenceStatus
+    supports: list[OutcomeSupport]
+    n_source_documents: int = Field(description="Distinct source documents behind the outcome. Several excerpts of one document are one source.")
+    affected_drug_id: str | None = None
+    direction_note: Bi
+    seriousness: SeriousnessClass
+    seriousness_basis: Bi
+    evidence_strength: Literal["official_label_statement", "database_standard_sentence", "label_and_database", "annotation_hypothesis"]
+    evidence_strength_text: Bi
+    extraction_note: Bi | None = Field(None, description="Measured extraction quality on the pilot set, when one exists for this method. Never a probability that the outcome occurs.")
+    limitations: list[Bi] = []
+    research_only: bool = Field(False, description="True for hypotheses without a documented outcome: shown in Research mode only.")
+
+
+class ChainLink(BaseModel):
+    source: str
+    target: str
+    relation: str
+    provenance: LinkProvenance
+    text: Bi
+    refs: list[str] = []
+
+
+class ChainNode(BaseModel):
+    id: str
+    kind: Literal["drug", "protein", "effect", "outcome"]
+    label: Bi
+    ref: str | None = None
+
+
+class MechanismChain(BaseModel):
+    id: str
+    nodes: list[ChainNode]
+    links: list[ChainLink]
+    outcome_ids: list[str] = []
+    research_only: bool
+    summary: Bi
+
+
+class OutcomeReport(BaseModel):
+    method: str = "deterministic: DrugBank type map v1 + label outcome lexicon v1; no language model"
+    interaction_status: Literal["documented_interaction", "documented_outcome_unclear", "research_prediction_only",
+                                "insufficient_evidence", "source_unavailable"]
+    interaction_status_label: Bi
+    interaction_status_hint: Bi
+    outcomes: list[ClinicalOutcome]
+    chains: list[MechanismChain]
+    seriousness: SeriousnessClass
+    seriousness_text: Bi
+    coverage: list[Bi] = Field(description="Which sources were consulted, what they can and cannot say.")
+    no_outcome_text: Bi | None = Field(None, description="Set when no supported outcome could be identified; shown instead of an empty list.")
+    mechanism_without_outcome_text: Bi | None = None
+    individual_limit: Bi
+
+
 # ---------------------------------------------------------------- report ----
 class EvidenceStatus(str, Enum):
     CONTRAINDICATION_IN_LABEL = "contraindication_in_label"
@@ -260,6 +352,7 @@ class PairReport(BaseModel):
     limitations: list[Bi]
     disclaimer: Bi
     generated_at: str
+    outcomes: OutcomeReport | None = Field(None, description="Clinical outcome block. Absent from API versions before the outcome engine.")
 
 
 # ------------------------------------------------------------ multi-drug ----
@@ -276,6 +369,10 @@ class MultiPair(BaseModel):
     training_label_seen: bool
     needs_review: bool
     review_reasons: list[str]
+    interaction_status: str | None = Field(None, description="Outcome-engine pair status; absent from older APIs.")
+    outcome_categories: list[str] = Field([], description="Categories of documented (or mechanistically supported) outcomes for the pair.")
+    outcome_ids: list[str] = []
+    seriousness: str | None = None
 
 
 class MultiReport(BaseModel):
@@ -286,6 +383,8 @@ class MultiReport(BaseModel):
     scope_note: Bi
     disclaimer: Bi
     generated_at: str
+    shared_outcome_categories: dict[str, list[list[str]]] = Field({}, description="Documented outcome category -> the pairs it was documented for. Pairwise only: no additive or three-way inference.")
+    outcome_categories: dict[str, Bi] = Field({}, description="Labels of the categories used.")
 
 
 # --------------------------------------------------------- mechanism graph ----

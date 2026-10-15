@@ -211,6 +211,10 @@ export function Table({ cols, rows, size = 7.6, zebra = true }: { cols: Col[]; r
   // PAGE BREAKS); each row draws its own sides.
   const side = { borderLeftWidth: 0.5, borderRightWidth: 0.5, borderColor: C.rule } as const;
   return (
+    <>
+      {/* Keep-with-next marker: a table never starts with only its header at
+          a page bottom (the header would be drawn into the margin with no row). */}
+      <View wrap={false} minPresenceAhead={40} style={{ height: 0 }} />
     <View style={{ marginBottom: 8 }}>
       <View fixed style={{ flexDirection: "row", backgroundColor: C.navy }}>
         {cols.map((c, i) => cell(c, c.title.toUpperCase(), i, true))}
@@ -225,6 +229,7 @@ export function Table({ cols, rows, size = 7.6, zebra = true }: { cols: Col[]; r
         </View>
       ))}
     </View>
+    </>
   );
 }
 

@@ -321,6 +321,15 @@ export function machineSummary(p: PreparedExport): Record<string, unknown> {
         regime: r.model.regime, reliability: r.model.reliability, abstain: r.model.abstain,
       },
       sources_checked: r.sources_checked.map((c) => ({ source: c.source, status: c.status })),
+      outcomes: r.outcomes ? {
+        interaction_status: r.outcomes.interaction_status,
+        seriousness: r.outcomes.seriousness,
+        records: r.outcomes.outcomes.map((o) => ({
+          id: o.id, category: o.category, effect: o.effect, level: o.effect_level, status: o.evidence_status,
+          seriousness: o.seriousness, research_only: o.research_only, affected: o.affected_drug_id,
+          evidence: o.supports.map((x) => x.evidence_record_id ?? x.source_document_id), methods: Array.from(new Set(o.supports.map((x) => x.extraction_method))),
+        })),
+      } : null,
     };
   }
   const m = input.report.data;
@@ -334,6 +343,7 @@ export function machineSummary(p: PreparedExport): Record<string, unknown> {
       a: q.drug_a, b: q.drug_b, status: q.evidence_status, db: q.n_database_records, label_documents: q.n_label_documents ?? null, label_excerpts: q.n_label_records,
       hypotheses: q.n_mechanism_hypotheses, score: q.calibrated_model_score, regime: q.regime,
       label_seen: q.training_label_seen, review: q.needs_review,
+      interaction_status: q.interaction_status ?? null, outcome_categories: q.outcome_categories ?? [],
     })),
     sources_checked: m.sources_checked.map((c) => ({ source: c.source, status: c.status })),
   };

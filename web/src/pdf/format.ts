@@ -98,7 +98,8 @@ export function fileBase(input: ExportInput, ctx: ExportContext): string {
   const suffix = ctx.lang === "ru" ? "_RU" : "";
   if (input.kind === "pair") {
     const r = input.report.data;
-    return `DDI-Net_Report_${fileToken(r.drug_a)}_${fileToken(r.drug_b)}_${date}${suffix}`;
+    const kind = ctx.variant === "quick" ? "QuickReport" : "Report";
+    return `DDI-Net_${kind}_${fileToken(r.drug_a)}_${fileToken(r.drug_b)}_${date}${suffix}`;
   }
   const drugs = input.report.data.drugs;
   const head = drugs.slice(0, 3).map(fileToken).join("_");

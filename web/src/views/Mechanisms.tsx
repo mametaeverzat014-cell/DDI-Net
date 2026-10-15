@@ -17,6 +17,7 @@ import { PATTERN_LABEL } from "../components/v3/evidenceStyle";
 import { RelianceBars } from "../components/v3/RelianceBars";
 import { ExportReport } from "../components/v3/ExportReport";
 import type { ExportInput } from "../pdf/types";
+import { ChainExplorer } from "../components/v3/OutcomeParts";
 
 const T = {
   eyebrow: { ru: "DDI-Net 3.0 · Биологические механизмы", en: "DDI-Net 3.0 · Biological mechanisms" },
@@ -116,6 +117,7 @@ export function Mechanisms({ pair, setPair }: { pair: [string, string]; setPair:
               </ul>
             )}
             <p style={{ marginTop: 10, fontSize: 12.5, color: "var(--text-3)" }}>{pick(report.data.mechanism.note, lang)}</p>
+            {report.data.outcomes && <ChainExplorer o={report.data.outcomes} research />}
           </div>
         )}
 

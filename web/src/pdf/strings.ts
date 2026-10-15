@@ -555,6 +555,26 @@ export const S = {
   category: { ru: "Вид", en: "Category" },
   templateKey: { ru: "Шаблон DrugBank", en: "DrugBank template" },
   direction: { ru: "Направление", en: "Direction" },
+  quickTitle: { ru: "Краткий отчёт", en: "Quick report" },
+  quickFullNote: {
+    ru: "Полный исследовательский отчёт содержит все цитаты, происхождение каждого утверждения, гипотезы о механизме и анализ модели.",
+    en: "The full research report holds every excerpt, the provenance of each statement, the mechanism hypotheses and the model analysis.",
+  },
+  outcomesTitle: { ru: "Клинические последствия (по источникам)", en: "Clinical outcomes (as the sources state them)" },
+  outcomesLead: {
+    ru: "Последствия, которые источники называют для этой пары, — с цитатой, документом, разделом и правилом извлечения. Серьёзность — только так, как её указывает источник.",
+    en: "Consequences the sources state for this pair, each with its quotation, document, section and extraction rule. Seriousness only as a source states it.",
+  },
+  outcomeCol: { ru: "Последствие", en: "Outcome" },
+  kindCol: { ru: "Вид / статус", en: "Kind / status" },
+  seriousCol: { ru: "Серьёзность", en: "Seriousness" },
+  refsCol: { ru: "Источники", en: "Sources" },
+  chainsTitle: { ru: "От механизма к последствию", en: "From mechanism to outcome" },
+  chainsLead: {
+    ru: "Каждое звено помечено: задокументировано, проверенная аннотация, правдоподобно без подтверждения. Общий белок или путь сам по себе связью не считается.",
+    en: "Each link is marked: directly documented, verified annotation, or plausible but unconfirmed. A shared protein or pathway alone is never a link.",
+  },
+  outcomeStatusTitle: { ru: "Статус взаимодействия (по последствиям)", en: "Interaction status (outcome engine)" },
 } satisfies Record<string, Bi>;
 
 export type StringKey = keyof typeof S;

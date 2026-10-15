@@ -15,6 +15,7 @@ import { useI18n, pick, type Bi } from "../i18n";
 import { RemoteNotice, SourcesChecked } from "../components/v3/ReportParts";
 import { REVIEW_REASON, STATUS_TIER } from "../components/v3/evidenceStyle";
 import { ExportReport } from "../components/v3/ExportReport";
+import { MultiOutcomes } from "../components/v3/MultiOutcomes";
 import type { ExportInput } from "../pdf/types";
 
 const T = {
@@ -131,6 +132,7 @@ export function MultiDrug({ setPair, setView }: { setPair: (p: [string, string])
                 <Network report={report} label={label} onPick={(p) => { setPair([p.drug_a, p.drug_b]); setView("analyzer"); }} />
                 <PairTable pairs={pairs} label={label} onPick={(p) => { setPair([p.drug_a, p.drug_b]); setView("analyzer"); }} />
               </div>
+              <MultiOutcomes report={report} label={label} onPick={(p) => { setPair([p.drug_a, p.drug_b]); setView("analyzer"); }} />
               <SourcesChecked checks={report.sources_checked} detail={false} />
               <p style={{ fontSize: 13, color: "var(--amber)" }}>{pick(report.disclaimer, lang)}</p>
             </>

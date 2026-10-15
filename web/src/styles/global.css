@@ -94,7 +94,11 @@ p { margin: 0; color: var(--text-2); font-size: clamp(15px, 1.15vw, 18px); line-
   display: inline-flex; align-items: center; gap: 6px;
   font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
   border-radius: 5px; padding: 2px 7px; white-space: nowrap; border: 1px solid currentColor;
+  max-width: 100%;
 }
+/* A chip longer than its line (a long drug name on a phone) wraps instead of
+   pushing the page sideways. */
+@media (max-width: 640px) { .v3-chip { white-space: normal; overflow-wrap: anywhere; } }
 .v3-ref {
   font-family: var(--font-mono); font-size: 10.5px; color: var(--text-3);
   background: none; border: 1px solid var(--border-strong); border-radius: 4px;

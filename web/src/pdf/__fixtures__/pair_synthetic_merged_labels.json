@@ -8,7 +8,7 @@
     "drug_b": "DB00196",
     "include_labels": true
    },
-   "receivedAt": "2026-10-15T10:27:11.502Z"
+   "receivedAt": "2026-10-15T19:51:19.934Z"
   },
   "data": {
    "report_version": "3.0",
@@ -990,7 +990,668 @@
     "ru": "Это исследовательский прототип, а не медицинское изделие. Он не заменяет врача или фармацевта и не может сказать, безопасно ли сочетание лекарств для конкретного человека.",
     "en": "This is a research prototype, not a medical device. It does not replace a doctor or pharmacist and cannot say whether a combination is safe for a particular person."
    },
-   "generated_at": "2026-10-15T10:27:11+00:00"
+   "generated_at": "2026-10-15T19:51:19+00:00",
+   "outcomes": {
+    "method": "deterministic: DrugBank type map v1 + label outcome lexicon v1; no language model",
+    "interaction_status": "documented_interaction",
+    "interaction_status_label": {
+     "ru": "Найдено задокументированное взаимодействие",
+     "en": "Documented interaction found"
+    },
+    "interaction_status_hint": {
+     "ru": "Источники называют конкретные последствия или изменения действия для этой пары. Ниже — что именно и на каком основании.",
+     "en": "Sources name specific consequences or changes in effect for this pair. What they are, and on what basis, is below."
+    },
+    "outcomes": [
+     {
+      "id": "outcome:DB00196+DB00682:bleeding_coagulation:bleeding",
+      "drug_a": "DB00682",
+      "drug_b": "DB00196",
+      "category": "bleeding_coagulation",
+      "effect": "bleeding",
+      "effect_level": "clinical_outcome",
+      "label": {
+       "ru": "Кровотечение",
+       "en": "Bleeding"
+      },
+      "explanation": {
+       "ru": "Источник прямо называет это последствие для данной пары. Частоту и тяжесть он не указывает.",
+       "en": "The source names this consequence for this pair directly. It gives no frequency and no severity."
+      },
+      "evidence_status": "documented",
+      "supports": [
+       {
+        "evidence_record_id": "label:00000000-0000-0000-0000-0000000000f1:precautions:0:DB00682",
+        "source_type": "fda_label",
+        "source_name": "FDA drug label (Structured Product Labeling via openFDA)",
+        "source_document_id": "00000000-0000-0000-0000-0000000000f1",
+        "source_url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=00000000-0000-0000-0000-0000000000f1",
+        "section": "PRECAUTIONS, DRUG INTERACTIONS",
+        "excerpt": "Coumarin-type anticoagulants: [synthetic] Prothrombin time may be increased in patients receiving concomitant fluconazole and warfarin in this test fixture, and bleeding events have been reported in association with increases in prothrombin time.",
+        "matched_terms": [
+         "bleeding"
+        ],
+        "extraction_method": "label_lexicon/v2:term=bleeding",
+        "direction": "as_stated_in_excerpt",
+        "affected_drug_id": null,
+        "source_seriousness": null,
+        "retrieved_at": "2026-10-15",
+        "qualifiers": [
+         "Found in the same label sentence that names the partner drug; the sentence is quoted as written."
+        ]
+       }
+      ],
+      "n_source_documents": 1,
+      "affected_drug_id": null,
+      "direction_note": {
+       "ru": "Направление — только так, как сказано в процитированном предложении; отчёт его не выводит.",
+       "en": "Direction only as stated in the quoted sentence; the report infers none."
+      },
+      "seriousness": "documented_no_standard_severity",
+      "seriousness_basis": {
+       "ru": "Степень серьёзности не установлена по доступным данным.",
+       "en": "Severity not established from available evidence."
+      },
+      "evidence_strength": "official_label_statement",
+      "evidence_strength_text": {
+       "ru": "Утверждение официальной инструкции FDA (цитата).",
+       "en": "Statement in an official FDA label (quoted)."
+      },
+      "extraction_note": {
+       "ru": "Правила извлечения проверены только на пилотном наборе из 40 составленных предложений (тот же автор, не реальные инструкции): найдено 25 из 32 размеченных последствий, 1 из 26 найденных — лишнее. Перефразированные формулировки часто пропускаются. Это не клиническая валидация.",
+       "en": "The extraction rules were checked only on a pilot set of 40 constructed sentences (same author, not real labels): 25 of 32 annotated outcomes found, 1 of 26 extractions unsupported. Paraphrased wording is often missed. This is not a clinical validation."
+      },
+      "limitations": [],
+      "research_only": false
+     },
+     {
+      "id": "outcome:DB00196+DB00682:bleeding_coagulation:coagulation_measure_change",
+      "drug_a": "DB00682",
+      "drug_b": "DB00196",
+      "category": "bleeding_coagulation",
+      "effect": "coagulation_measure_change",
+      "effect_level": "pharmacodynamic_effect",
+      "label": {
+       "ru": "Изменение показателя свёртываемости (протромбиновое время / МНО)",
+       "en": "Change in a blood-clotting measure (prothrombin time / INR)"
+      },
+      "explanation": {
+       "ru": "Источник описывает усиление (или изменение) фармакологического действия одного из препаратов. Он не утверждает, что наступает конкретный вред.",
+       "en": "The source describes a stronger (or altered) pharmacological effect of one of the drugs. It does not state that a particular harm follows."
+      },
+      "evidence_status": "documented",
+      "supports": [
+       {
+        "evidence_record_id": "label:00000000-0000-0000-0000-0000000000f1:precautions:0:DB00682",
+        "source_type": "fda_label",
+        "source_name": "FDA drug label (Structured Product Labeling via openFDA)",
+        "source_document_id": "00000000-0000-0000-0000-0000000000f1",
+        "source_url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=00000000-0000-0000-0000-0000000000f1",
+        "section": "PRECAUTIONS, DRUG INTERACTIONS",
+        "excerpt": "Coumarin-type anticoagulants: [synthetic] Prothrombin time may be increased in patients receiving concomitant fluconazole and warfarin in this test fixture, and bleeding events have been reported in association with increases in prothrombin time.",
+        "matched_terms": [
+         "Prothrombin time"
+        ],
+        "extraction_method": "label_lexicon/v2:term=coagulation_measure",
+        "direction": "as_stated_in_excerpt",
+        "affected_drug_id": null,
+        "source_seriousness": null,
+        "retrieved_at": "2026-10-15",
+        "qualifiers": [
+         "Found in the same label sentence that names the partner drug; the sentence is quoted as written."
+        ]
+       },
+       {
+        "evidence_record_id": "label:00000000-0000-0000-0000-0000000000f1:precautions:1:DB00682",
+        "source_type": "fda_label",
+        "source_name": "FDA drug label (Structured Product Labeling via openFDA)",
+        "source_document_id": "00000000-0000-0000-0000-0000000000f1",
+        "source_url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=00000000-0000-0000-0000-0000000000f1",
+        "section": "PRECAUTIONS, DRUG INTERACTIONS",
+        "excerpt": "[synthetic] Careful monitoring of prothrombin time in patients receiving fluconazole and warfarin is described in this fixture sentence.",
+        "matched_terms": [
+         "prothrombin time"
+        ],
+        "extraction_method": "label_lexicon/v2:term=coagulation_measure",
+        "direction": "as_stated_in_excerpt",
+        "affected_drug_id": null,
+        "source_seriousness": null,
+        "retrieved_at": "2026-10-15",
+        "qualifiers": [
+         "Found in the same label sentence that names the partner drug; the sentence is quoted as written."
+        ]
+       }
+      ],
+      "n_source_documents": 1,
+      "affected_drug_id": null,
+      "direction_note": {
+       "ru": "Направление — только так, как сказано в процитированном предложении; отчёт его не выводит.",
+       "en": "Direction only as stated in the quoted sentence; the report infers none."
+      },
+      "seriousness": "documented_no_standard_severity",
+      "seriousness_basis": {
+       "ru": "Степень серьёзности не установлена по доступным данным.",
+       "en": "Severity not established from available evidence."
+      },
+      "evidence_strength": "official_label_statement",
+      "evidence_strength_text": {
+       "ru": "Утверждение официальной инструкции FDA (цитата).",
+       "en": "Statement in an official FDA label (quoted)."
+      },
+      "extraction_note": {
+       "ru": "Правила извлечения проверены только на пилотном наборе из 40 составленных предложений (тот же автор, не реальные инструкции): найдено 25 из 32 размеченных последствий, 1 из 26 найденных — лишнее. Перефразированные формулировки часто пропускаются. Это не клиническая валидация.",
+       "en": "The extraction rules were checked only on a pilot set of 40 constructed sentences (same author, not real labels): 25 of 32 annotated outcomes found, 1 of 26 extractions unsupported. Paraphrased wording is often missed. This is not a clinical validation."
+      },
+      "limitations": [
+       {
+        "ru": "Описано изменение действия, а не наступление вреда.",
+        "en": "A change in effect is described, not that harm occurs."
+       }
+      ],
+      "research_only": false
+     },
+     {
+      "id": "outcome:DB00196+DB00682:exposure_increase:serum_concentration_increase",
+      "drug_a": "DB00682",
+      "drug_b": "DB00196",
+      "category": "exposure_increase",
+      "effect": "serum_concentration_increase",
+      "effect_level": "pharmacokinetic_change",
+      "label": {
+       "ru": "Повышение концентрации в крови",
+       "en": "Higher serum concentration"
+      },
+      "explanation": {
+       "ru": "Источник описывает изменение того, сколько препарата находится в организме. Само по себе это не задокументированное клиническое последствие.",
+       "en": "The source describes a change in how much of a drug is in the body. That, by itself, is not a documented clinical outcome."
+      },
+      "evidence_status": "mechanistically_supported",
+      "supports": [
+       {
+        "evidence_record_id": "drugbank-tdc:DB00682>DB00196:t73",
+        "source_type": "drugbank_tdc",
+        "source_name": "DrugBank DDI records via Therapeutics Data Commons",
+        "source_document_id": "DB00682|DB00196|Y=73",
+        "source_url": "https://tdcommons.ai/multi_pred_tasks/ddi/",
+        "section": null,
+        "excerpt": "The serum concentration of #Drug2 can be increased when it is combined with #Drug1.",
+        "matched_terms": [
+         "serum concentration"
+        ],
+        "extraction_method": "drugbank_type_map/v1:type=73",
+        "direction": "not_verified",
+        "affected_drug_id": null,
+        "source_seriousness": null,
+        "retrieved_at": "2026-08-24",
+        "qualifiers": [
+         "DrugBank gives no severity and does not state the basis of the record."
+        ]
+       }
+      ],
+      "n_source_documents": 1,
+      "affected_drug_id": "DB00682",
+      "direction_note": {
+       "ru": "Затронут, по ролям белков, препарат «Варфарин». Это следует из аннотаций (ингибитор/индуктор и субстрат), а не из порядка в записи DrugBank.",
+       "en": "By the protein roles, the affected drug is Warfarin. This comes from the annotations (inhibitor/inducer and substrate), not from the DrugBank record's order."
+      },
+      "seriousness": "documented_no_standard_severity",
+      "seriousness_basis": {
+       "ru": "Степень серьёзности не установлена по доступным данным.",
+       "en": "Severity not established from available evidence."
+      },
+      "evidence_strength": "database_standard_sentence",
+      "evidence_strength_text": {
+       "ru": "Стандартная фраза базы DrugBank; на чём основана запись, источник не указывает.",
+       "en": "DrugBank standard sentence; the source does not state what the record is based on."
+      },
+      "extraction_note": null,
+      "limitations": [
+       {
+        "ru": "Изменение концентрации само по себе не задокументированное клиническое последствие.",
+        "en": "A change in concentration is not, by itself, a documented clinical outcome."
+       }
+      ],
+      "research_only": false
+     }
+    ],
+    "chains": [
+     {
+      "id": "chain:mech:P33261:enzyme:inhibitor_substrate:DB00196",
+      "nodes": [
+       {
+        "id": "drug:DB00196",
+        "kind": "drug",
+        "label": {
+         "ru": "Флуконазол",
+         "en": "Fluconazole"
+        },
+        "ref": "DB00196"
+       },
+       {
+        "id": "protein:P33261",
+        "kind": "protein",
+        "label": {
+         "ru": "CYP2C19 (фермент)",
+         "en": "CYP2C19 (enzyme)"
+        },
+        "ref": "mech:P33261:enzyme:inhibitor_substrate:DB00196"
+       },
+       {
+        "id": "drug:DB00682",
+        "kind": "drug",
+        "label": {
+         "ru": "Варфарин",
+         "en": "Warfarin"
+        },
+        "ref": "DB00682"
+       },
+       {
+        "id": "effect:DB00682:up",
+        "kind": "effect",
+        "label": {
+         "ru": "Больше препарата «Варфарин» в организме",
+         "en": "Higher exposure of Warfarin"
+        },
+        "ref": "outcome:DB00196+DB00682:exposure_increase:serum_concentration_increase"
+       },
+       {
+        "id": "outcome:outcome:DB00196+DB00682:bleeding_coagulation:bleeding",
+        "kind": "outcome",
+        "label": {
+         "ru": "Кровотечение",
+         "en": "Bleeding"
+        },
+        "ref": "outcome:DB00196+DB00682:bleeding_coagulation:bleeding"
+       },
+       {
+        "id": "outcome:outcome:DB00196+DB00682:bleeding_coagulation:coagulation_measure_change",
+        "kind": "outcome",
+        "label": {
+         "ru": "Изменение показателя свёртываемости (протромбиновое время / МНО)",
+         "en": "Change in a blood-clotting measure (prothrombin time / INR)"
+        },
+        "ref": "outcome:DB00196+DB00682:bleeding_coagulation:coagulation_measure_change"
+       }
+      ],
+      "links": [
+       {
+        "source": "drug:DB00196",
+        "target": "protein:P33261",
+        "relation": "inhibitor",
+        "provenance": "verified_annotation",
+        "text": {
+         "ru": "«Флуконазол» отмечен как ингибитор CYP2C19.",
+         "en": "Fluconazole is annotated as an inhibitor of CYP2C19."
+        },
+        "refs": [
+         "annot:drugbank:DB00196:P33261:enzyme",
+         "annot:drugbank:DB00682:P33261:enzyme"
+        ]
+       },
+       {
+        "source": "protein:P33261",
+        "target": "drug:DB00682",
+        "relation": "substrate",
+        "provenance": "verified_annotation",
+        "text": {
+         "ru": "«Варфарин» отмечен как субстрат CYP2C19.",
+         "en": "Warfarin is annotated as a substrate of CYP2C19."
+        },
+        "refs": [
+         "annot:drugbank:DB00196:P33261:enzyme",
+         "annot:drugbank:DB00682:P33261:enzyme"
+        ]
+       },
+       {
+        "source": "protein:P33261",
+        "target": "effect:DB00682:up",
+        "relation": "exposure_change",
+        "provenance": "documented",
+        "text": {
+         "ru": "Изменение концентрации этого препарата для пары задокументировано.",
+         "en": "A change in this drug's exposure is documented for the pair."
+        },
+        "refs": [
+         "outcome:DB00196+DB00682:exposure_increase:serum_concentration_increase"
+        ]
+       },
+       {
+        "source": "effect:DB00682:up",
+        "target": "outcome:outcome:DB00196+DB00682:bleeding_coagulation:bleeding",
+        "relation": "may_lead_to",
+        "provenance": "plausible_unconfirmed",
+        "text": {
+         "ru": "Последствие задокументировано для пары, но то, что оно вызвано именно этим путём, не подтверждено.",
+         "en": "The outcome is documented for the pair, but that it arises through this route is not confirmed."
+        },
+        "refs": [
+         "outcome:DB00196+DB00682:bleeding_coagulation:bleeding"
+        ]
+       },
+       {
+        "source": "effect:DB00682:up",
+        "target": "outcome:outcome:DB00196+DB00682:bleeding_coagulation:coagulation_measure_change",
+        "relation": "may_lead_to",
+        "provenance": "plausible_unconfirmed",
+        "text": {
+         "ru": "Последствие задокументировано для пары, но то, что оно вызвано именно этим путём, не подтверждено.",
+         "en": "The outcome is documented for the pair, but that it arises through this route is not confirmed."
+        },
+        "refs": [
+         "outcome:DB00196+DB00682:bleeding_coagulation:coagulation_measure_change"
+        ]
+       }
+      ],
+      "outcome_ids": [
+       "outcome:DB00196+DB00682:exposure_increase:serum_concentration_increase",
+       "outcome:DB00196+DB00682:bleeding_coagulation:bleeding",
+       "outcome:DB00196+DB00682:bleeding_coagulation:coagulation_measure_change"
+      ],
+      "research_only": false,
+      "summary": {
+       "ru": "«Флуконазол» подавляет CYP2C19, а «Варфарин» этим белком перерабатывается (аннотации). Изменение концентрации этого препарата для пары задокументировано.",
+       "en": "Fluconazole inhibits CYP2C19, which processes Warfarin (annotations). This drug's exposure change is documented for the pair."
+      }
+     },
+     {
+      "id": "chain:mech:P11712:enzyme:inhibitor_substrate:DB00196",
+      "nodes": [
+       {
+        "id": "drug:DB00196",
+        "kind": "drug",
+        "label": {
+         "ru": "Флуконазол",
+         "en": "Fluconazole"
+        },
+        "ref": "DB00196"
+       },
+       {
+        "id": "protein:P11712",
+        "kind": "protein",
+        "label": {
+         "ru": "CYP2C9 (фермент)",
+         "en": "CYP2C9 (enzyme)"
+        },
+        "ref": "mech:P11712:enzyme:inhibitor_substrate:DB00196"
+       },
+       {
+        "id": "drug:DB00682",
+        "kind": "drug",
+        "label": {
+         "ru": "Варфарин",
+         "en": "Warfarin"
+        },
+        "ref": "DB00682"
+       },
+       {
+        "id": "effect:DB00682:up",
+        "kind": "effect",
+        "label": {
+         "ru": "Больше препарата «Варфарин» в организме",
+         "en": "Higher exposure of Warfarin"
+        },
+        "ref": "outcome:DB00196+DB00682:exposure_increase:serum_concentration_increase"
+       },
+       {
+        "id": "outcome:outcome:DB00196+DB00682:bleeding_coagulation:bleeding",
+        "kind": "outcome",
+        "label": {
+         "ru": "Кровотечение",
+         "en": "Bleeding"
+        },
+        "ref": "outcome:DB00196+DB00682:bleeding_coagulation:bleeding"
+       },
+       {
+        "id": "outcome:outcome:DB00196+DB00682:bleeding_coagulation:coagulation_measure_change",
+        "kind": "outcome",
+        "label": {
+         "ru": "Изменение показателя свёртываемости (протромбиновое время / МНО)",
+         "en": "Change in a blood-clotting measure (prothrombin time / INR)"
+        },
+        "ref": "outcome:DB00196+DB00682:bleeding_coagulation:coagulation_measure_change"
+       }
+      ],
+      "links": [
+       {
+        "source": "drug:DB00196",
+        "target": "protein:P11712",
+        "relation": "inhibitor",
+        "provenance": "verified_annotation",
+        "text": {
+         "ru": "«Флуконазол» отмечен как ингибитор CYP2C9.",
+         "en": "Fluconazole is annotated as an inhibitor of CYP2C9."
+        },
+        "refs": [
+         "annot:drugbank:DB00196:P11712:enzyme",
+         "annot:drugbank:DB00682:P11712:enzyme"
+        ]
+       },
+       {
+        "source": "protein:P11712",
+        "target": "drug:DB00682",
+        "relation": "substrate",
+        "provenance": "verified_annotation",
+        "text": {
+         "ru": "«Варфарин» отмечен как субстрат CYP2C9.",
+         "en": "Warfarin is annotated as a substrate of CYP2C9."
+        },
+        "refs": [
+         "annot:drugbank:DB00196:P11712:enzyme",
+         "annot:drugbank:DB00682:P11712:enzyme"
+        ]
+       },
+       {
+        "source": "protein:P11712",
+        "target": "effect:DB00682:up",
+        "relation": "exposure_change",
+        "provenance": "documented",
+        "text": {
+         "ru": "Изменение концентрации этого препарата для пары задокументировано.",
+         "en": "A change in this drug's exposure is documented for the pair."
+        },
+        "refs": [
+         "outcome:DB00196+DB00682:exposure_increase:serum_concentration_increase"
+        ]
+       },
+       {
+        "source": "effect:DB00682:up",
+        "target": "outcome:outcome:DB00196+DB00682:bleeding_coagulation:bleeding",
+        "relation": "may_lead_to",
+        "provenance": "plausible_unconfirmed",
+        "text": {
+         "ru": "Последствие задокументировано для пары, но то, что оно вызвано именно этим путём, не подтверждено.",
+         "en": "The outcome is documented for the pair, but that it arises through this route is not confirmed."
+        },
+        "refs": [
+         "outcome:DB00196+DB00682:bleeding_coagulation:bleeding"
+        ]
+       },
+       {
+        "source": "effect:DB00682:up",
+        "target": "outcome:outcome:DB00196+DB00682:bleeding_coagulation:coagulation_measure_change",
+        "relation": "may_lead_to",
+        "provenance": "plausible_unconfirmed",
+        "text": {
+         "ru": "Последствие задокументировано для пары, но то, что оно вызвано именно этим путём, не подтверждено.",
+         "en": "The outcome is documented for the pair, but that it arises through this route is not confirmed."
+        },
+        "refs": [
+         "outcome:DB00196+DB00682:bleeding_coagulation:coagulation_measure_change"
+        ]
+       }
+      ],
+      "outcome_ids": [
+       "outcome:DB00196+DB00682:exposure_increase:serum_concentration_increase",
+       "outcome:DB00196+DB00682:bleeding_coagulation:bleeding",
+       "outcome:DB00196+DB00682:bleeding_coagulation:coagulation_measure_change"
+      ],
+      "research_only": false,
+      "summary": {
+       "ru": "«Флуконазол» подавляет CYP2C9, а «Варфарин» этим белком перерабатывается (аннотации). Изменение концентрации этого препарата для пары задокументировано.",
+       "en": "Fluconazole inhibits CYP2C9, which processes Warfarin (annotations). This drug's exposure change is documented for the pair."
+      }
+     },
+     {
+      "id": "chain:mech:P08684:enzyme:inhibitor_substrate:DB00196",
+      "nodes": [
+       {
+        "id": "drug:DB00196",
+        "kind": "drug",
+        "label": {
+         "ru": "Флуконазол",
+         "en": "Fluconazole"
+        },
+        "ref": "DB00196"
+       },
+       {
+        "id": "protein:P08684",
+        "kind": "protein",
+        "label": {
+         "ru": "CYP3A4 (фермент)",
+         "en": "CYP3A4 (enzyme)"
+        },
+        "ref": "mech:P08684:enzyme:inhibitor_substrate:DB00196"
+       },
+       {
+        "id": "drug:DB00682",
+        "kind": "drug",
+        "label": {
+         "ru": "Варфарин",
+         "en": "Warfarin"
+        },
+        "ref": "DB00682"
+       },
+       {
+        "id": "effect:DB00682:up",
+        "kind": "effect",
+        "label": {
+         "ru": "Больше препарата «Варфарин» в организме",
+         "en": "Higher exposure of Warfarin"
+        },
+        "ref": "outcome:DB00196+DB00682:exposure_increase:serum_concentration_increase"
+       },
+       {
+        "id": "outcome:outcome:DB00196+DB00682:bleeding_coagulation:bleeding",
+        "kind": "outcome",
+        "label": {
+         "ru": "Кровотечение",
+         "en": "Bleeding"
+        },
+        "ref": "outcome:DB00196+DB00682:bleeding_coagulation:bleeding"
+       },
+       {
+        "id": "outcome:outcome:DB00196+DB00682:bleeding_coagulation:coagulation_measure_change",
+        "kind": "outcome",
+        "label": {
+         "ru": "Изменение показателя свёртываемости (протромбиновое время / МНО)",
+         "en": "Change in a blood-clotting measure (prothrombin time / INR)"
+        },
+        "ref": "outcome:DB00196+DB00682:bleeding_coagulation:coagulation_measure_change"
+       }
+      ],
+      "links": [
+       {
+        "source": "drug:DB00196",
+        "target": "protein:P08684",
+        "relation": "inhibitor",
+        "provenance": "verified_annotation",
+        "text": {
+         "ru": "«Флуконазол» отмечен как ингибитор CYP3A4.",
+         "en": "Fluconazole is annotated as an inhibitor of CYP3A4."
+        },
+        "refs": [
+         "annot:drugbank:DB00196:P08684:enzyme",
+         "annot:drugbank:DB00682:P08684:enzyme"
+        ]
+       },
+       {
+        "source": "protein:P08684",
+        "target": "drug:DB00682",
+        "relation": "substrate",
+        "provenance": "verified_annotation",
+        "text": {
+         "ru": "«Варфарин» отмечен как субстрат CYP3A4.",
+         "en": "Warfarin is annotated as a substrate of CYP3A4."
+        },
+        "refs": [
+         "annot:drugbank:DB00196:P08684:enzyme",
+         "annot:drugbank:DB00682:P08684:enzyme"
+        ]
+       },
+       {
+        "source": "protein:P08684",
+        "target": "effect:DB00682:up",
+        "relation": "exposure_change",
+        "provenance": "documented",
+        "text": {
+         "ru": "Изменение концентрации этого препарата для пары задокументировано.",
+         "en": "A change in this drug's exposure is documented for the pair."
+        },
+        "refs": [
+         "outcome:DB00196+DB00682:exposure_increase:serum_concentration_increase"
+        ]
+       },
+       {
+        "source": "effect:DB00682:up",
+        "target": "outcome:outcome:DB00196+DB00682:bleeding_coagulation:bleeding",
+        "relation": "may_lead_to",
+        "provenance": "plausible_unconfirmed",
+        "text": {
+         "ru": "Последствие задокументировано для пары, но то, что оно вызвано именно этим путём, не подтверждено.",
+         "en": "The outcome is documented for the pair, but that it arises through this route is not confirmed."
+        },
+        "refs": [
+         "outcome:DB00196+DB00682:bleeding_coagulation:bleeding"
+        ]
+       },
+       {
+        "source": "effect:DB00682:up",
+        "target": "outcome:outcome:DB00196+DB00682:bleeding_coagulation:coagulation_measure_change",
+        "relation": "may_lead_to",
+        "provenance": "plausible_unconfirmed",
+        "text": {
+         "ru": "Последствие задокументировано для пары, но то, что оно вызвано именно этим путём, не подтверждено.",
+         "en": "The outcome is documented for the pair, but that it arises through this route is not confirmed."
+        },
+        "refs": [
+         "outcome:DB00196+DB00682:bleeding_coagulation:coagulation_measure_change"
+        ]
+       }
+      ],
+      "outcome_ids": [
+       "outcome:DB00196+DB00682:exposure_increase:serum_concentration_increase",
+       "outcome:DB00196+DB00682:bleeding_coagulation:bleeding",
+       "outcome:DB00196+DB00682:bleeding_coagulation:coagulation_measure_change"
+      ],
+      "research_only": false,
+      "summary": {
+       "ru": "«Флуконазол» подавляет CYP3A4, а «Варфарин» этим белком перерабатывается (аннотации). Изменение концентрации этого препарата для пары задокументировано.",
+       "en": "Fluconazole inhibits CYP3A4, which processes Warfarin (annotations). This drug's exposure change is documented for the pair."
+      }
+     }
+    ],
+    "seriousness": "documented_no_standard_severity",
+    "seriousness_text": {
+     "ru": "Степень серьёзности не установлена по доступным данным.",
+     "en": "Severity not established from available evidence."
+    },
+    "coverage": [
+     {
+      "ru": "DrugBank (локальная выгрузка TDC): записей для пары — 1. Степень тяжести и основание записей не указаны.",
+      "en": "DrugBank (local TDC export): 1 record(s) for the pair. No severity and no stated basis."
+     },
+     {
+      "ru": "Инструкции FDA проверены. Ищутся названия препаратов, не группы; раздел «Нежелательные реакции» не используется.",
+      "en": "FDA labels checked. Drug names are searched, not classes; Adverse Reactions sections are not used."
+     }
+    ],
+    "no_outcome_text": null,
+    "mechanism_without_outcome_text": null,
+    "individual_limit": {
+     "ru": "Платформа не может определить, безопасно ли конкретное сочетание для конкретного человека. Это исследовательский и учебный инструмент.",
+     "en": "This platform cannot determine whether a particular combination is safe for an individual. It is a research and educational tool."
+    }
+   }
   }
  },
  "graph": {
@@ -1000,7 +1661,7 @@
     "drug_a": "DB00682",
     "drug_b": "DB00196"
    },
-   "receivedAt": "2026-10-15T10:27:11.502Z"
+   "receivedAt": "2026-10-15T19:51:19.934Z"
   },
   "data": {
    "drug_a": "DB00682",

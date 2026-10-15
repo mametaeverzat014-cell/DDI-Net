@@ -1,7 +1,9 @@
 // DDI-Net 3.0 — Drug Interaction Analyzer.
 //
-// Answers, in this order: what is documented, why it might happen, what the
-// research model sees, how certain each part is, and what is missing. Simple
+// Answers, in this order (outcome engine, API `outcomes`): is there a documented
+// interaction, what could happen, why, how certain, what the research model
+// adds, and the limit of what this can say. Older API responses without the
+// outcome block fall back to the documented records and the explanation. Simple
 // mode (the default) is written for someone who has never heard of CYP2C9;
 // research mode adds identifiers, roles, PubMed links, the model's regime and
 // its measured performance — nothing from the earlier pages is removed, the
@@ -21,6 +23,7 @@ import {
   EvidenceList, ExplanationView, MechanismTable, ModelPanelV3, RemoteNotice, SourcesChecked, StatusBanner,
 } from "../components/v3/ReportParts";
 import { buildRefIndex } from "../components/v3/refs";
+import { OutcomeOverview, OutcomeTable } from "../components/v3/OutcomeParts";
 import { ExportReport } from "../components/v3/ExportReport";
 import type { ExportInput } from "../pdf/types";
 
@@ -31,6 +34,7 @@ const EXAMPLES: [string, string][] = [
   ["DB00682", "DB00196"],   // warfarin + fluconazole
   ["DB00641", "DB01211"],   // simvastatin + clarithromycin
   ["DB00331", "DB00682"],   // metformin + warfarin
+  ["DB00682", "DB00945"],   // warfarin + aspirin: a documented pharmacodynamic record
 ];
 
 const T = {
@@ -136,10 +140,13 @@ export function Analyzer({ pair, setPair, setView }: {
             <RemoteNotice state={state} />
           ) : (
             <>
-              <StatusBanner report={report} />
+              {/* A–F: the user's question first (outcome engine); the model never changes it. */}
+              <OutcomeOverview report={report} refs={refs} research={mode === "research"} />
+              {(mode === "research" || !report.outcomes) && <StatusBanner report={report} />}
+              {mode === "research" && <OutcomeTable report={report} />}
               <div style={{ display: "grid", gridTemplateColumns: mode === "research" ? "minmax(0, 1.5fr) minmax(0, 1fr)" : "minmax(0, 1fr)", gap: 22, alignItems: "start" }} className="collapse">
                 <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
-                  <ExplanationView report={report} refs={refs} />
+                  {(mode === "research" || !report.outcomes) && <ExplanationView report={report} refs={refs} />}
                   <EvidenceList report={report} research={mode === "research"} groups={refs?.groups} />
                 </div>
                 {mode === "research" && (

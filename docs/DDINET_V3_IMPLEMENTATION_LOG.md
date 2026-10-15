@@ -170,6 +170,44 @@ The fixes:
 
 Details: `docs/DDINET_V3_REPORT_QUALITY_PASS.md`.
 
+## Step 11 — Clinical Outcome Engine
+
+This step answers five questions per pair from the evidence records alone:
+1. Is an interaction documented?
+2. What consequences are documented?
+3. Why could it happen?
+4. How serious is it, and how strong is the evidence?
+5. What is unknown?
+
+The pieces:
+
+* **Backend:** `serving/evidence/outcomes.py`, which contains:
+  * a DrugBank type map with an effect level per type;
+  * the label lexicon, with scoped negation, population and partner-clause
+    guards;
+  * evidence states, source-stated seriousness and qualitative evidence
+    strength;
+  * mechanism → outcome chains with a provenance class per link;
+  * multi-drug outcome categories, with no combined score.
+* **Site:** the Simple mode A–F layout, the chain explorer, the
+  research-mode outcome table and the multi-drug outcome matrix.
+* **PDF:** the Quick Report, the full-report outcome sections, and outcomes
+  in the JSON.
+
+**Validation** (`scripts/66_v3_outcome_validation.py`):
+* A constructed pilot set exposed v1's errors: negation after the term, a
+  second clause, and a case-sensitive "Prothrombin". These led to
+  `label_lexicon/v2`.
+* A hold-out set written after v2 was frozen gave precision 25/26 and recall
+  25/32.
+* The pair-level checks, mechanism-attribution check and adversarial cases
+  are in `docs/DDINET_V3_CLINICAL_OUTCOMES_VALIDATION.md`.
+
+**Found and fixed along the way:**
+* a horizontal overflow at phone width, from long chain-node chips;
+* a long Russian drug name running out of the PDF annotation table's column.
+  This one was pre-existing and now has a geometry regression test.
+
 ---
 
 ## What was not done, and why

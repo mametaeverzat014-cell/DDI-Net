@@ -28,6 +28,9 @@ import { STATUS_CODE, type StringKey } from "./strings";
 import { C, CONTENT_WIDTH, DRUG_COLOR, EV, FONT, PAGE, REL, SIZE } from "./theme";
 import type { FetchMeta } from "../data/v3";
 import type { PreparedExport } from "./types";
+import { QuickReportPage } from "./QuickReport";
+import { ChainFigure, MultiOutcomeBlock, OutcomeEvidence, OutcomeSummaryBlock } from "./OutcomeSections";
+import { OT } from "../data/outcomeText";
 
 type Tr = (k: StringKey, vars?: Record<string, string | number>) => string;
 
@@ -50,6 +53,7 @@ export function ReportDocument({ prep }: { prep: PreparedExport }) {
       producer="@react-pdf/renderer"
       language={lang}
     >
+      {input.kind === "pair" && ctx.variant === "quick" ? <QuickReportPage prep={prep} r={input.report.data} /> : <>
       <Cover prep={prep} tr={tr} />
       <Page size="A4" style={st.page} wrap>
         <RunningHeader left={tr("headerLeft")} right={headerRight} />
@@ -58,6 +62,7 @@ export function ReportDocument({ prep }: { prep: PreparedExport }) {
           ? <PairBody prep={prep} report={input.report.data} graph={input.graph?.data ?? null} tr={tr} />
           : <MultiBody prep={prep} m={input.report.data} tr={tr} />}
       </Page>
+      </>}
     </Document>
   );
 }
@@ -262,6 +267,7 @@ function PairSummary({ r, lang, tr, synthetic, glossaryN }: { r: PairReport; lan
         <Text style={[st.small, { marginTop: 4 }]}>{statusHint(r.evidence_status, lang)}</Text>
         <Text style={[st.mono, { marginTop: 4, fontSize: 6.6 }]}>{tr("notSeverity")}</Text>
       </Card>
+      <OutcomeSummaryBlock r={r} lang={lang} />
 
       <View wrap={false} style={{ marginBottom: 8, paddingLeft: 9, borderLeftWidth: 2, borderLeftColor: C.navy }}>
         <Eyebrow color={C.navy}>{tr("briefTitle")}</Eyebrow>
@@ -476,6 +482,7 @@ function Documented({ r, lang, tr }: { r: PairReport; lang: Lang; tr: Tr }) {
           {g.docs.map((d) => <DocBlock key={d.id} d={d} r={r} lang={lang} tr={tr} />)}
         </>
       )}
+      <OutcomeEvidence r={r} lang={lang} />
       {r.conflicts.length ? (
         <>
           <SubTitle color={EV.missing}>{tr("conflicts")}</SubTitle>
@@ -599,6 +606,8 @@ function Mechanisms({ r, graph, lang, tr }: { r: PairReport; graph: MechanismGra
         </>
       ) : null}
 
+      <ChainFigure o={r.outcomes} lang={lang} />
+
       {proteinsWithText.length ? (
         <>
           <SubTitle>{tr("proteinNotes")}</SubTitle>
@@ -669,6 +678,7 @@ function ModelSection({ r, lang, tr }: { r: PairReport; lang: Lang; tr: Tr }) {
             {tile(tr("reliability"), tr(`rel_${m.reliability}` as StringKey), { mono: false, color: m.abstain ? EV.missing : C.ink })}
           </View>
           <Text style={[st.tiny, { marginTop: 3 }]}>{tr("roundedNote")}</Text>
+          <Text style={[st.small, { marginTop: 4 }]}>{pick(OT.eText, lang)}</Text>
         </View>
       )}
       <KV rows={[
@@ -872,7 +882,9 @@ function SourcesSection({ prep, lang, tr }: { prep: PreparedExport; lang: Lang; 
   const ecols: Col[] = [{ title: "#", width: 0.35 }, { title: tr("source"), width: 1.8 }, { title: tr("docIdCol"), width: 1.45 }, { title: tr("retrieved"), width: 0.8 }, { title: tr("url"), width: 2.2 }];
   const docs = pairFacts(r).groups.docs;
   const used = Array.from(new Set(r.mechanism.findings.flatMap((f) => f.annotation_ids))).map((id) => r.mechanism.annotations[id]).filter(Boolean);
-  const acols: Col[] = [{ title: tr("drug"), width: 1 }, { title: tr("protein"), width: 1 }, { title: tr("roles"), width: 1.4 }, { title: tr("source"), width: 1.6 }, { title: tr("retrieved"), width: 0.8 }, { title: tr("pmids"), width: 1.4 }];
+  // The drug column fits "Ацетилсалициловая"; SafeText wraps anything longer
+  // inside the cell (a long Russian name once ran into the protein column).
+  const acols: Col[] = [{ title: tr("drug"), width: 1.3 }, { title: tr("protein"), width: 0.9 }, { title: tr("roles"), width: 1.3 }, { title: tr("source"), width: 1.5 }, { title: tr("retrieved"), width: 0.8 }, { title: tr("pmids"), width: 1.4 }];
   const name = (id: string) => (id === r.drug_a.id ? drugName(r.drug_a, lang) : id === r.drug_b.id ? drugName(r.drug_b, lang) : id);
   const geneOf = (uniprot: string) => r.mechanism.findings.find((f) => f.protein.uniprot === uniprot)?.protein.gene ?? uniprot;
   const role = (k: string) => (ROLE_LABEL[k] ? pick(ROLE_LABEL[k], lang) : k);
@@ -897,7 +909,7 @@ function SourcesSection({ prep, lang, tr }: { prep: PreparedExport; lang: Lang; 
         <>
           <SubTitle>{tr("annotationRecords")}</SubTitle>
           <Table cols={acols} rows={used.map((a) => [
-            name(a.drug_id),
+            <SafeText key="d" text={name(a.drug_id)} width={colPoints(acols, 0)} size={7.6} />,
             <View key="p">
               <Text style={{ fontFamily: FONT.mono, fontSize: 7, color: C.navy }}>{geneOf(a.uniprot)}</Text>
               <Text style={{ fontFamily: FONT.mono, fontSize: 6.4, color: C.muted }}>{a.uniprot}</Text>
@@ -997,6 +1009,7 @@ function MultiBody({ prep, m, tr }: { prep: PreparedExport; m: MultiReport; tr: 
           ))}
         </View>
         <Bullets items={[tr("multiSumReview", { n: counts.review }), tr("multiSumAbstain", { n: counts.abstain })]} size={SIZE.small} />
+        <MultiOutcomeBlock m={m} lang={lang} dn={dn} />
         <Card accent={C.navy} background={C.white}>
           <Text style={st.p}>{tr("multiNoOverall")}</Text>
         </Card>

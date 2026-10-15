@@ -264,7 +264,7 @@ describe("colour and wording rules", () => {
     ];
     const files = [
       ...readdirSync(__dirname).filter((f) => /\.tsx?$/.test(f) && !f.includes(".test.")).map((f) => join(__dirname, f)),
-      ...["plainLanguage.ts", "evidenceGroups.ts", "scoreFormat.ts"].map((f) => join(__dirname, "..", "data", f)),
+      ...["plainLanguage.ts", "evidenceGroups.ts", "scoreFormat.ts", "outcomeText.ts"].map((f) => join(__dirname, "..", "data", f)),
     ];
     for (const f of files) {
       const text = readFileSync(f, "utf8");

@@ -20,6 +20,7 @@ from .labels import LabelEvidence
 from .lexicon import DrugEntry, Resolution
 from .mechanism import mechanism_block, mechanism_graph
 from .model_context import model_block
+from .outcomes import CATEGORIES, build_outcomes
 from .records import database_evidence
 from .schema import (
     Bi, DrugOut, EvidenceCategory, EvidenceStatus, MechanismGraph, MultiPair, MultiReport,
@@ -181,12 +182,13 @@ class EvidenceEngine:
         status = classify(evidence, conflicts, model)
         explanation = build_explanation(self.store, ea.id, eb.id, evidence, conflicts, mech, model, checks, status)
         validate(explanation, evidence, mech, model)
+        outcomes = build_outcomes(self.store, ea.id, eb.id, evidence, mech, model, checks)
         return PairReport(
             drug_a=drug_out(ea, qa), drug_b=drug_out(eb, qb),
             evidence_status=status, evidence_status_label=STATUS_LABEL[status],
             evidence=evidence, conflicts=conflicts, mechanism=mech, model=model,
             explanation=explanation, sources_checked=checks, limitations=LIMITATIONS,
-            disclaimer=DISCLAIMER, generated_at=_now(),
+            disclaimer=DISCLAIMER, generated_at=_now(), outcomes=outcomes,
         )
 
     def graph(self, qa: str, qb: str) -> MechanismGraph:
@@ -213,6 +215,8 @@ class EvidenceEngine:
             mech = mechanism_block(self.store, ea.index, eb.index)
             model = self._model(ea, eb, self.store.is_documented(ea.index, eb.index))
             status = classify(evidence, conflicts, model)
+            oc = build_outcomes(self.store, ea.id, eb.id, evidence, mech, model, checks)
+            shown = [o for o in oc.outcomes if not o.research_only and o.evidence_status != "hypothesized"]
             pk = [f for f in mech.findings if f.pattern in ("inhibitor_substrate", "inducer_substrate")]
             reasons = []
             if status in (EvidenceStatus.CONTRAINDICATION_IN_LABEL, EvidenceStatus.WARNING_IN_LABEL,
@@ -235,6 +239,10 @@ class EvidenceEngine:
                 regime=model.regime, training_label_seen=model.training_label_seen,
                 needs_review=any(r != "low_annotation_coverage" for r in reasons),
                 review_reasons=reasons,
+                interaction_status=oc.interaction_status,
+                outcome_categories=sorted({o.category for o in shown}),
+                outcome_ids=[o.id for o in shown],
+                seriousness=oc.seriousness,
             ))
         checks = [SourceCheck(source="drugbank_tdc", status="ok", detail="Local DrugBank export (TDC).")]
         if include_labels:
@@ -242,8 +250,15 @@ class EvidenceEngine:
                 next((c for c in label_checks if c.status == "disabled"), None)
             checks.append(worst or SourceCheck(source="openfda_label", status="ok",
                                                detail="Labels consulted for every pair with named drugs."))
+        shared: dict[str, list[list[str]]] = {}
+        for p in pairs:
+            for cat in p.outcome_categories:
+                shared.setdefault(cat, []).append([p.drug_a, p.drug_b])
+        used = {c for p in pairs for c in p.outcome_categories}
         return MultiReport(drugs=[drug_out(e) for e in uniq], pairs=pairs, sources_checked=checks,
-                           scope_note=SCOPE_NOTE, disclaimer=DISCLAIMER, generated_at=_now())
+                           scope_note=SCOPE_NOTE, disclaimer=DISCLAIMER, generated_at=_now(),
+                           shared_outcome_categories={k: v for k, v in sorted(shared.items()) if len(v) >= 2},
+                           outcome_categories={c: CATEGORIES[c] for c in sorted(used)})
 
     def sources(self) -> dict:
         return {

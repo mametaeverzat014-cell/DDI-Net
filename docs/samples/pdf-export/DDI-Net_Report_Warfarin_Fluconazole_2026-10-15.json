@@ -1,8 +1,8 @@
 {
   "schema": "ddinet.report-export/1",
-  "report_id": "DDI-20261015-113813-50F23900",
-  "generated_at": "2026-10-15T11:38:13+00:00",
-  "generated_at_utc": "2026-10-15T11:38:13.490Z",
+  "report_id": "DDI-20261015-201750-D84F3659",
+  "generated_at": "2026-10-15T20:17:50+00:00",
+  "generated_at_utc": "2026-10-15T20:17:50.188Z",
   "time_zone": "UTC",
   "language": "en",
   "site": {
@@ -22,11 +22,11 @@
         "drug_b": "DB00196",
         "include_labels": true
       },
-      "receivedAt": "2026-10-15T11:38:07.312Z"
+      "receivedAt": "2026-10-15T20:17:40.873Z"
     },
     "graph": null
   },
-  "payload_sha256": "50f2390086b6dff4e63ec59af2a610f4c69b545f7aba27245cc650b1bfcac7a4",
+  "payload_sha256": "d84f3659dfa516930a74e3a9f084a8deef953c9b33cd0abb8142e70c9405cf7a",
   "payload_sha256_of": "SHA-256 of JSON.stringify(payload) with object keys sorted at every level (ECMAScript number formatting, no whitespace)",
   "payload": {
     "report": {
@@ -849,7 +849,383 @@
         "ru": "Это исследовательский прототип, а не медицинское изделие. Он не заменяет врача или фармацевта и не может сказать, безопасно ли сочетание лекарств для конкретного человека.",
         "en": "This is a research prototype, not a medical device. It does not replace a doctor or pharmacist and cannot say whether a combination is safe for a particular person."
       },
-      "generated_at": "2026-10-15T11:38:07+00:00"
+      "generated_at": "2026-10-15T20:17:40+00:00",
+      "outcomes": {
+        "method": "deterministic: DrugBank type map v1 + label outcome lexicon v1; no language model",
+        "interaction_status": "documented_outcome_unclear",
+        "interaction_status_label": {
+          "ru": "Есть данные о взаимодействии, клиническое последствие не ясно",
+          "en": "Interaction-specific evidence found, clinical outcome unclear"
+        },
+        "interaction_status_hint": {
+          "ru": "Источники фиксируют взаимодействие (например, изменение концентрации), но не называют, к какому клиническому последствию оно ведёт.",
+          "en": "Sources record an interaction (for example a change in concentration) but do not name the clinical consequence."
+        },
+        "outcomes": [
+          {
+            "id": "outcome:DB00196+DB00682:exposure_increase:serum_concentration_increase",
+            "drug_a": "DB00682",
+            "drug_b": "DB00196",
+            "category": "exposure_increase",
+            "effect": "serum_concentration_increase",
+            "effect_level": "pharmacokinetic_change",
+            "label": {
+              "ru": "Повышение концентрации в крови",
+              "en": "Higher serum concentration"
+            },
+            "explanation": {
+              "ru": "Источник описывает изменение того, сколько препарата находится в организме. Само по себе это не задокументированное клиническое последствие.",
+              "en": "The source describes a change in how much of a drug is in the body. That, by itself, is not a documented clinical outcome."
+            },
+            "evidence_status": "mechanistically_supported",
+            "supports": [
+              {
+                "evidence_record_id": "drugbank-tdc:DB00682>DB00196:t73",
+                "source_type": "drugbank_tdc",
+                "source_name": "DrugBank DDI records via Therapeutics Data Commons",
+                "source_document_id": "DB00682|DB00196|Y=73",
+                "source_url": "https://tdcommons.ai/multi_pred_tasks/ddi/",
+                "section": null,
+                "excerpt": "The serum concentration of #Drug2 can be increased when it is combined with #Drug1.",
+                "matched_terms": [
+                  "serum concentration"
+                ],
+                "extraction_method": "drugbank_type_map/v1:type=73",
+                "direction": "not_verified",
+                "affected_drug_id": null,
+                "source_seriousness": null,
+                "retrieved_at": "2026-08-24",
+                "qualifiers": [
+                  "DrugBank gives no severity and does not state the basis of the record."
+                ]
+              }
+            ],
+            "n_source_documents": 1,
+            "affected_drug_id": "DB00682",
+            "direction_note": {
+              "ru": "Затронут, по ролям белков, препарат «Варфарин». Это следует из аннотаций (ингибитор/индуктор и субстрат), а не из порядка в записи DrugBank.",
+              "en": "By the protein roles, the affected drug is Warfarin. This comes from the annotations (inhibitor/inducer and substrate), not from the DrugBank record's order."
+            },
+            "seriousness": "documented_no_standard_severity",
+            "seriousness_basis": {
+              "ru": "Степень серьёзности не установлена по доступным данным.",
+              "en": "Severity not established from available evidence."
+            },
+            "evidence_strength": "database_standard_sentence",
+            "evidence_strength_text": {
+              "ru": "Стандартная фраза базы DrugBank; на чём основана запись, источник не указывает.",
+              "en": "DrugBank standard sentence; the source does not state what the record is based on."
+            },
+            "extraction_note": null,
+            "limitations": [
+              {
+                "ru": "Изменение концентрации само по себе не задокументированное клиническое последствие.",
+                "en": "A change in concentration is not, by itself, a documented clinical outcome."
+              }
+            ],
+            "research_only": false
+          }
+        ],
+        "chains": [
+          {
+            "id": "chain:mech:P33261:enzyme:inhibitor_substrate:DB00196",
+            "nodes": [
+              {
+                "id": "drug:DB00196",
+                "kind": "drug",
+                "label": {
+                  "ru": "Флуконазол",
+                  "en": "Fluconazole"
+                },
+                "ref": "DB00196"
+              },
+              {
+                "id": "protein:P33261",
+                "kind": "protein",
+                "label": {
+                  "ru": "CYP2C19 (фермент)",
+                  "en": "CYP2C19 (enzyme)"
+                },
+                "ref": "mech:P33261:enzyme:inhibitor_substrate:DB00196"
+              },
+              {
+                "id": "drug:DB00682",
+                "kind": "drug",
+                "label": {
+                  "ru": "Варфарин",
+                  "en": "Warfarin"
+                },
+                "ref": "DB00682"
+              },
+              {
+                "id": "effect:DB00682:up",
+                "kind": "effect",
+                "label": {
+                  "ru": "Больше препарата «Варфарин» в организме",
+                  "en": "Higher exposure of Warfarin"
+                },
+                "ref": "outcome:DB00196+DB00682:exposure_increase:serum_concentration_increase"
+              }
+            ],
+            "links": [
+              {
+                "source": "drug:DB00196",
+                "target": "protein:P33261",
+                "relation": "inhibitor",
+                "provenance": "verified_annotation",
+                "text": {
+                  "ru": "«Флуконазол» отмечен как ингибитор CYP2C19.",
+                  "en": "Fluconazole is annotated as an inhibitor of CYP2C19."
+                },
+                "refs": [
+                  "annot:drugbank:DB00196:P33261:enzyme",
+                  "annot:drugbank:DB00682:P33261:enzyme"
+                ]
+              },
+              {
+                "source": "protein:P33261",
+                "target": "drug:DB00682",
+                "relation": "substrate",
+                "provenance": "verified_annotation",
+                "text": {
+                  "ru": "«Варфарин» отмечен как субстрат CYP2C19.",
+                  "en": "Warfarin is annotated as a substrate of CYP2C19."
+                },
+                "refs": [
+                  "annot:drugbank:DB00196:P33261:enzyme",
+                  "annot:drugbank:DB00682:P33261:enzyme"
+                ]
+              },
+              {
+                "source": "protein:P33261",
+                "target": "effect:DB00682:up",
+                "relation": "exposure_change",
+                "provenance": "documented",
+                "text": {
+                  "ru": "Изменение концентрации этого препарата для пары задокументировано.",
+                  "en": "A change in this drug's exposure is documented for the pair."
+                },
+                "refs": [
+                  "outcome:DB00196+DB00682:exposure_increase:serum_concentration_increase"
+                ]
+              }
+            ],
+            "outcome_ids": [
+              "outcome:DB00196+DB00682:exposure_increase:serum_concentration_increase"
+            ],
+            "research_only": false,
+            "summary": {
+              "ru": "«Флуконазол» подавляет CYP2C19, а «Варфарин» этим белком перерабатывается (аннотации). Изменение концентрации этого препарата для пары задокументировано.",
+              "en": "Fluconazole inhibits CYP2C19, which processes Warfarin (annotations). This drug's exposure change is documented for the pair."
+            }
+          },
+          {
+            "id": "chain:mech:P11712:enzyme:inhibitor_substrate:DB00196",
+            "nodes": [
+              {
+                "id": "drug:DB00196",
+                "kind": "drug",
+                "label": {
+                  "ru": "Флуконазол",
+                  "en": "Fluconazole"
+                },
+                "ref": "DB00196"
+              },
+              {
+                "id": "protein:P11712",
+                "kind": "protein",
+                "label": {
+                  "ru": "CYP2C9 (фермент)",
+                  "en": "CYP2C9 (enzyme)"
+                },
+                "ref": "mech:P11712:enzyme:inhibitor_substrate:DB00196"
+              },
+              {
+                "id": "drug:DB00682",
+                "kind": "drug",
+                "label": {
+                  "ru": "Варфарин",
+                  "en": "Warfarin"
+                },
+                "ref": "DB00682"
+              },
+              {
+                "id": "effect:DB00682:up",
+                "kind": "effect",
+                "label": {
+                  "ru": "Больше препарата «Варфарин» в организме",
+                  "en": "Higher exposure of Warfarin"
+                },
+                "ref": "outcome:DB00196+DB00682:exposure_increase:serum_concentration_increase"
+              }
+            ],
+            "links": [
+              {
+                "source": "drug:DB00196",
+                "target": "protein:P11712",
+                "relation": "inhibitor",
+                "provenance": "verified_annotation",
+                "text": {
+                  "ru": "«Флуконазол» отмечен как ингибитор CYP2C9.",
+                  "en": "Fluconazole is annotated as an inhibitor of CYP2C9."
+                },
+                "refs": [
+                  "annot:drugbank:DB00196:P11712:enzyme",
+                  "annot:drugbank:DB00682:P11712:enzyme"
+                ]
+              },
+              {
+                "source": "protein:P11712",
+                "target": "drug:DB00682",
+                "relation": "substrate",
+                "provenance": "verified_annotation",
+                "text": {
+                  "ru": "«Варфарин» отмечен как субстрат CYP2C9.",
+                  "en": "Warfarin is annotated as a substrate of CYP2C9."
+                },
+                "refs": [
+                  "annot:drugbank:DB00196:P11712:enzyme",
+                  "annot:drugbank:DB00682:P11712:enzyme"
+                ]
+              },
+              {
+                "source": "protein:P11712",
+                "target": "effect:DB00682:up",
+                "relation": "exposure_change",
+                "provenance": "documented",
+                "text": {
+                  "ru": "Изменение концентрации этого препарата для пары задокументировано.",
+                  "en": "A change in this drug's exposure is documented for the pair."
+                },
+                "refs": [
+                  "outcome:DB00196+DB00682:exposure_increase:serum_concentration_increase"
+                ]
+              }
+            ],
+            "outcome_ids": [
+              "outcome:DB00196+DB00682:exposure_increase:serum_concentration_increase"
+            ],
+            "research_only": false,
+            "summary": {
+              "ru": "«Флуконазол» подавляет CYP2C9, а «Варфарин» этим белком перерабатывается (аннотации). Изменение концентрации этого препарата для пары задокументировано.",
+              "en": "Fluconazole inhibits CYP2C9, which processes Warfarin (annotations). This drug's exposure change is documented for the pair."
+            }
+          },
+          {
+            "id": "chain:mech:P08684:enzyme:inhibitor_substrate:DB00196",
+            "nodes": [
+              {
+                "id": "drug:DB00196",
+                "kind": "drug",
+                "label": {
+                  "ru": "Флуконазол",
+                  "en": "Fluconazole"
+                },
+                "ref": "DB00196"
+              },
+              {
+                "id": "protein:P08684",
+                "kind": "protein",
+                "label": {
+                  "ru": "CYP3A4 (фермент)",
+                  "en": "CYP3A4 (enzyme)"
+                },
+                "ref": "mech:P08684:enzyme:inhibitor_substrate:DB00196"
+              },
+              {
+                "id": "drug:DB00682",
+                "kind": "drug",
+                "label": {
+                  "ru": "Варфарин",
+                  "en": "Warfarin"
+                },
+                "ref": "DB00682"
+              },
+              {
+                "id": "effect:DB00682:up",
+                "kind": "effect",
+                "label": {
+                  "ru": "Больше препарата «Варфарин» в организме",
+                  "en": "Higher exposure of Warfarin"
+                },
+                "ref": "outcome:DB00196+DB00682:exposure_increase:serum_concentration_increase"
+              }
+            ],
+            "links": [
+              {
+                "source": "drug:DB00196",
+                "target": "protein:P08684",
+                "relation": "inhibitor",
+                "provenance": "verified_annotation",
+                "text": {
+                  "ru": "«Флуконазол» отмечен как ингибитор CYP3A4.",
+                  "en": "Fluconazole is annotated as an inhibitor of CYP3A4."
+                },
+                "refs": [
+                  "annot:drugbank:DB00196:P08684:enzyme",
+                  "annot:drugbank:DB00682:P08684:enzyme"
+                ]
+              },
+              {
+                "source": "protein:P08684",
+                "target": "drug:DB00682",
+                "relation": "substrate",
+                "provenance": "verified_annotation",
+                "text": {
+                  "ru": "«Варфарин» отмечен как субстрат CYP3A4.",
+                  "en": "Warfarin is annotated as a substrate of CYP3A4."
+                },
+                "refs": [
+                  "annot:drugbank:DB00196:P08684:enzyme",
+                  "annot:drugbank:DB00682:P08684:enzyme"
+                ]
+              },
+              {
+                "source": "protein:P08684",
+                "target": "effect:DB00682:up",
+                "relation": "exposure_change",
+                "provenance": "documented",
+                "text": {
+                  "ru": "Изменение концентрации этого препарата для пары задокументировано.",
+                  "en": "A change in this drug's exposure is documented for the pair."
+                },
+                "refs": [
+                  "outcome:DB00196+DB00682:exposure_increase:serum_concentration_increase"
+                ]
+              }
+            ],
+            "outcome_ids": [
+              "outcome:DB00196+DB00682:exposure_increase:serum_concentration_increase"
+            ],
+            "research_only": false,
+            "summary": {
+              "ru": "«Флуконазол» подавляет CYP3A4, а «Варфарин» этим белком перерабатывается (аннотации). Изменение концентрации этого препарата для пары задокументировано.",
+              "en": "Fluconazole inhibits CYP3A4, which processes Warfarin (annotations). This drug's exposure change is documented for the pair."
+            }
+          }
+        ],
+        "seriousness": "documented_no_standard_severity",
+        "seriousness_text": {
+          "ru": "Степень серьёзности не установлена по доступным данным.",
+          "en": "Severity not established from available evidence."
+        },
+        "coverage": [
+          {
+            "ru": "DrugBank (локальная выгрузка TDC): записей для пары — 1. Степень тяжести и основание записей не указаны.",
+            "en": "DrugBank (local TDC export): 1 record(s) for the pair. No severity and no stated basis."
+          },
+          {
+            "ru": "Инструкции FDA сейчас недоступны — их данные в анализ не вошли. Ищутся названия препаратов, не группы; раздел «Нежелательные реакции» не используется.",
+            "en": "FDA labels unavailable now — not part of this analysis. Drug names are searched, not classes; Adverse Reactions sections are not used."
+          }
+        ],
+        "no_outcome_text": null,
+        "mechanism_without_outcome_text": null,
+        "individual_limit": {
+          "ru": "Платформа не может определить, безопасно ли конкретное сочетание для конкретного человека. Это исследовательский и учебный инструмент.",
+          "en": "This platform cannot determine whether a particular combination is safe for an individual. It is a research and educational tool."
+        }
+      }
     },
     "graph": null
   }

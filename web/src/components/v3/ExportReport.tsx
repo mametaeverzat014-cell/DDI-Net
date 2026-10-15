@@ -11,6 +11,8 @@ import type { ExportInput } from "../../pdf/types";
 
 const T = {
   pdf: { ru: "Экспорт PDF", en: "Export PDF" },
+  quick: { ru: "Краткий PDF", en: "Quick PDF" },
+  quickTitle: { ru: "Краткий отчёт на 1–2 страницы: статус, последствия по источникам, механизм, неопределённость", en: "1–2 page quick report: status, source-stated outcomes, mechanism, uncertainty" },
   json: { ru: "JSON", en: "JSON" },
   jsonTitle: { ru: "Скачать полные данные ответа в JSON (тот же SHA-256, что указан в PDF)", en: "Download the full response data as JSON (same SHA-256 as stated in the PDF)" },
   group: { ru: "Экспорт отчёта", en: "Report export" },
@@ -27,7 +29,7 @@ const T = {
 
 type State =
   | { kind: "idle" }
-  | { kind: "working"; what: "pdf" | "json" }
+  | { kind: "working"; what: "pdf" | "quick" | "json" }
   | { kind: "done"; file: string }
   | { kind: "error"; message: string };
 
@@ -46,12 +48,12 @@ export function ExportReport({ input, id }: { input: ExportInput | null; id: str
   useEffect(() => { setState({ kind: "idle" }); }, [input]);
 
   const busy = state.kind === "working";
-  const run = async (what: "pdf" | "json") => {
+  const run = async (what: "pdf" | "quick" | "json") => {
     if (!input || busy) return;
     setState({ kind: "working", what });
     try {
       const mod = await import("../../pdf/exportReport");
-      const file = what === "pdf" ? await mod.exportPdf(input, lang) : await mod.exportJson(input, lang);
+      const file = what === "json" ? await mod.exportJson(input, lang) : await mod.exportPdf(input, lang, what === "quick" ? "quick" : "full");
       mod.download(file);
       setState({ kind: "done", file: file.filename });
     } catch (e) {
@@ -62,7 +64,7 @@ export function ExportReport({ input, id }: { input: ExportInput | null; id: str
   const statusId = `${id}-status`;
   const status =
     !input ? pick(T.disabled, lang)
-      : state.kind === "working" ? pick(state.what === "pdf" ? T.workingPdf : T.workingJson, lang)
+      : state.kind === "working" ? pick(state.what === "json" ? T.workingJson : T.workingPdf, lang)
         : state.kind === "done" ? fill(pick(T.done, lang), { f: state.file })
           : state.kind === "error" ? state.message
             : pick(T.note, lang);
@@ -74,6 +76,13 @@ export function ExportReport({ input, id }: { input: ExportInput | null; id: str
         {busy && state.kind === "working" && state.what === "pdf" ? <span className="v3-spinner" aria-hidden="true" /> : <PdfIcon />}
         {pick(T.pdf, lang)}
       </button>
+      {input?.kind === "pair" && (
+        <button type="button" className="v3-export-secondary" onClick={() => run("quick")} disabled={!input || busy}
+          aria-describedby={statusId} title={pick(T.quickTitle, lang)} aria-label={`${pick(T.quick, lang)} — ${pick(T.quickTitle, lang)}`}>
+          {busy && state.kind === "working" && state.what === "quick" ? <span className="v3-spinner" aria-hidden="true" /> : null}
+          {pick(T.quick, lang)}
+        </button>
+      )}
       <button type="button" className="v3-export-secondary" onClick={() => run("json")} disabled={!input || busy}
         aria-describedby={statusId} title={pick(T.jsonTitle, lang)} aria-label={`${pick(T.json, lang)} — ${pick(T.jsonTitle, lang)}`}>
         {busy && state.kind === "working" && state.what === "json" ? <span className="v3-spinner" aria-hidden="true" /> : null}

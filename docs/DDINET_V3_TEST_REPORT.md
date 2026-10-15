@@ -10,8 +10,8 @@ passing that was not run. Commands are given so each line can be reproduced.
 
 | Check | Before (baseline at `aa04493`) | After |
 |---|---|---|
-| Python test suite (`pytest tests/`) | 613 passed, 21 skipped, **2 failed, 11 errors** | **755 passed, 3 skipped, 1 failed** |
-| Web unit tests (`npx vitest run`) | 66 passed | **152 passed** (65 of them for the PDF export, 16 of those page-geometry checks) |
+| Python test suite (`pytest tests/`) | 613 passed, 21 skipped, **2 failed, 11 errors** | **790 passed, 3 skipped, 1 failed** (after the Clinical Outcome Engine) |
+| Web unit tests (`npx vitest run`) | 66 passed | **169 passed** (PDF export included; 24 page-geometry checks) |
 | TypeScript (`npx tsc --noEmit`) | clean | clean |
 | ESLint (`--max-warnings 0`) | clean | clean |
 | Production build (`npm run build`) | — | succeeds; regenerating `frozen.json` from the tag gives no diff |
@@ -107,6 +107,17 @@ hydroxyprogesterone caproate + pentaerithrityl tetranitrate RU/EN, and the 4-,
 
 There were 0 console errors.
 
+### Clinical Outcome Engine — 35 Python, 17 web tests
+
+| File | Tests | What they establish |
+|---|---:|---|
+| `tests/test_v3_outcomes.py` | 35 | Covers six areas: (1) every DrugBank type is mapped and read off its own template, and pharmacodynamic records never become named outcomes; (2) lexicon cases, including the v2 guards for negation after the term, the partner clause and sentence-initial "Prothrombin time"; (3) a PK record with unambiguous roles is `mechanistically_supported`, while ambiguous roles name no drug; (4) no evidence gives abstention without reassurance, and outcomes are identical with a model scoring 0.99; (5) synthetic label outcomes are verbatim, a contraindication or explicit wording is source-stated, and an unrelated effect, separate sentences and no-effect sentences are not assigned; (6) an unavailable source is stated, multi-drug reports carry categories with no global score, texts are bilingual and advice-free, and contradicting sources are both kept |
+| `web/src/components/v3/outcomes.test.tsx` | 6 | Simple mode A–F from synthetic labels, `source_unavailable` wording, model score only in block E, chain link selection, old-API fallback, multi filter |
+| `web/src/pdf/render.test.ts`, `layout.test.ts`, `ExportReport.test.tsx` | 11 | Quick Report (1–2 pages, verbatim excerpts, no hypotheses outside research), full-report outcome sections, Quick PDF button, and geometry of 8 outcome reports. The 8 reports include warfarin + aspirin in Russian, the regression case for a long drug name in the annotation table |
+
+`scripts/66_v3_outcome_validation.py` (not a test; deterministic, offline)
+gives the pilot measurements in `docs/DDINET_V3_CLINICAL_OUTCOMES_VALIDATION.md`.
+
 ## 5. Browser end-to-end
 
 Playwright (Chromium 1194) against `vite preview` of a production build pointed
@@ -127,6 +138,8 @@ sources enabled but unreachable from the container):
 | After the edge-direction fix: Mechanisms, simvastatin + clarithromycin and fluconazole + warfarin | documented arc has no arrowhead; its tooltip is the label in Russian and the direction-neutral statement in English |
 | PDF export (EN and RU): Analyzer warfarin + fluconazole | button disabled while loading, enabled with the report; Enter on the focused button downloads `DDI-Net_Report_Warfarin_Fluconazole_2026-10-15.pdf` (`_RU` in Russian) in about 6 s; status "File saved: …"; JSON companion downloads, its hash equals the one printed in the PDF |
 | PDF export: Mechanisms simvastatin + clarithromycin; Multi-drug with 4 and 6 drugs | files download with descriptive names; Multi-drug button disabled until "Check pairs" returns; 0 console errors |
+| Clinical Outcome Engine (EN and RU): warfarin + fluconazole, warfarin + aspirin, metformin + warfarin | A–F blocks shown; no "safe" wording; chain links selectable; Quick PDF, full PDF and JSON download from the same result; 0 console errors; at 390 px no horizontal overflow (a 77 px overflow from long chain chips was found here and fixed) |
+| Clinical Outcome Engine: Multi-drug with 6 drugs at 390 px | matrix and shared categories shown, no overall score, no overflow |
 | Exported files | poppler `pdfinfo`/`pdffonts`/`pdftotext`: no errors, all fonts embedded; `pypdf` strict mode reads every file; pages inspected at 40, 60, 110 and 220 dpi; samples in `docs/samples/pdf-export/` |
 
 ## 6. Reproducing

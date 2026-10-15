@@ -48,9 +48,17 @@ describe("ExportReport", () => {
     expect(btn.getAttribute("aria-describedby")).toBe("t-status");
     fireEvent.click(btn);
     await waitFor(() => expect(screen.getByText("File saved: DDI-Net_Report_Warfarin_Fluconazole_2026-10-14.pdf")).toBeTruthy());
-    expect(exportPdf).toHaveBeenCalledWith(input, "en");
+    expect(exportPdf).toHaveBeenCalledWith(input, "en", "full");
     expect(download).toHaveBeenCalledTimes(1);
     expect(screen.getByRole("status").textContent).toContain("File saved");
+  });
+
+  it("offers a quick report for a pair and exports it as the quick variant", async () => {
+    exportPdf.mockResolvedValue({ blob: new Blob(["%PDF-1.3"]), filename: "DDI-Net_QuickReport_Warfarin_Fluconazole_2026-10-14.pdf", reportId: "DDI-X" });
+    setup("en", input);
+    fireEvent.click(screen.getByRole("button", { name: /Quick PDF/ }));
+    await waitFor(() => expect(screen.getByText(/File saved: DDI-Net_QuickReport/)).toBeTruthy());
+    expect(exportPdf).toHaveBeenCalledWith(input, "en", "quick");
   });
 
   it("shows a loading state and blocks a second export meanwhile", async () => {

@@ -154,3 +154,42 @@ they are hypotheses, not findings.
   pushed or deployed.
 * The evidence layer was not evaluated with users. Whether lay readers
   understand the five-section explanation as intended is untested.
+
+
+## 7. Clinical outcome engine
+
+The design is in `docs/DDINET_V3_CLINICAL_OUTCOMES_ARCHITECTURE.md` and the
+measurements in `docs/DDINET_V3_CLINICAL_OUTCOMES_VALIDATION.md`.
+
+* **Outcomes come only from sources that state them for the pair:**
+  * a DrugBank record, read through a fixed 86-row type map;
+  * or a label sentence that names the partner drug together with an outcome
+    term (`label_lexicon/v2`).
+
+  General adverse reactions are never assigned to a pair, and the Adverse
+  Reactions section is not read.
+* **DrugBank outcomes are template-level.** The record names the effect
+  ("risk or severity of bleeding"), but gives no frequency, severity or basis.
+* **Label extraction is rule-based and partial.** On a 40-sentence
+  constructed hold-out set it found 25 of 32 annotated outcomes, with 1
+  unsupported extraction. Paraphrases are missed, and a sentence about the
+  partner's own effect can be taken as a pair outcome. The excerpt is always
+  shown verbatim.
+* **No validation on real label text has been possible yet.** openFDA is
+  unreachable from the build container.
+* **The affected drug of an exposure change** is named only from a verified
+  record order, or from unambiguous inhibitor/inducer–substrate annotations.
+  The annotation rule agreed with a verified order in 595 of 606 checks on the
+  same database. That is consistency, not confirmation.
+* **Seriousness is never estimated.** It is stated only from a
+  CONTRAINDICATIONS section, a BOXED WARNING, or explicit "fatal /
+  life-threatening / serious" wording in the quoted sentence. Otherwise:
+  "Severity not established from available evidence."
+* **Mechanism chains** connect protein annotations to a documented exposure
+  change. A link to a clinical outcome is "documented" only when one label
+  sentence states both. Shared proteins or pathways are never treated as
+  causes.
+* **The interaction status and the outcomes do not depend on the BIO-GINE
+  score.** This was checked with scores 0.01 and 0.99 on 89 pairs.
+* **No documented outcome is not evidence of safety.** The text says so
+  wherever it applies.

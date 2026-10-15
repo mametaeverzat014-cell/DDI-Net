@@ -33,6 +33,8 @@ export interface ExportContext {
   siteOrigin: string | null;
   /** Git commit the site was built from, when the build exposed it. */
   siteCommit: string | null;
+  /** "quick": 1–2 page summary of a pair report; "full" (default): the research report. */
+  variant?: "full" | "quick";
 }
 
 /** An export after hashing: what the document and the companion JSON share. */

@@ -40,13 +40,14 @@ const BANDS = {
 
 const show = (p: number, r: Rect) => `p${p} ${r.kind} y ${r.y0.toFixed(1)}–${r.y1.toFixed(1)} ${JSON.stringify(r.text ?? "")}`;
 
-async function check(name: string, input: ExportInput, lang: "ru" | "en") {
-  const prep = await prepareExport(input, { lang, now: new Date("2026-10-15T08:00:00Z"), timeZone: "Europe/Moscow", siteOrigin: null, siteCommit: null });
+async function check(name: string, input: ExportInput, lang: "ru" | "en", variant: "full" | "quick" = "full") {
+  const prep = await prepareExport(input, { lang, now: new Date("2026-10-15T08:00:00Z"), timeZone: "Europe/Moscow", siteOrigin: null, siteCommit: null, variant });
   const bytes = new Uint8Array(await (await renderPdf(prep, (f) => join(FONT_DIR, f))).arrayBuffer());
   if (process.env.DDINET_PDF_DUMP) writeFileSync(join(process.env.DDINET_PDF_DUMP, `layout-${name}-${lang}.pdf`), bytes);
   const pages = await pageGeometry(bytes);
   const problems: string[] = [];
-  for (const g of pages.slice(1)) {             // page 1 is the cover, laid out on its own
+  // page 1 of the full report is the cover, laid out on its own; the quick report has none
+  for (const g of pages.slice(variant === "quick" ? 0 : 1)) {
     const furniture = {
       header: t("headerLeft", lang).toUpperCase() + headerRightText(input, lang),
       footer: t("footerLeft", lang) + prep.reportId + t("page", lang, { n: g.page, t: pages.length }),
@@ -114,6 +115,25 @@ describe("PDF geometry: no overlap with header or footer, no collapsed text, rig
     it(`${name} (${lang})`, async () => {
       const { problems } = await check(name, input, lang);
       expect(problems).toEqual([]);
+    }, 120_000);
+  }
+
+  const outcomeCases: [string, ExportInput, "ru" | "en", "full" | "quick"][] = [
+    ["outcomes-synthetic-labels", pair(fx("pair_synthetic_merged_labels.json").report), "ru", "full"],
+    ["outcomes-warfarin-aspirin", pair(fx("pair_outcomes_warfarin_aspirin.json").report), "en", "full"],
+    // "Ацетилсалициловая" once ran out of the annotation table's drug column into the protein column
+    ["outcomes-warfarin-aspirin", pair(fx("pair_outcomes_warfarin_aspirin.json").report), "ru", "full"],
+    ["outcomes-multi-6", { kind: "multi", report: fx("multi_outcomes_6.json") }, "ru", "full"],
+    ["quick-synthetic-labels", pair(fx("pair_synthetic_merged_labels.json").report), "ru", "quick"],
+    ["quick-synthetic-labels", pair(fx("pair_synthetic_merged_labels.json").report), "en", "quick"],
+    ["quick-warfarin-fluconazole", pair(fx("pair_outcomes_warfarin_fluconazole.json").report), "ru", "quick"],
+    ["quick-metformin-warfarin", pair(fx("pair_outcomes_metformin_warfarin.json").report), "en", "quick"],
+  ];
+  for (const [name, input, lang, variant] of outcomeCases) {
+    it(`${name} (${lang}, ${variant})`, async () => {
+      const { pages, problems } = await check(name, input, lang, variant);
+      expect(problems).toEqual([]);
+      if (variant === "quick") expect(pages).toBeLessThanOrEqual(2);
     }, 120_000);
   }
 
