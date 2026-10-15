@@ -141,6 +141,35 @@ Issues found and fixed during this step:
 * 44 web tests; real-browser exports in both languages; samples in
   `docs/samples/pdf-export/`.
 
+## Step 10 — Report quality pass
+
+A real Preview PDF showed five weaknesses. Their causes:
+
+* repeated label text counted as separate sources;
+* a thin summary;
+* an evidence card overlapping the footer on page 6;
+* a pooled metric that read as an S2 figure;
+* jargon.
+
+Each cause was verified before it was changed:
+
+* openFDA returns an older label's Drug Interactions subsection twice;
+* react-pdf shrinks the content of a box split across pages;
+* the frozen code pools test_S2 and test_S3.
+
+The fixes:
+
+* the backend merges repeated text within a label and counts documents;
+* the site and the PDF group evidence by source document;
+* the summary is deterministic and quotes the sources;
+* the PDF is built from atomic page-level blocks, with geometry regression
+  tests;
+* metrics are labelled pooled, and scores are printed at the precision they
+  have;
+* a plain-language score explainer and a glossary were added.
+
+Details: `docs/DDINET_V3_REPORT_QUALITY_PASS.md`.
+
 ---
 
 ## What was not done, and why

@@ -22,6 +22,14 @@ WHAT IT IS NOT, AND THE QUALIFIERS SAY SO.
   reassurance.
 * The section a sentence sits in is a structural fact of the label. It is not
   converted into a severity grade.
+
+ONE SENTENCE, ONE EXCERPT. Older-format labels keep their "Drug Interactions"
+subsection inside PRECAUTIONS, and openFDA also returns that subsection as a
+separate `drug_interactions` field, so the same sentence is found twice. Within
+one label, a sentence identical to (or contained in, or a near-verbatim copy of)
+one already found is not a new excerpt: the section it was found in again is
+added to `also_in`. Distinct sentences stay distinct even when they name the same
+drugs, and excerpts from different labels are never merged.
 """
 
 from __future__ import annotations
@@ -94,6 +102,8 @@ class Excerpt:
     truncated: bool
     no_effect_wording: bool
     matched_term: str
+    #: Other sections of the same label where the same sentence was found.
+    also_in: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -127,6 +137,32 @@ def _parse(result: dict, url: str) -> Label:
         sections=sections,
         retrieval_url=url,
     )
+
+
+def _norm(sentence: str) -> str:
+    """Case, punctuation and spacing removed: the comparable core of a sentence."""
+    return re.sub(r"[^0-9a-z]+", " ", sentence.casefold()).strip()
+
+
+def same_finding(a: str, b: str) -> bool:
+    """True when two sentences of ONE label are the same statement.
+
+    Identical after normalisation; or one contained in the other (a heading or
+    numbering glued to one copy), with at least 40 characters in common; or a
+    near-verbatim copy (word sets 90 % alike and lengths within 10 %). Anything
+    else is a different statement, even about the same two drugs.
+    """
+    na, nb = _norm(a), _norm(b)
+    if not na or not nb:
+        return False
+    if na == nb:
+        return True
+    short, long_ = sorted((na, nb), key=len)
+    if len(short) >= 40 and short in long_:
+        return True
+    ta, tb = set(na.split()), set(nb.split())
+    jaccard = len(ta & tb) / len(ta | tb)
+    return jaccard >= 0.9 and len(short) / len(long_) >= 0.9
 
 
 def _single_ingredient(label: Label) -> bool:
@@ -189,6 +225,8 @@ class OpenFdaLabelAdapter:
                 for t in sorted({t.strip() for t in terms if len(t.strip()) >= 4}, key=len, reverse=True)]
         if not pats:
             return out
+        # label.sections follows SECTIONS order (boxed warning first), so the
+        # first copy of a sentence keeps its most prominent section.
         for field_name, text in label.sections.items():
             display, category = SECTIONS[field_name]
             found = 0
@@ -198,6 +236,11 @@ class OpenFdaLabelAdapter:
                 if not hit or sentence in seen:
                     continue
                 seen.add(sentence)
+                twin = next((e for e in out if same_finding(e.text.rstrip("…"), sentence)), None)
+                if twin is not None:
+                    if display != twin.section and display not in twin.also_in:
+                        twin.also_in.append(display)
+                    continue
                 truncated = len(sentence) > MAX_EXCERPT
                 excerpt = sentence[:MAX_EXCERPT].rstrip() + ("…" if truncated else "")
                 out.append(Excerpt(

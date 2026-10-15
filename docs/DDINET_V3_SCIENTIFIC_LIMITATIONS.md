@@ -55,6 +55,12 @@ what was measured rather than assumed. Every number here is in a file under
   prescription label. Other manufacturers' labels, combination products and
   older versions are not consulted.
 * **US labels only**, in English; excerpts are not translated.
+* **One sentence, one excerpt.** A sentence that one label repeats in several
+  of its sections (older-format labels repeat their Drug Interactions
+  subsection, and openFDA returns it twice) is one excerpt with all its section
+  names. Several excerpts of one label are one source, not separate
+  confirmations. The rule is lexical: paraphrases stay separate excerpts of the
+  same document.
 * **No-effect detection is a word list.** Sentences such as "did not
   significantly alter" are categorised separately; a sentence reporting no
   effect in other words may stay in the warning category (the safer error).
@@ -109,6 +115,10 @@ what was measured rather than assumed. Every number here is in a file under
   data; when such a pair is documented, the model was trained on its label and
   its score is withheld from the status and the explanation.
   Validation-split drugs influenced configuration selection and calibration.
+* **Pooled test metric.** M4's frozen test metrics exist for the pooled
+  drug-disjoint test (S2 and S3 together: 84,690 pairs, 7,758 of them S3) and
+  for S3. No S2-only figure exists, so an S2 pair is shown the pooled figure,
+  labelled as pooled. Test-set metrics describe many pairs, not one prediction.
 * **Calibration.** Temperature scaling (T = 7.20) was fitted on validation pairs
   at prevalence 0.5 against sampled unlabelled negatives. The calibrated score
   is not a probability of interaction in practice, nor of harm. The

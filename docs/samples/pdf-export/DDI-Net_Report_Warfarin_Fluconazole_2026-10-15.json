@@ -1,8 +1,8 @@
 {
   "schema": "ddinet.report-export/1",
-  "report_id": "DDI-20261015-045150-80DDD4EA",
-  "generated_at": "2026-10-15T04:51:50+00:00",
-  "generated_at_utc": "2026-10-15T04:51:50.870Z",
+  "report_id": "DDI-20261015-113813-50F23900",
+  "generated_at": "2026-10-15T11:38:13+00:00",
+  "generated_at_utc": "2026-10-15T11:38:13.490Z",
   "time_zone": "UTC",
   "language": "en",
   "site": {
@@ -22,11 +22,11 @@
         "drug_b": "DB00196",
         "include_labels": true
       },
-      "receivedAt": "2026-10-15T04:51:44.755Z"
+      "receivedAt": "2026-10-15T11:38:07.312Z"
     },
     "graph": null
   },
-  "payload_sha256": "80ddd4eaafa0c097ddbb14fbcdeefa82107b0444a050233783ecd33cd91efdc3",
+  "payload_sha256": "50f2390086b6dff4e63ec59af2a610f4c69b545f7aba27245cc650b1bfcac7a4",
   "payload_sha256_of": "SHA-256 of JSON.stringify(payload) with object keys sorted at every level (ECMAScript number formatting, no whitespace)",
   "payload": {
     "report": {
@@ -84,6 +84,7 @@
           },
           "statement_ru": "Концентрация одного из двух препаратов в сыворотке может повышаться при сочетании с другим препаратом.",
           "section": null,
+          "also_in_sections": [],
           "drug1_id": null,
           "drug2_id": null,
           "retrieved_at": "2026-08-24",
@@ -736,8 +737,8 @@
               {
                 "kind": "documented",
                 "text": {
-                  "ru": "Задокументировано: 1 запись в источниках. Это самая надёжная часть страницы.",
-                  "en": "Documented: 1 source record(s). This is the most reliable part of the page."
+                  "ru": "Задокументировано: 1 запись DrugBank. Несколько фрагментов одной инструкции — один источник, а не отдельные подтверждения; запись DrugBank тоже может опираться на текст инструкции. Это самая надёжная часть страницы.",
+                  "en": "Documented: 1 DrugBank record(s). Several excerpts of one label are one source, not separate confirmations, and a DrugBank record may itself rest on label text. This is the most reliable part of the page."
                 },
                 "refs": [
                   "drugbank-tdc:DB00682>DB00196:t73"
@@ -766,8 +767,8 @@
               {
                 "kind": "model",
                 "text": {
-                  "ru": "Качество модели на отложенных парах, где один из препаратов модель не видела при обучении (как здесь): AUPRC 0.812 ± 0.010 по 5 запускам. Это средняя характеристика по многим парам, а не уверенность в этой конкретной паре.",
-                  "en": "Model quality on held-out pairs where the model did not see one of the drugs in training (as here): AUPRC 0.812 ± 0.010 over 5 runs. That is an average over many pairs, not confidence in this particular pair."
+                  "ru": "Качество модели на объединённом отложенном тесте (пары S2 и S3 вместе, 91 % — S2; отдельной оценки только для S2 в замороженных результатах нет): AUPRC 0.812 ± 0.010 (разброс между 5 запусками обучения). Это средняя характеристика по многим парам, а не уверенность в этой конкретной паре.",
+                  "en": "Model quality on the pooled held-out test (S2 and S3 pairs together, 91% S2; the frozen results hold no S2-only figure): AUPRC 0.812 ± 0.010 (spread across 5 training runs). That is an average over many pairs, not confidence in this particular pair."
                 },
                 "refs": [
                   "model"
@@ -819,7 +820,7 @@
         {
           "source": "openfda_label",
           "status": "unavailable",
-          "detail": "openfda_label: network error (URLError)"
+          "detail": "openfda_label: recently unreachable; retrying after a cooldown"
         }
       ],
       "limitations": [
@@ -848,7 +849,7 @@
         "ru": "Это исследовательский прототип, а не медицинское изделие. Он не заменяет врача или фармацевта и не может сказать, безопасно ли сочетание лекарств для конкретного человека.",
         "en": "This is a research prototype, not a medical device. It does not replace a doctor or pharmacist and cannot say whether a combination is safe for a particular person."
       },
-      "generated_at": "2026-10-15T04:51:44+00:00"
+      "generated_at": "2026-10-15T11:38:07+00:00"
     },
     "graph": null
   }

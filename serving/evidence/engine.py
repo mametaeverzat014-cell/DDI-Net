@@ -228,6 +228,8 @@ class EvidenceEngine:
                 drug_a=ea.id, drug_b=eb.id, evidence_status=status,
                 n_database_records=sum(e.category == EvidenceCategory.DATABASE_INTERACTION_RECORD for e in evidence),
                 n_label_records=sum(e.category != EvidenceCategory.DATABASE_INTERACTION_RECORD for e in evidence),
+                n_label_documents=len({e.source_record_id for e in evidence
+                                       if e.category != EvidenceCategory.DATABASE_INTERACTION_RECORD}),
                 n_mechanism_hypotheses=sum(f.pattern != "shared_annotation" for f in mech.findings),
                 calibrated_model_score=None if model.abstain else model.calibrated_model_score,
                 regime=model.regime, training_label_seen=model.training_label_seen,

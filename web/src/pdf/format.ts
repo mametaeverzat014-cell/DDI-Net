@@ -155,6 +155,21 @@ export function wrapMono(text: string, width: number, size: number): string[] {
   return out;
 }
 
+/** Long text cut into pieces of at most `max` characters at spaces, so that no
+ *  single atomic block can be taller than a page. */
+export function chunkText(text: string, max = 900): string[] {
+  const out: string[] = [];
+  let rest = text;
+  while (rest.length > max) {
+    let cut = rest.lastIndexOf(" ", max);
+    if (cut < max / 2) cut = max;
+    out.push(rest.slice(0, cut).trimEnd());
+    rest = rest.slice(cut).trimStart();
+  }
+  out.push(rest);
+  return out;
+}
+
 // ------------------------------------------------------------------ numbers --
 
 export const fixed = (x: number | null | undefined, digits: number): string =>

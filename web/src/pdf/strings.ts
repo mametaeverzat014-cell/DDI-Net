@@ -63,7 +63,7 @@ export const S = {
   // ── four kinds ──────────────────────────────────────────────────────────
   kindsTitle: { ru: "Четыре вида информации в этом отчёте", en: "Four kinds of information in this report" },
   kindDocumented: { ru: "Задокументированные доказательства", en: "Documented evidence" },
-  kindDocumentedHint: { ru: "Источник прямо описывает взаимодействие этих двух препаратов.", en: "A source states that these two drugs interact." },
+  kindDocumentedHint: { ru: "Инструкция или запись базы данных, где названы оба препарата.", en: "A label or database record that names both drugs." },
   kindHypothesis: { ru: "Гипотезы о механизме", en: "Mechanism hypotheses" },
   kindHypothesisHint: { ru: "Собраны из задокументированных ролей каждого препарата отдельно; для пары не проверены.", en: "Assembled from each drug's documented roles separately; not tested for the pair." },
   kindModel: { ru: "Предсказание модели", en: "Machine-learning prediction" },
@@ -107,8 +107,8 @@ export const S = {
     en: "For {n} of {m} DrugBank records the drug order in the export is not verified, so the report does not say which drug affects which.",
   },
   gapNoCi: {
-    ru: "Сервис использует одну контрольную точку модели (сид 0) и не даёт ни доверительного интервала для пары, ни ансамблевой оценки. Ниже приведено измеренное качество для этого режима — среднее по многим парам, а не уверенность в этой паре.",
-    en: "The service uses one model checkpoint (seed 0) and provides neither a per-pair confidence interval nor an ensemble estimate. Measured performance for this regime is given instead — an average over many pairs, not confidence in this pair.",
+    ru: "Сервис использует одну контрольную точку модели (сид 0) и не даёт ни доверительного интервала для пары, ни ансамблевой оценки. В разделе 5 приведено качество, измеренное на отложенном тесте, — среднее по многим парам, а не уверенность в этой паре.",
+    en: "The service uses one model checkpoint (seed 0) and provides neither a per-pair confidence interval nor an ensemble estimate. Section 5 gives the quality measured on the held-out test instead — an average over many pairs, not confidence in this pair.",
   },
   gapSeverity: { ru: "Ни один источник не указывает степень тяжести; отчёт её не присваивает.", en: "No source gives a severity, and none is assigned here." },
   gapIndividual: {
@@ -116,7 +116,7 @@ export const S = {
     en: "Doses, duration, age, kidney and liver function, other medicines and individual factors are not taken into account.",
   },
 
-  kindCountDoc: { ru: "записей DrugBank: {db}; фрагментов инструкций: {lab}", en: "DrugBank records: {db}; label excerpts: {lab}" },
+  kindCountDoc: { ru: "инструкций FDA: {ld} (фрагментов: {lab}); записей DrugBank: {db}", en: "FDA labels: {ld} ({lab} excerpts); DrugBank records: {db}" },
   kindNoneFound: { ru: "ничего не найдено — это не означает «безопасно»", en: "none found — this does not mean “safe”" },
   kindCountHyp: { ru: "гипотез: {n}; общих путей Reactome: {p}", en: "hypotheses: {n}; shared Reactome pathways: {p}" },
   kindModelScore: { ru: "калиброванная оценка {cal} · режим {reg}", en: "calibrated score {cal} · regime {reg}" },
@@ -164,8 +164,8 @@ export const S = {
 
   // ── evidence ────────────────────────────────────────────────────────────
   evidenceIntro: {
-    ru: "Каждая запись пронумерована; на эти номера ссылаются пояснения. Английский текст — слова источника (цитата или стандартная фраза DrugBank); русский — перевод проекта.",
-    en: "Each record is numbered; the explanations refer to these numbers. The English text is the source's own words (an excerpt or DrugBank's standard sentence).",
+    ru: "Доказательства сгруппированы по документам-источникам: [n] — документ, [n.k] — его отдельный фрагмент; на эти метки ссылается пояснение. Несколько фрагментов одной инструкции — один источник, а не отдельные подтверждения. Английский текст — слова источника; русский — перевод проекта (только стандартные фразы DrugBank; цитаты инструкций не переводятся).",
+    en: "Evidence is grouped by source document: [n] is a document, [n.k] one distinct excerpt of it; the explanation refers to these labels. Several excerpts of one label are one source, not separate confirmations. The English text is the source's own words (an excerpt or DrugBank's standard sentence).",
   },
   sourceWords: { ru: "Слова источника", en: "Source's words" },
   projectTranslation: { ru: "Перевод проекта (не слова источника)", en: "Project translation (not the source's words)" },
@@ -259,7 +259,7 @@ export const S = {
     ru: "Оценка BIO-GINE говорит, насколько пара похожа на пары, уже записанные как взаимодействующие. Калибровка подобрана на проверочных парах с равной долей задокументированных и случайно набранных пар, поэтому число — не вероятность вреда, не частота взаимодействий в практике и не степень тяжести. Её смысл — ранжирование для исследования.",
     en: "The BIO-GINE score says how closely a pair resembles pairs already recorded as interacting. Calibration was fitted on validation pairs with equal shares of documented and randomly drawn pairs, so the number is not a probability of harm, not a frequency of interactions in practice, and not a severity. Its use is ranking for research.",
   },
-  measured: { ru: "Измеренное качество для этого режима", en: "Measured performance for this regime" },
+  measured: { ru: "Измеренное качество на отложенном тесте", en: "Measured performance on the held-out test" },
   metric: { ru: "Метрика", en: "Metric" },
   meanSd: { ru: "Среднее ± SD", en: "Mean ± SD" },
   seeds: { ru: "Сидов", en: "Seeds" },
@@ -287,8 +287,8 @@ export const S = {
 
   // ── explanation ─────────────────────────────────────────────────────────
   explanationIntro: {
-    ru: "Текст ниже составлен сервисом детерминированными шаблонами по найденным записям (без языковой модели) и проверен им на отсутствие советов. Метки в скобках ведут к записям: [n] — доказательство, H — гипотеза, M — модель, R — путь Reactome.",
-    en: "The text below was written by the service with deterministic templates over the retrieved records (no language model) and checked by it for advice wording. Bracketed labels point to records: [n] evidence, H hypothesis, M model, R Reactome pathway.",
+    ru: "Текст ниже составлен сервисом детерминированными шаблонами по найденным записям (без языковой модели) и проверен им на отсутствие советов. Метки ведут к записям: [n] — документ-источник, [n.k] — его фрагмент, H — гипотеза, M — модель, R — путь Reactome.",
+    en: "The text below was written by the service with deterministic templates over the retrieved records (no language model) and checked by it for advice wording. Labels point to records: [n] source document, [n.k] one of its excerpts, H hypothesis, M model, R Reactome pathway.",
   },
   method: { ru: "Метод", en: "Method" },
 
@@ -393,6 +393,168 @@ export const S = {
   matrixNotCountedNote: { ru: "«не уч.» — оценка не учитывается: модель обучалась на записи этой пары.", en: "“n/c” — not counted: the model was trained on this pair's record." },
   noModelScore: { ru: "нет", en: "none" },
   code: { ru: "Код", en: "Code" },
+
+  // ── executive summary (pairBrief) ───────────────────────────────────────
+  briefTitle: { ru: "Коротко", en: "In brief" },
+  briefCounts: { ru: "Найденная документация — {c}.", en: "Documentation found — {c}." },
+  briefNoRecords: {
+    ru: "В проверенных источниках записей о взаимодействии не найдено (это не означает, что сочетание безопасно).",
+    en: "No interaction record was found in the sources checked (this does not mean the combination is safe).",
+  },
+  briefHypCount: { ru: "Гипотез о механизме: {n}.", en: "Mechanism hypotheses: {n}." },
+  briefModelScore: { ru: "Калиброванная оценка BIO-GINE: {cal} — исследовательский сигнал, а не риск.", en: "BIO-GINE calibrated score: {cal} — a research signal, not a risk." },
+  briefModelNone: { ru: "BIO-GINE: модель недоступна.", en: "BIO-GINE: model unavailable." },
+  briefModelAbstain: { ru: "BIO-GINE: оценка не учитывается (модель обучалась на записи этой пары).", en: "BIO-GINE: score not counted (the model was trained on this pair's record)." },
+  briefDocsTitle: { ru: "Что документируют официальные источники", en: "What the official sources document" },
+  briefLabelDoc: {
+    ru: "Инструкция FDA препарата «{owner}» называет препарат «{partner}»; различных фрагментов: {k} (разделы: {s}).",
+    en: "The FDA label of {owner} names {partner} in {k} distinct excerpt(s) (sections: {s}).",
+  },
+  briefLabelDocNoEffect: {
+    ru: "Инструкция FDA препарата «{owner}» называет препарат «{partner}» только в формулировках, где эффект не отмечен (фрагментов: {k}).",
+    en: "The FDA label of {owner} names {partner} only in wording that reports no relevant effect ({k} excerpt(s)).",
+  },
+  briefDbDoc: {
+    ru: "В DrugBank (выгрузка TDC) записей о взаимодействии этой пары: {d}. Запись сообщает только тип взаимодействия — без степени тяжести и без указания, на чём она основана.",
+    en: "DrugBank (TDC export) holds {d} interaction record(s) for this pair. A record gives the interaction type only — no severity, and no note of what it is based on.",
+  },
+  briefConflicts: { ru: "Записи противоречат друг другу (противоречий: {n}); см. раздел 3.", en: "The records disagree ({n} conflict(s)); see section 3." },
+  briefOneSource: {
+    ru: "Несколько фрагментов одной инструкции — один источник, а не отдельные подтверждения; текст, который инструкция повторяет в нескольких разделах, учтён один раз.",
+    en: "Several excerpts of one label are one source, not separate confirmations; text a label repeats in several sections is counted once.",
+  },
+  briefQuotesTitle: { ru: "Что прямо сказано в цитатах", en: "What the quoted evidence directly says" },
+  briefQuoteIntro: {
+    ru: "Словами источников (сокращено там, где стоит «…»; полный текст — в разделе 3). Задокументировано только то, что сказано в этих предложениях; отчёт не добавляет к ним толкований. Цитаты инструкций FDA даны на английском, без перевода.",
+    en: "In the sources' own words (shortened where marked “…”; full text in section 3). Only what these sentences state is documented; the report adds no interpretation to them.",
+  },
+  briefQuoteLabel: { ru: "Инструкция «{owner}» · {s}", en: "{owner} label · {s}" },
+  briefNoEffectTag: { ru: "упоминание без отмеченного эффекта", en: "mention without a reported effect" },
+  briefDbNeutral: { ru: "DrugBank, стандартная фраза; направление не подтверждено", en: "DrugBank, standard sentence; direction not verified" },
+  briefDbStandard: { ru: "DrugBank, стандартная фраза", en: "DrugBank, standard sentence" },
+  briefTranslated: { ru: "перевод проекта", en: "project translation" },
+  briefMoreExcerpts: { ru: "Ещё фрагментов документа {d} — в разделе 3: {n}.", en: "{n} more excerpt(s) of {d} in section 3." },
+  briefNoQuotes: { ru: "Цитировать нечего: текстов источников об этой паре не найдено.", en: "There is no source text about this pair to quote." },
+  briefDirectionLabels: {
+    ru: "Направление: порядок препаратов в выгрузке DrugBank для этого типа записей не подтверждён, поэтому направление из DrugBank не берётся. Предложения инструкций приведены как написаны: если в них указано направление, это утверждение самой инструкции; из одного того, что инструкция одного препарата называет другой, направление не выводится.",
+    en: "Direction: the drug order in the DrugBank export is not verified for this record type, so no direction is taken from DrugBank. The label sentences are quoted as written: any direction they state is the label's own statement, and none is inferred from the mere fact that one drug's label names the other.",
+  },
+  briefDirectionDb: {
+    ru: "Направление: порядок препаратов в выгрузке DrugBank для этого типа записей не подтверждён, поэтому отчёт не говорит, какой препарат на какой влияет.",
+    en: "Direction: the drug order in the DrugBank export is not verified for this record type, so the report does not say which drug affects which.",
+  },
+  briefHypTitle: { ru: "Что остаётся гипотезой", en: "What is only a hypothesis" },
+  briefHypRoute: { ru: "{x} → {y}: {p} ({g}).", en: "{x} → {y}: {p} ({g})." },
+  briefHypShared: { ru: "{p} ({g}).", en: "{p} ({g})." },
+  briefHypCaveat: {
+    ru: "Собрано из того, что базы данных сообщают о каждом препарате по отдельности; для этой пары не проверялось. Стрелка — направление гипотезы, а не задокументированный факт.",
+    en: "Assembled from what databases record about each drug separately; not tested for this pair. The arrow is the direction of the hypothesis, not a documented finding.",
+  },
+  briefHypConsistent: {
+    ru: "Согласие гипотезы с записью DrugBank — не независимое подтверждение: запись может опираться на те же данные о белках.",
+    en: "A hypothesis agreeing with a DrugBank record is not independent confirmation: the record may rest on the same protein data.",
+  },
+  briefModelTitle: { ru: "Что добавляет BIO-GINE", en: "What BIO-GINE adds" },
+  band_high: { ru: "пара сильно похожа на пары, описанные как взаимодействующие", en: "the pair strongly resembles pairs documented as interacting" },
+  band_moderate: { ru: "пара умеренно похожа на пары, описанные как взаимодействующие", en: "the pair moderately resembles pairs documented as interacting" },
+  band_low: { ru: "пара мало похожа на пары, описанные как взаимодействующие", en: "the pair bears little resemblance to pairs documented as interacting" },
+  briefModelDocumented: {
+    ru: "Калиброванная оценка {cal} (режим {reg}): {band}. Модель не обучалась на записи этой пары. Документация уже есть, поэтому оценка не добавляет нового доказательства взаимодействия; она показывает, отнесла бы модель эту пару к задокументированным сама.",
+    en: "Calibrated score {cal} (regime {reg}): {band}. The model was not trained on this pair's record. Since documentation already exists, the score adds no new evidence that the drugs interact; it shows whether the model, on its own, would rank the pair with documented ones.",
+  },
+  briefModelUndocumented: {
+    ru: "Калиброванная оценка {cal} (режим {reg}): {band}. Документации не найдено, поэтому оценка — единственный сигнал: повод для исследования, а не доказательство того, что препараты взаимодействуют или не взаимодействуют.",
+    en: "Calibrated score {cal} (regime {reg}): {band}. No documentation was found, so the score is the only signal: a lead for research, not evidence that the drugs interact or that they do not.",
+  },
+  briefPerfPooled: {
+    ru: "Измеренное качество на объединённом отложенном тесте (пары S2 и S3 вместе; отдельной оценки только для S2 нет): {v}. Это среднее по всему тесту, а не надёжность этого конкретного предсказания.",
+    en: "Measured quality on the pooled held-out test (S2 and S3 pairs together; no S2-only estimate exists): {v}. That is an average over the whole test set, not the reliability of this one prediction.",
+  },
+  briefPerfS3: {
+    ru: "Измеренное качество на тестовых парах S3 (модель не видела ни один препарат, как здесь): {v}. Это среднее по тесту, а не надёжность этого конкретного предсказания.",
+    en: "Measured quality on the S3 test pairs (neither drug seen in training, as here): {v}. That is an average over the test set, not the reliability of this one prediction.",
+  },
+  briefPerfS1: { ru: "Для пар из двух препаратов, на которых модель обучалась, качество не измерялось.", en: "For pairs of two drugs the model was trained on, quality was never measured." },
+  briefValPair: {
+    ru: "Один препарат этой пары был в проверочной выборке; такие пары использовались, чтобы выбрать настройки модели и подобрать калибровку, поэтому результаты теста описывают эту пару лишь приблизительно.",
+    en: "One drug of this pair was in the validation set, whose pairs were used to choose the model's settings and to fit the calibration, so the test figures describe this pair only approximately.",
+  },
+  briefModelLimits: {
+    ru: "Оценка ничего не говорит о механизме, направлении, тяжести или о том, что делать, и не является вероятностью вреда (подробнее — раздел 5).",
+    en: "The score says nothing about mechanism, direction, severity or what to do, and it is not a probability of harm (more in section 5).",
+  },
+  briefUncertainTitle: { ru: "Что остаётся неопределённым", en: "What remains uncertain" },
+  gapLabelMatch: {
+    ru: "Фрагменты инструкций найдены по совпадению названий препаратов: предложение может относиться к другой лекарственной форме, к классу препаратов или к условиям исследования (см. оговорки в разделе 3).",
+    en: "Label excerpts were found by matching drug names: a sentence may concern another formulation, a drug class or a study condition (see the qualifiers in section 3).",
+  },
+  gapNotIndependent: {
+    ru: "Запись DrugBank может сама опираться на текст инструкции, поэтому инструкции и DrugBank не обязательно независимые источники.",
+    en: "A DrugBank record may itself rest on label text, so labels and DrugBank are not necessarily independent sources.",
+  },
+  gapStrength: {
+    ru: "Базы данных не сообщают, насколько сильно препарат подавляет или усиливает белок и какую долю работы с препаратом выполняет этот белок.",
+    en: "Databases do not record how strongly a drug inhibits or induces a protein, or how much of a drug's handling that protein does.",
+  },
+  glossaryPointer: { ru: "Термины вроде S2, AUPRC или CYP450 объяснены в словаре (раздел {n}).", en: "Terms such as S2, AUPRC or CYP450 are explained in the glossary (section {n})." },
+  syntheticBanner: {
+    ru: "СИНТЕТИЧЕСКИЕ ТЕСТОВЫЕ ДАННЫЕ. Этот отчёт создан из тестового набора (адрес synthetic://). Тексты, помеченные [synthetic], не являются настоящими инструкциями и не могут цитироваться как таковые.",
+    en: "SYNTHETIC TEST DATA. This report was generated from a test fixture (synthetic:// endpoint). Text marked [synthetic] is not real label text and must not be cited as such.",
+  },
+
+  // ── evidence by document ────────────────────────────────────────────────
+  docTable: { ru: "Документы-источники", en: "Source documents" },
+  docCol: { ru: "Документ", en: "Document" },
+  docIdCol: { ru: "Идентификатор", en: "Identifier" },
+  versionCol: { ru: "Версия / дата", en: "Version / date" },
+  excerptsCol: { ru: "Фрагм.", en: "Excerpts" },
+  sectionsCol: { ru: "Разделы", en: "Sections" },
+  labelDocTitle: { ru: "Инструкция FDA: {owner}", en: "FDA label: {owner}" },
+  labelDocSub: { ru: "называет препарат «{partner}»; различных фрагментов: {k}", en: "names {partner} in {k} distinct excerpt(s)" },
+  dbDocTitle: { ru: "DrugBank (выгрузка TDC)", en: "DrugBank (TDC export)" },
+  dbDocSub: { ru: "записей о взаимодействии: {k}; записи DrugBank не объединяются", en: "{k} interaction record(s); DrugBank records are never merged" },
+  splSetId: { ru: "SPL set ID", en: "SPL set ID" },
+  foundIn: { ru: "Найдено в разделах: {s}", en: "Found in sections: {s}" },
+  repeatNote: {
+    ru: "Инструкция содержит этот текст в нескольких разделах; он показан один раз и считается одним фрагментом.",
+    en: "The label carries this text in more than one section; it is shown once and counted as one excerpt.",
+  },
+  docProvenance: { ru: "Происхождение документа", en: "Document provenance" },
+  recordsCol: { ru: "Записи", en: "Records" },
+  sameAs: { ru: "тот же текст, что {x}", en: "same text as {x}" },
+  supplementTitle: { ru: "Приложение S1. Записи-доказательства в том виде, как их вернул сервис", en: "Supplement S1. Evidence records as returned by the service" },
+  supplementIntro: {
+    ru: "Каждая запись ответа API — с её разделом, идентификаторами и временем получения. Записи, которые повторяют один и тот же текст одной инструкции, отнесены к одному фрагменту; полный ответ — в сопутствующем JSON-файле.",
+    en: "Every record of the API response, with its section, identifiers and retrieval time. Records that repeat one label's text map to the same excerpt; the full response is in the companion JSON file.",
+  },
+  excerptCol: { ru: "Фрагмент", en: "Excerpt" },
+  recordCol: { ru: "Запись API", en: "API record" },
+
+  // ── model: reading the numbers ──────────────────────────────────────────
+  roundedNote: { ru: "Числа округлены; точные значения — в приложении A и в сопутствующем JSON.", en: "Numbers are rounded; exact values are in Appendix A and the companion JSON." },
+  measuredTitle: { ru: "Измеренное качество модели (на отложенном тесте, не для этой пары)", en: "Measured model quality (held-out test set, not this pair)" },
+  testSetCol: { ru: "Тестовый набор", en: "Test set" },
+  readerNote6: {
+    ru: "Пояснение ниже написано сервисом; термины (S2, AUPRC, AUROC) объяснены в словаре (раздел {n}).",
+    en: "The text below comes from the service; its terms (S2, AUPRC, AUROC) are explained in the glossary (section {n}).",
+  },
+  secGlossary: { ru: "Словарь терминов", en: "Glossary" },
+  glossaryIntro: {
+    ru: "Простые объяснения терминов, которые встречаются в отчёте.",
+    en: "Plain explanations of the terms used in this report.",
+  },
+  labelDocsCol: { ru: "Инстр. (фрагм.)", en: "Labels (excerpts)" },
+  labelColNote: {
+    ru: "«Инстр. (фрагм.)» — число инструкций FDA, называющих другой препарат пары, и в скобках число различных фрагментов из них; несколько фрагментов одной инструкции — один источник.",
+    en: "“Labels (excerpts)”: the number of FDA labels naming the other drug of the pair, and in brackets the distinct excerpts from them; several excerpts of one label are one source.",
+  },
+  labelColNoteOld: {
+    ru: "«Инстр.» — число фрагментов инструкций FDA; этот ответ сервиса не сообщает число самих инструкций.",
+    en: "“Labels”: the number of FDA label excerpts; this service response does not give the number of labels themselves.",
+  },
+  category: { ru: "Вид", en: "Category" },
+  templateKey: { ru: "Шаблон DrugBank", en: "DrugBank template" },
+  direction: { ru: "Направление", en: "Direction" },
 } satisfies Record<string, Bi>;
 
 export type StringKey = keyof typeof S;

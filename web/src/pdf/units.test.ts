@@ -6,13 +6,14 @@ import { join } from "node:path";
 import { webcrypto } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import type { MechanismGraph, MultiReport, PairReport } from "../data/v3";
-import { companionJson, machineSummary, pairSummary, STATUS_COLOR, t } from "./content";
+import { companionJson, machineSummary, pairBrief, STATUS_COLOR, t } from "./content";
 import { diagramData, inside, labelBox, layoutMechanism, layoutNetwork, overlaps } from "./diagram";
 import {
   canonicalJson, clean, countWords, drugName, fileBase, humanDateTime, isoLocal, jsonLines, payloadOf, prepareExport, safeUrl, wrapMono,
 } from "./format";
 import { sha256Fallback, sha256Hex } from "./sha256";
 import { S } from "./strings";
+import { needsPooledNote } from "../data/plainLanguage";
 import { CONTENT_WIDTH, EV } from "./theme";
 import type { ExportContext, ExportInput } from "./types";
 
@@ -133,13 +134,41 @@ describe("safe text", () => {
 describe("content is read off the payload", () => {
   it("summary counts equal the payload", () => {
     const r = wf.report.data as PairReport;
-    const s = pairSummary(r, "en");
-    expect(s.lines.map((l) => l.text).join(" ")).toContain("DrugBank interaction records: 1; official label excerpts: 0");
-    expect(s.lines.map((l) => l.text).join(" ")).toContain("calibrated score 0.811 (raw 0.999972), regime S2");
-    expect(s.gaps.join(" ")).toContain("FDA labels (openFDA)");
-    expect(s.gaps.join(" ")).toContain("For 1 of 1 DrugBank records the drug order in the export is not verified");
-    const none = pairSummary(mw.report.data as PairReport, "en");
-    expect(none.lines.map((l) => l.text).join(" ")).toContain("does not mean the combination is safe");
+    const s = pairBrief(r, "en");
+    const all = (id: string) => s.parts.find((p) => p.id === id)!.items.map((i) => `${i.lead ?? ""} ${i.text ?? ""} ${i.quote ?? ""}`).join(" ");
+    expect(s.headline).toContain("FDA label documents: 0 · distinct excerpts: 0 · DrugBank records: 1");
+    expect(s.headline).toContain("BIO-GINE calibrated score: 0.81");
+    expect(all("documents")).toContain("DrugBank (TDC export) holds 1 interaction record(s)");
+    expect(all("quotes")).toContain(r.evidence[0].statement);
+    expect(all("quotes")).toContain("does not say which drug affects which");
+    expect(all("hypotheses")).toContain("Fluconazole → Warfarin");
+    expect(all("model")).toContain("pooled held-out test (S2 and S3 pairs together; no S2-only estimate exists): AUPRC 0.812 ± 0.010");
+    expect(all("model")).toContain("validation set");
+    expect(all("uncertain")).toContain("FDA labels (openFDA)");
+    expect(all("uncertain")).toContain("For 1 of 1 DrugBank records the drug order in the export is not verified");
+    const none = pairBrief(mw.report.data as PairReport, "en");
+    expect(none.parts[0].items.map((i) => i.text).join(" ")).toContain("does not mean the combination is safe");
+    expect(none.parts[0].kind).toBe("missing");
+  });
+
+  it("summary of a report with label evidence counts documents, quotes verbatim, and keeps the direction rule", () => {
+    const dup = fx("pair_synthetic_duplicated_labels.json").report.data as PairReport;
+    const merged = fx("pair_synthetic_merged_labels.json").report.data as PairReport;
+    for (const r of [dup, merged]) {
+      const s = pairBrief(r, "en");
+      expect(s.headline).toContain("FDA label documents: 2 · distinct excerpts: 4 · DrugBank records: 1");
+      const docs = s.parts[0].items.map((i) => i.text).join(" ");
+      expect(docs).toContain("The FDA label of Fluconazole names Warfarin in 2 distinct excerpt(s)");
+      expect(docs).toContain("not separate confirmations");
+      const quotes = s.parts[1].items.filter((i) => i.quote);
+      // every quote is a verbatim prefix of a source sentence, never a paraphrase
+      for (const q of quotes) expect(r.evidence.some((e) => e.statement.replace(/\s+/g, " ").startsWith(q.quote!.replace(/…$/, "")))).toBe(true);
+      // the repeated sentence is quoted once
+      expect(new Set(quotes.map((q) => q.quote)).size).toBe(quotes.length);
+      expect(s.parts[1].items.map((i) => i.text ?? "").join(" ")).toContain("none is inferred from the mere fact that one drug's label names the other");
+    }
+    const ru = pairBrief(merged, "ru");
+    expect(ru.headline).toContain("инструкций FDA: 2 · различных фрагментов: 4 · записей DrugBank: 1");
   });
 
   it("the machine summary and the companion JSON copy values, never invent them", async () => {
@@ -196,6 +225,18 @@ describe("diagram geometry", () => {
   });
 });
 
+describe("pooled metric note for responses that predate the backend fix", () => {
+  it("is added only to S2 sentences that quote a metric without saying pooled", () => {
+    const old = { en: "Model quality on held-out pairs where the model did not see one of the drugs in training (as here): AUPRC 0.812 ± 0.010 over 5 runs.", ru: "" };
+    const fixed = { en: "Model quality on the pooled held-out test (S2 and S3 pairs together, 91% S2; the frozen results hold no S2-only figure): AUPRC 0.812 ± 0.010.", ru: "" };
+    const s3 = { en: "Model quality on held-out pairs where the model saw neither drug in training (S3, as here): AUPRC 0.737 ± 0.015.", ru: "" };
+    expect(needsPooledNote(old, "S2")).toBe(true);
+    expect(needsPooledNote(fixed, "S2")).toBe(false);
+    expect(needsPooledNote(s3, "S3")).toBe(false);
+    expect(needsPooledNote({ en: "No metric here.", ru: "" }, "S2")).toBe(false);
+  });
+});
+
 describe("colour and wording rules", () => {
   const hue = (hex: string) => {
     const n = parseInt(hex.slice(1), 16);
@@ -221,9 +262,12 @@ describe("colour and wording rules", () => {
       /(измените|снизьте|увеличьте|уменьшите) дозу/i, /не принимайте/i, /рекомендуем/i,
       /\brisk of\b/i, /\bprobability of (an )?interaction\b/i,
     ];
-    const files = readdirSync(__dirname).filter((f) => /\.tsx?$/.test(f) && !f.includes(".test."));
+    const files = [
+      ...readdirSync(__dirname).filter((f) => /\.tsx?$/.test(f) && !f.includes(".test.")).map((f) => join(__dirname, f)),
+      ...["plainLanguage.ts", "evidenceGroups.ts", "scoreFormat.ts"].map((f) => join(__dirname, "..", "data", f)),
+    ];
     for (const f of files) {
-      const text = readFileSync(join(__dirname, f), "utf8");
+      const text = readFileSync(f, "utf8");
       for (const p of forbidden) expect(p.test(text), `${p} in ${f}`).toBe(false);
     }
   });

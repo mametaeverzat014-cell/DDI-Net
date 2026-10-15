@@ -62,6 +62,8 @@ export interface EvidenceRecord {
   direction_check: { n_informative: number; n_consistent: number; consistency: number | null } | null;
   statement_ru: string | null;
   section: string | null;
+  /** Other sections of the same label with the same sentence. Absent from older APIs, which repeat the record instead. */
+  also_in_sections?: string[];
   drug1_id: string | null;
   drug2_id: string | null;
   retrieved_at: string;
@@ -187,7 +189,10 @@ export interface MultiPair {
   drug_b: string;
   evidence_status: EvidenceStatus;
   n_database_records: number;
+  /** Label excerpts (older APIs count a sentence repeated across sections twice). */
   n_label_records: number;
+  /** Distinct label documents (SPL set IDs). Absent from older APIs. */
+  n_label_documents?: number | null;
   n_mechanism_hypotheses: number;
   calibrated_model_score: number | null;
   regime: string;

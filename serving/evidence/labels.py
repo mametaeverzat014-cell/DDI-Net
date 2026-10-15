@@ -93,6 +93,9 @@ class LabelEvidence:
                                   "That is not a statement that the combination is safe.")
             if ex.truncated:
                 qualifiers.append("Excerpt truncated; the full sentence is in the label.")
+            if ex.also_in:
+                qualifiers.append(f"The same sentence also appears in the {', '.join(ex.also_in)} section(s) of this "
+                                  "label. It is listed once: repeated text in one label is not separate evidence.")
             out.append(EvidenceRecord(
                 id=f"label:{lb.set_id}:{ex.section_field}:{i}:{partner.id}",
                 category=category,
@@ -110,6 +113,7 @@ class LabelEvidence:
                 statement=ex.text,
                 statement_origin="verbatim_excerpt",
                 section=ex.section,
+                also_in_sections=list(ex.also_in),
                 drug1_id=owner.id,
                 drug2_id=partner.id,
                 retrieved_at=_today(),

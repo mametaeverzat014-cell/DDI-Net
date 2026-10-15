@@ -13,7 +13,8 @@ import { join } from "node:path";
 import { render, screen } from "@testing-library/react";
 import { LanguageProvider } from "../../i18n";
 import { STATUS_TIER, KIND_TIER, CATEGORY_LABEL } from "./evidenceStyle";
-import { StatusBanner, ExplanationView, EvidenceList } from "./ReportParts";
+import { StatusBanner, ExplanationView, EvidenceList, ModelPanelV3 } from "./ReportParts";
+import { evidenceCountsText, groupEvidence } from "../../data/evidenceGroups";
 import { buildRefIndex } from "./refs";
 import type { PairReport } from "../../data/v3";
 
@@ -133,3 +134,43 @@ describe("report rendering", () => {
     expect(document.getElementById("ev-1")).not.toBeNull();
   });
 });
+
+describe("evidence grouped by source document (same rule and counts as the PDF)", () => {
+  // SYNTHETIC label text (tests/synthetic_labels.py), shaped like an old-format
+  // label whose Drug Interactions subsection openFDA returns twice; as an older
+  // API sent it, with the repeats as separate records.
+  const DUP = JSON.parse(readFileSync(join(SRC, "pdf", "__fixtures__", "pair_synthetic_duplicated_labels.json"), "utf8")).report.data as PairReport;
+  const WF = JSON.parse(readFileSync(join(SRC, "pdf", "__fixtures__", "pair_warfarin_fluconazole.json"), "utf8")).report.data as PairReport;
+
+  it("shows two label documents with four distinct excerpts, not six records", () => {
+    const g = groupEvidence(DUP.evidence);
+    expect(g.docs.map((d) => [d.kind, d.excerpts.length, d.records.length])).toEqual([["label", 2, 2], ["label", 2, 4], ["database", 1, 1]]);
+    const { container } = render(<LanguageProvider><EvidenceList report={DUP} research={false} /></LanguageProvider>);
+    expect(container.textContent).toContain(evidenceCountsText(g.counts, "ru"));
+    expect(container.querySelectorAll("article")).toHaveLength(3);
+    for (const id of ["ev-1", "ev-1-1", "ev-1-2", "ev-2", "ev-2-1", "ev-2-2", "ev-3"]) expect(document.getElementById(id), id).not.toBeNull();
+    const sentence = "Careful monitoring of prothrombin time in patients receiving fluconazole and warfarin";
+    expect(container.textContent!.split(sentence).length - 1).toBe(1);
+    expect(container.textContent).toContain("разделы: PRECAUTIONS · DRUG INTERACTIONS");
+  });
+
+  it("collapses references to a whole document into [n], and keeps distinct findings apart", () => {
+    const idx = buildRefIndex(DUP);
+    const flu = DUP.evidence.filter((e) => e.source_record_id?.endsWith("f1")).map((e) => e.id);
+    expect(idx.labels(flu).map((l) => l.label)).toEqual(["[2]"]);
+    expect(idx.labels([flu[0]]).map((l) => l.label)).toEqual(["[2.1]"]);
+  });
+
+  it("labels the pooled test metric as pooled and prints scores with the precision they have", () => {
+    const { container } = render(<LanguageProvider><ModelPanelV3 model={WF.model} /></LanguageProvider>);
+    const text = container.textContent!;
+    expect(text).toContain("0.81");
+    expect(text).toContain("> 0.9999");
+    expect(text).not.toContain("0.811");
+    expect(text).not.toContain("0.999972");
+    expect(text).toContain("pooled drug-disjoint test (S2 and S3; 91% S2)");
+    expect(text).toContain("Отдельной оценки только для S2 нет");
+    expect(text).toContain("76,932");
+  });
+});
+

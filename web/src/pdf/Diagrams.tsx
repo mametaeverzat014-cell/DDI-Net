@@ -8,6 +8,7 @@ import { STATUS_COLOR, statusDash, t } from "./content";
 import { tint } from "./styles";
 import { layoutMechanism, layoutNetwork, L, type DiagramData, type Side } from "./diagram";
 import { deltaText, drugName, fixed } from "./format";
+import { fmtRaw } from "../data/scoreFormat";
 import { STATUS_CODE } from "./strings";
 import { C, CONTENT_WIDTH, DRUG_COLOR, EV, FONT, REL } from "./theme";
 
@@ -161,7 +162,7 @@ export function RelianceChart({ r, lang }: { r: ModalityReliance; lang: Lang }) 
               <Text x={0} y={y + 10} fill={C.ink} style={{ fontFamily: FONT.sans, fontSize: 7.6 }}>{row.k}</Text>
               <Rect x={barX0} y={y + 4} width={barW} height={7} fill={C.tint2} />
               <Rect x={x} y={y + 4} width={Math.max(len, 0.6)} height={7} fill={EV.model} />
-              <Text x={W} y={y + 10} textAnchor="end" fill={C.ink} style={{ fontFamily: FONT.mono, fontSize: 6.8 }}>{`${deltaText(row.d)}  (${fixed(row.without, 4)})`}</Text>
+              <Text x={W} y={y + 10} textAnchor="end" fill={C.ink} style={{ fontFamily: FONT.mono, fontSize: 6.8 }}>{`${deltaText(row.d)}  (${fmtRaw(row.without)})`}</Text>
             </G>
           );
         })}

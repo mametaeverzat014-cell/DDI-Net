@@ -4,10 +4,14 @@
 // status banner names the strongest KIND of documentation found and says in so
 // many words that it is not a severity; the explanation tags every sentence
 // with its kind; sources are numbered so every sentence can be traced.
-import { useI18n, pick, type Bi } from "../../i18n";
+import { useI18n, pick, fill, type Bi } from "../../i18n";
 import type {
-  EvidenceRecord, MechanismFinding, ModelBlock, PairReport, Remote, ResolveOut, SourceCheck,
+  MechanismFinding, ModelBlock, PairReport, Remote, ResolveOut, SourceCheck,
 } from "../../data/v3";
+import { evidenceCountsText, groupEvidence, type EvidenceGroups, type Excerpt, type SourceDoc } from "../../data/evidenceGroups";
+import { fmtCalibrated, fmtRaw } from "../../data/scoreFormat";
+import { fillPlain, METRIC_NOTES, needsPooledNote, POOLED_NOTE, SCORE_EXPLAINER } from "../../data/plainLanguage";
+import { studyCounts } from "../../data/studyCounts";
 import {
   CATEGORY_LABEL, KIND_TIER, PATTERN_LABEL, RELATION_LABEL, ROLE_LABEL, SOURCE_NAME, SOURCE_STATUS, STATUS_TIER,
 } from "./evidenceStyle";
@@ -17,6 +21,22 @@ import { RelianceBars } from "./RelianceBars";
 const T = {
   notSeverity: { ru: "Это вид найденной документации, а не степень опасности.", en: "This is the kind of documentation found, not a level of danger." },
   sources: { ru: "Источники", en: "Sources" },
+  oneSource: {
+    ru: "Несколько фрагментов одной инструкции — это один источник, а не отдельные подтверждения.",
+    en: "Several excerpts from one label are one source, not separate confirmations.",
+  },
+  merged: {
+    ru: "Повторы одного и того же предложения в разных разделах одной инструкции показаны один раз (объединено повторов: {n}).",
+    en: "A sentence a label repeats in several of its sections is shown once ({n} repeat(s) merged).",
+  },
+  labelOf: { ru: "Инструкция FDA: {owner}", en: "FDA label: {owner}" },
+  namesIn: { ru: "упоминает препарат {partner}; различных фрагментов: {n}", en: "names {partner} in {n} distinct excerpt(s)" },
+  dbRecords: { ru: "записей: {n}", en: "{n} record(s)" },
+  inSections: { ru: "разделы: {s}", en: "sections: {s}" },
+  repeatNote: {
+    ru: "Этот же текст стоит в нескольких разделах инструкции; он показан один раз и считается одним фрагментом.",
+    en: "The label carries this text in more than one section; it is shown once and counted as one excerpt.",
+  },
   original: { ru: "Оригинал источника", en: "Source original" },
   translation: { ru: "Перевод проекта", en: "Project translation" },
   template: { ru: "Шаблон DrugBank", en: "DrugBank template" },
@@ -38,7 +58,12 @@ const T = {
   raw: { ru: "сырая оценка", en: "raw score" },
   regime: { ru: "режим", en: "regime" },
   split: { ru: "разбиение (сид 0)", en: "split (seed 0)" },
-  measured: { ru: "Измеренное качество для этого режима", en: "Measured quality for this regime" },
+  measured: { ru: "Измеренное качество на отложенном тесте (по всему тесту, не для этой пары)", en: "Measured quality on the held-out test (whole test set, not this pair)" },
+  valPair: {
+    ru: "Один препарат этой пары был в проверочной выборке: такие пары использовались, чтобы выбрать настройки модели и подобрать калибровку. Результаты теста описывают эту пару лишь приблизительно.",
+    en: "One drug of this pair was in the validation set: such pairs were used to choose the model's settings and to fit the calibration. The test results describe this pair only approximately.",
+  },
+  rounded: { ru: "Округлено; точные значения — в ответе API и в JSON-экспорте.", en: "Rounded; exact values are in the API response and the JSON export." },
   abstain: { ru: "Оценка не учитывается: модель обучалась на этой записи.", en: "Score not counted: the model was trained on this record." },
   unavailable: { ru: "Модель недоступна", en: "Model unavailable" },
 } satisfies Record<string, Bi>;
@@ -69,12 +94,13 @@ export function ExplanationView({ report, refs }: { report: PairReport; refs?: R
           <ul style={{ listStyle: "none", margin: 0, padding: 0, display: "flex", flexDirection: "column", gap: 12 }}>
             {sec.statements.map((st, i) => {
               const tier = KIND_TIER[st.kind];
-              const labels = Array.from(new Map(st.refs.map((r) => index.label(r)).filter((x): x is NonNullable<typeof x> => !!x).map((x) => [x.label, x])).values());
+              const labels = index.labels(st.refs);
               return (
                 <li key={i} style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 12, alignItems: "baseline" }}>
                   <span className="v3-chip" title={pick(tier.hint, lang)} style={{ color: tier.color, minWidth: 92, justifyContent: "center" }}>{pick(tier.label, lang)}</span>
                   <p style={{ fontSize: 14.5, color: st.kind === "caveat" ? "var(--text-3)" : "var(--text-2)" }}>
                     {pick(st.text, lang)}
+                    {needsPooledNote(st.text, report.model.regime) && <span style={{ color: "var(--ev-missing)" }}> {pick(POOLED_NOTE, lang)}</span>}
                     {labels.map((l) => (
                       <button key={l.label} className="v3-ref" onClick={() => l.anchor && scrollToAnchor(l.anchor)} aria-label={`→ ${l.label}`}>{l.label}</button>
                     ))}
@@ -90,58 +116,115 @@ export function ExplanationView({ report, refs }: { report: PairReport; refs?: R
 }
 
 // --------------------------------------------------------------- sources ----
-export function EvidenceList({ report, research }: { report: PairReport; research: boolean }) {
+// Sources are grouped by DOCUMENT (one FDA label, or the DrugBank export), and
+// within a label by distinct excerpt (data/evidenceGroups.ts). One sentence that
+// a label repeats in two sections is one excerpt, with both section names; two
+// excerpts of one label are one source, not two confirmations.
+export function EvidenceList({ report, research, groups }: { report: PairReport; research: boolean; groups?: EvidenceGroups }) {
   const { lang } = useI18n();
-  if (report.evidence.length === 0) return null;
+  const g = groups ?? groupEvidence(report.evidence);
+  if (g.docs.length === 0) return null;
+  const nameOf = (id: string | null) =>
+    id === report.drug_a.id ? shortName(report.drug_a, lang) : id === report.drug_b.id ? shortName(report.drug_b, lang) : id ?? "—";
+  const multiExcerpt = g.docs.some((d) => d.kind === "label" && d.excerpts.length > 1);
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-      <span className="eyebrow">{pick(T.sources, lang)} · {report.evidence.length}</span>
-      {report.evidence.map((e, i) => <EvidenceCard key={e.id} e={e} n={i + 1} research={research} />)}
+      <span className="eyebrow">{pick(T.sources, lang)} · {evidenceCountsText(g.counts, lang)}</span>
+      {(multiExcerpt || g.counts.mergedRepeats > 0) && (
+        <p style={{ fontSize: 12.5, color: "var(--text-3)" }}>
+          {pick(T.oneSource, lang)}
+          {g.counts.mergedRepeats > 0 && ` ${fill(pick(T.merged, lang), { n: g.counts.mergedRepeats })}`}
+        </p>
+      )}
+      {g.docs.map((d) => <SourceDocCard key={d.id} d={d} nameOf={nameOf} research={research} />)}
     </div>
   );
 }
 
-function EvidenceCard({ e, n, research }: { e: EvidenceRecord; n: number; research: boolean }) {
+const shortName = (d: PairReport["drug_a"], lang: "ru" | "en") => (lang === "ru" ? d.name_ru ?? d.inn : d.inn) ?? d.id;
+
+function SourceDocCard({ d, nameOf, research }: { d: SourceDoc; nameOf: (id: string | null) => string; research: boolean }) {
   const { lang } = useI18n();
-  const cat = CATEGORY_LABEL[e.category];
-  const showRu = lang === "ru" && e.statement_ru;
+  const first = d.records[0];
+  const color = d.kind === "database" ? CATEGORY_LABEL.database_interaction_record.color : CATEGORY_LABEL.label_warning_or_interaction.color;
+  const title = d.kind === "label"
+    ? fill(pick(T.labelOf, lang), { owner: nameOf(d.ownerId) })
+    : pick(SOURCE_NAME.drugbank_tdc, lang);
+  const sub = d.kind === "label"
+    ? fill(pick(T.namesIn, lang), { partner: nameOf(d.mentionedId), n: d.excerpts.length })
+    : fill(pick(T.dbRecords, lang), { n: d.records.length });
+  const qualifiers = Array.from(new Set(d.records.flatMap((e) => e.qualifiers)));
   return (
-    <article id={`ev-${n}`} className="v3-card" style={{ borderLeft: `3px solid ${cat.color}`, scrollMarginTop: 120 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-        <span style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-          <span className="mono" style={{ fontSize: 12, color: "var(--text-3)" }}>[{n}]</span>
-          <span className="v3-chip" style={{ color: cat.color }}>{pick(cat, lang)}</span>
-          {e.direction === "not_verified" && <span className="v3-chip" style={{ color: "var(--ev-missing)" }}>{pick(T.directionNeutral, lang)}</span>}
+    <article id={`ev-${d.n}`} className="v3-card" style={{ borderLeft: `3px solid ${color}`, scrollMarginTop: 120 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "baseline" }}>
+        <span style={{ display: "flex", gap: 8, alignItems: "baseline", flexWrap: "wrap" }}>
+          <span className="mono" style={{ fontSize: 12, color: "var(--text-3)" }}>[{d.n}]</span>
+          <span style={{ color: "var(--text)", fontSize: 15 }}>{title}</span>
+          <span style={{ fontSize: 12.5, color: "var(--text-3)" }}>{sub}</span>
         </span>
-        <span className="mono" style={{ fontSize: 10.5, color: "var(--text-3)" }}>{pick(T.retrieved, lang)} {e.retrieved_at}</span>
+        <span className="mono" style={{ fontSize: 10.5, color: "var(--text-3)" }}>{pick(T.retrieved, lang)} {first.retrieved_at}</span>
       </div>
-      {showRu && (
-        <p style={{ marginTop: 12, fontSize: 14.5, color: "var(--text)" }}>
-          {e.statement_ru} <span className="mono" style={{ fontSize: 10, color: "var(--text-3)" }}>· {pick(T.translation, lang)}</span>
-        </p>
-      )}
-      <blockquote lang="en" style={{ margin: "10px 0 0", padding: "8px 12px", borderLeft: "2px solid var(--border-strong)", color: showRu ? "var(--text-2)" : "var(--text)", fontSize: showRu ? 13 : 14.5, lineHeight: 1.6 }}>
-        {e.statement}
-        {showRu && <span className="mono" style={{ display: "block", marginTop: 4, fontSize: 10, color: "var(--text-3)" }}>{pick(T.original, lang)}</span>}
-      </blockquote>
-      <div className="mono" style={{ marginTop: 10, fontSize: 11, color: "var(--text-3)", lineHeight: 1.8 }}>
-        {e.source_name}{e.source_version ? ` · ${e.source_version}` : ""}{e.section ? ` · ${e.section}` : ""}
-        {e.source_url && <> · <a href={e.source_url} target="_blank" rel="noreferrer noopener">{pick(T.openSource, lang)} ↗</a></>}
+      <div className="mono" style={{ marginTop: 6, fontSize: 11, color: "var(--text-3)", lineHeight: 1.8, overflowWrap: "anywhere" }}>
+        {first.source_name}{first.source_version ? ` · ${first.source_version}` : ""}
+        {d.kind === "label" && ` · SPL set ID ${d.id}`}
+        {first.source_url && <> · <a href={first.source_url} target="_blank" rel="noreferrer noopener">{pick(T.openSource, lang)} ↗</a></>}
       </div>
+      <ol style={{ listStyle: "none", margin: "10px 0 0", padding: 0, display: "flex", flexDirection: "column", gap: 12 }}>
+        {d.excerpts.map((x) => <ExcerptView key={x.key} x={x} multi={d.excerpts.length > 1} />)}
+      </ol>
       {research && (
         <details style={{ marginTop: 10 }}>
           <summary className="mono" style={{ cursor: "pointer", fontSize: 11, color: "var(--cyan)" }}>{pick(T.qualifiers, lang)} · {pick(T.ids, lang)}</summary>
           <ul style={{ margin: "8px 0 0", paddingLeft: 18, color: "var(--text-3)", fontSize: 12.5, lineHeight: 1.6 }}>
-            {e.qualifiers.map((q) => <li key={q}>{q}</li>)}
+            {qualifiers.map((q) => <li key={q}>{q}</li>)}
           </ul>
-          {e.source_template && <p className="mono" style={{ marginTop: 8, fontSize: 11, color: "var(--text-3)" }}>{pick(T.template, lang)}: {e.source_template}</p>}
-          <div className="mono" style={{ marginTop: 8, fontSize: 10.5, color: "var(--text-3)", wordBreak: "break-all", lineHeight: 1.8 }}>
-            {Object.entries(e.original_identifiers).map(([k, v]) => <div key={k}>{k}: {v}</div>)}
-            {e.license && <div>license: {e.license}</div>}
+          <div className="mono" style={{ marginTop: 8, fontSize: 10.5, color: "var(--text-3)", overflowWrap: "anywhere", lineHeight: 1.8 }}>
+            {d.records.map((e) => (
+              <div key={e.id} style={{ marginTop: 4 }}>
+                <div>{d.excerpts.length > 1 || d.records.length > 1 ? `${excerptLabelOf(d, e.id)} · ` : ""}record: {e.id}{e.section ? ` · ${e.section}` : ""}</div>
+                {e.source_template && <div>{pick(T.template, lang)}: {e.source_template}</div>}
+                {Object.entries(e.original_identifiers).map(([k, v]) => <div key={k}>{k}: {v}</div>)}
+                {e.retrieval_url && <div>retrieval: {e.retrieval_url}</div>}
+              </div>
+            ))}
+            {first.license && <div style={{ marginTop: 4 }}>license: {first.license}</div>}
           </div>
         </details>
       )}
     </article>
+  );
+}
+
+const excerptLabelOf = (d: SourceDoc, recordId: string) => d.excerpts.find((x) => x.records.some((e) => e.id === recordId))?.label ?? "";
+
+function ExcerptView({ x, multi }: { x: Excerpt; multi: boolean }) {
+  const { lang } = useI18n();
+  const cat = CATEGORY_LABEL[x.category];
+  const e = x.records[0];
+  const showRu = lang === "ru" && x.textRu;
+  return (
+    <li id={multi ? x.anchor : undefined} style={{ scrollMarginTop: 120 }}>
+      <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
+        {multi && <span className="mono" style={{ fontSize: 11.5, color: "var(--text-3)" }}>{x.label}</span>}
+        <span className="v3-chip" style={{ color: cat.color }}>{pick(cat, lang)}</span>
+        {e.direction === "not_verified" && <span className="v3-chip" style={{ color: "var(--ev-missing)" }}>{pick(T.directionNeutral, lang)}</span>}
+        {x.sections.length > 0 && (
+          <span className="mono" style={{ fontSize: 10.5, color: "var(--text-3)" }}>
+            {x.sections.length > 1 ? fill(pick(T.inSections, lang), { s: x.sections.join(" · ") }) : x.sections[0]}
+          </span>
+        )}
+      </div>
+      {showRu && (
+        <p style={{ marginTop: 8, fontSize: 14.5, color: "var(--text)" }}>
+          {x.textRu} <span className="mono" style={{ fontSize: 10, color: "var(--text-3)" }}>· {pick(T.translation, lang)}</span>
+        </p>
+      )}
+      <blockquote lang="en" style={{ margin: "8px 0 0", padding: "8px 12px", borderLeft: "2px solid var(--border-strong)", color: showRu ? "var(--text-2)" : "var(--text)", fontSize: showRu ? 13 : 14.5, lineHeight: 1.6 }}>
+        {x.text}
+        {showRu && <span className="mono" style={{ display: "block", marginTop: 4, fontSize: 10, color: "var(--text-3)" }}>{pick(T.original, lang)}</span>}
+      </blockquote>
+      {x.sections.length > 1 && <p style={{ marginTop: 6, fontSize: 12, color: "var(--text-3)" }}>{pick(T.repeatNote, lang)}</p>}
+    </li>
   );
 }
 
@@ -221,8 +304,23 @@ function FindingRow({ f, n, report, nameOf, rolesText }: {
 }
 
 // ----------------------------------------------------------------- model ----
+/** Notes that say which test set the measured figures come from (frozen study counts). */
+function regimeNotes(model: ModelBlock): Bi[] {
+  const out: Bi[] = [];
+  if (model.regime === "S1") out.push(METRIC_NOTES.s1);
+  else {
+    out.push(model.regime === "S3" ? METRIC_NOTES.s3 : METRIC_NOTES.pooledS2);
+    if (model.measured_performance.some((p) => p.view.includes("both annotated"))) out.push(METRIC_NOTES.bothAnnotated);
+    out.push(METRIC_NOTES.datasetVsPair);
+  }
+  if (model.split_a === "val" || model.split_b === "val") out.push(T.valPair);
+  return out;
+}
+
 export function ModelPanelV3({ model }: { model: ModelBlock }) {
   const { lang } = useI18n();
+  const sc = studyCounts();
+  const study = { pooled: sc.pooled.toLocaleString("en-US"), s2: sc.s2.toLocaleString("en-US"), s3: sc.s3.toLocaleString("en-US"), seeds: sc.seeds, bothAnnotated: sc.bothAnnotated.toLocaleString("en-US") };
   return (
     <div id="model-block" className="v3-card" style={{ borderColor: "rgba(159,179,204,0.35)", scrollMarginTop: 120 }}>
       <span className="eyebrow" style={{ color: "var(--ev-model)" }}>{pick(T.modelTitle, lang)}</span>
@@ -232,13 +330,14 @@ export function ModelPanelV3({ model }: { model: ModelBlock }) {
         <>
           <div style={{ display: "flex", alignItems: "baseline", gap: 12, marginTop: 12, flexWrap: "wrap" }}>
             <span className="mono" style={{ fontSize: 34, color: model.abstain ? "var(--text-3)" : "var(--ev-model)", textDecoration: model.abstain ? "line-through" : "none" }}>
-              {model.calibrated_model_score?.toFixed(3)}
+              {fmtCalibrated(model.calibrated_model_score)}
             </span>
             <span className="eyebrow">{pick(T.calibrated, lang)}</span>
           </div>
           {model.abstain && <p style={{ fontSize: 13, color: "var(--ev-missing)", marginTop: 6 }}>{pick(T.abstain, lang)}</p>}
           <div className="mono" style={{ fontSize: 11.5, color: "var(--text-3)", marginTop: 12, lineHeight: 1.9 }}>
-            <div>{pick(T.raw, lang)} {model.raw_model_score?.toFixed(6)}</div>
+            <div>{pick(T.raw, lang)} {fmtRaw(model.raw_model_score)}</div>
+            <div style={{ fontSize: 10.5 }}>{pick(T.rounded, lang)}</div>
             <div>{model.model} · {model.checkpoint} · seed 0</div>
           </div>
         </>
@@ -246,16 +345,33 @@ export function ModelPanelV3({ model }: { model: ModelBlock }) {
       <div className="mono" style={{ fontSize: 11.5, color: "var(--text-3)", marginTop: 10, lineHeight: 1.9 }}>
         <div>{pick(T.regime, lang)} {model.regime} · {pick(T.split, lang)}: {model.split_a} / {model.split_b}</div>
       </div>
-      {model.measured_performance.length > 0 && (
+      {model.available && !model.abstain && (
+        <details style={{ marginTop: 12 }}>
+          <summary className="mono" style={{ cursor: "pointer", fontSize: 11.5, color: "var(--cyan)" }}>{pick(SCORE_EXPLAINER.title, lang)}</summary>
+          <ul style={{ margin: "8px 0 0", paddingLeft: 18, fontSize: 13, color: "var(--text-2)", lineHeight: 1.65, display: "flex", flexDirection: "column", gap: 6 }}>
+            <li>{fillPlain(pick(SCORE_EXPLAINER.raw, lang), { raw: fmtRaw(model.raw_model_score) })}</li>
+            <li>{fillPlain(pick(SCORE_EXPLAINER.calibrated, lang), { cal: fmtCalibrated(model.calibrated_model_score) })}</li>
+            <li>{pick(SCORE_EXPLAINER.notProbability, lang)}</li>
+            <li>{pick(SCORE_EXPLAINER.can, lang)}</li>
+            <li>{pick(SCORE_EXPLAINER.cannot, lang)}</li>
+          </ul>
+        </details>
+      )}
+      {(model.measured_performance.length > 0 || model.regime === "S1") && (
         <div style={{ marginTop: 12 }}>
           <span className="eyebrow">{pick(T.measured, lang)}</span>
-          <ul style={{ margin: "8px 0 0", paddingLeft: 18, fontSize: 12.5, color: "var(--text-2)", lineHeight: 1.7 }}>
-            {model.measured_performance.map((p) => (
-              <li key={p.view + p.metric}>
-                {p.metric} <span className="mono">{p.mean.toFixed(3)} ± {p.sd.toFixed(3)}</span> · {p.view} · n={p.n_seeds}
-                <div className="mono" style={{ fontSize: 10, color: "var(--text-3)" }}>{p.source}</div>
-              </li>
-            ))}
+          {model.measured_performance.length > 0 && (
+            <ul style={{ margin: "8px 0 0", paddingLeft: 18, fontSize: 12.5, color: "var(--text-2)", lineHeight: 1.7 }}>
+              {model.measured_performance.map((p) => (
+                <li key={p.view + p.metric}>
+                  {p.metric} <span className="mono">{p.mean.toFixed(3)} ± {p.sd.toFixed(3)}</span> · {p.view} · n={p.n_seeds}
+                  <div className="mono" style={{ fontSize: 10, color: "var(--text-3)" }}>{p.source}</div>
+                </li>
+              ))}
+            </ul>
+          )}
+          <ul style={{ margin: "8px 0 0", paddingLeft: 18, fontSize: 12.5, color: "var(--text-3)", lineHeight: 1.65 }}>
+            {regimeNotes(model).map((n, i) => <li key={i}>{fillPlain(pick(n, lang), study)}</li>)}
           </ul>
         </div>
       )}

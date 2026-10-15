@@ -10,8 +10,8 @@ passing that was not run. Commands are given so each line can be reproduced.
 
 | Check | Before (baseline at `aa04493`) | After |
 |---|---|---|
-| Python test suite (`pytest tests/`) | 613 passed, 21 skipped, **2 failed, 11 errors** | **743 passed, 3 skipped, 1 failed** |
-| Web unit tests (`npx vitest run`) | 66 passed | **128 passed** (44 of them for the PDF export) |
+| Python test suite (`pytest tests/`) | 613 passed, 21 skipped, **2 failed, 11 errors** | **755 passed, 3 skipped, 1 failed** |
+| Web unit tests (`npx vitest run`) | 66 passed | **152 passed** (65 of them for the PDF export, 16 of those page-geometry checks) |
 | TypeScript (`npx tsc --noEmit`) | clean | clean |
 | ESLint (`--max-warnings 0`) | clean | clean |
 | Production build (`npm run build`) | — | succeeds; regenerating `frozen.json` from the tag gives no diff |
@@ -78,6 +78,34 @@ possible from this container (network policy; see the audit).
 Two of these were mutation-checked: re-adding a line height to the page style
 makes the suite fail (renderer overflow), and removing the per-document font
 reset makes the glyph test fail (`Clarithromycin` extracts as `\u0016larithromycin`).
+
+### Report quality pass — 12 Python, 24 web tests
+
+See `docs/DDINET_V3_REPORT_QUALITY_PASS.md`.
+
+* `tests/test_v3_label_dedup.py` (12, synthetic labels): a repeated subsection
+  gives one excerpt per sentence with the other section kept; distinct
+  sentences and different labels stay apart; documents are counted, not
+  records; the pooled metric is never called S2.
+* `web/src/pdf/layout.test.ts` (16): page geometry of real and synthetic
+  reports, plus an excerpt-length sweep that reproduced the page-6 overlap.
+* `render.test.ts` (+3): duplicated evidence, pooled labelling and score
+  precision.
+* `units.test.ts` (+2): summary content and the pooled note.
+* `evidence.test.tsx` (+3): site grouping, references and the model panel.
+
+Fourteen PDFs were exported in Chromium from a production build connected to a
+local API. They are: W+F RU/EN, Mechanisms RU/EN, metformin + warfarin RU/EN,
+hydroxyprogesterone caproate + pentaerithrityl tetranitrate RU/EN, and the 4-,
+6- and 8-drug sets in RU/EN. Each was checked:
+
+* with poppler and with `pypdf` in strict mode;
+* fonts embedded, IBM Plex only; Cyrillic text extracted;
+* no replacement or control characters;
+* scores, metrics, SHA-256, URLs and record IDs against the companion JSON;
+* geometry checks as above.
+
+There were 0 console errors.
 
 ## 5. Browser end-to-end
 

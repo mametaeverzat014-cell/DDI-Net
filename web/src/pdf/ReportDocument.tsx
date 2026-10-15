@@ -5,21 +5,25 @@
 // substitutes one.
 import { Fragment, type ReactNode } from "react";
 import { Document, Page, Text, View } from "@react-pdf/renderer";
-import type { EvidenceRecord, MechanismGraph, MultiReport, PairReport } from "../data/v3";
-import { pick, type Lang } from "../i18n";
+import type { MechanismGraph, MultiReport, PairReport } from "../data/v3";
+import { pick, type Bi, type Lang } from "../i18n";
 import { CATEGORY_LABEL, KIND_TIER, RELATION_LABEL, REVIEW_REASON, ROLE_LABEL } from "../components/v3/evidenceStyle";
 import { frozen } from "../data/frozen";
+import { evidenceCountsText, type Excerpt, type SourceDoc } from "../data/evidenceGroups";
+import { fillPlain, GLOSSARY, METRIC_NOTES, needsPooledNote, POOLED_NOTE, SCORE_EXPLAINER } from "../data/plainLanguage";
+import { fmtCalibrated, fmtRaw } from "../data/scoreFormat";
+import { studyCounts } from "../data/studyCounts";
 import {
-  bi, FROZEN, KIND_COLOR, machineSummary, multiCounts, pairFacts, pairSummary, patternLabel, problemSources, refLabels,
-  sortedPairs, sourceLabel, sourceStatus, STATUS_COLOR, STATUS_ORDER, statusHint, statusLabel, statusLegendItems, t,
+  bi, drugNames, FROZEN, headerRightText, isSynthetic, KIND_COLOR, machineSummary, multiCounts, pairBrief, pairFacts, patternLabel, problemSources, refLabels,
+  sortedPairs, sourceLabel, sourceStatus, STATUS_COLOR, STATUS_ORDER, statusHint, statusLabel, statusLegendItems, t, type BriefItem,
 } from "./content";
-import { Bullets, Card, Chip, Dot, Eyebrow, JsonBlock, KV, MonoLines, RunningFooter, RunningHeader, SectionTitle, SubTitle, Table, Url } from "./components";
+import { Bullets, Card, Chip, Dot, Eyebrow, JsonBox, KV, MonoLines, RunningFooter, RunningHeader, SafeText, SectionTitle, Seg, SubTitle, Table, Url } from "./components";
 import { colPoints, st, tint, type Col } from "./styles";
 import {
   CoverMotif, DotSwatch, LineSwatch, MechanismFigure, NetworkFigure, PairMatrixFigure, PathwayMatrixFigure, RelianceChart,
 } from "./Diagrams";
 import { diagramData } from "./diagram";
-import { clean, countWords, drugName, fixed, humanDateTime, int } from "./format";
+import { chunkText, clean, countWords, drugName, humanDateTime, int } from "./format";
 import { STATUS_CODE, type StringKey } from "./strings";
 import { C, CONTENT_WIDTH, DRUG_COLOR, EV, FONT, PAGE, REL, SIZE } from "./theme";
 import type { FetchMeta } from "../data/v3";
@@ -33,12 +37,9 @@ export function ReportDocument({ prep }: { prep: PreparedExport }) {
   const { input, ctx } = prep;
   const lang = ctx.lang;
   const tr: Tr = (k, vars) => t(k, lang, vars);
-  const names = input.kind === "pair"
-    ? `${drugName(input.report.data.drug_a, lang)} + ${drugName(input.report.data.drug_b, lang)}`
-    : input.report.data.drugs.map((d) => drugName(d, lang)).join(", ");
+  const names = drugNames(input, lang);
   const title = input.kind === "pair" ? tr("title") : tr("titleMulti");
-  // One line in the running header (about 60 characters fit); full names are in the report.
-  const headerRight = names.length > 58 ? `${names.slice(0, 56).trimEnd()}…` : names;
+  const headerRight = headerRightText(input, lang);
   return (
     <Document
       title={`${title} — ${names}`}
@@ -66,7 +67,11 @@ export function ReportDocument({ prep }: { prep: PreparedExport }) {
 function Cover({ prep, tr }: { prep: PreparedExport; tr: Tr }) {
   const { input, ctx } = prep;
   const lang = ctx.lang;
-  const bandH = input.kind === "pair" ? 292 : 246;
+  const many = input.kind === "multi" && input.report.data.drugs.length > 4;
+  const bandH = input.kind === "pair" ? 292 : many ? 214 : 246;
+  // The cover is one page: with many drugs each name gets one or two lines here
+  // (shortened with "…"); section 2 and the tables print every name in full.
+  const coverName = (x: string, max: number) => (input.kind === "multi" && x.length > max ? `${x.slice(0, max - 1).trimEnd()}…` : x);
   const meta = input.report.meta;
   const drugs = input.kind === "pair" ? [input.report.data.drug_a, input.report.data.drug_b] : input.report.data.drugs;
   const serverGenerated = input.report.data.generated_at;
@@ -83,12 +88,13 @@ function Cover({ prep, tr }: { prep: PreparedExport; tr: Tr }) {
         <View style={{ paddingHorizontal: PAGE.marginX, paddingTop: 54 }}>
           <Text style={{ fontFamily: FONT.mono, fontSize: 8, color: "#7CC4BC" }}>{tr("brand")}</Text>
           <Text style={{ fontSize: 8.6, color: "#B8C6DA", marginTop: 4 }}>{tr("brandLine")}</Text>
-          <Text style={{ fontFamily: FONT.serif, fontWeight: 600, fontSize: SIZE.h1, color: C.white, marginTop: input.kind === "pair" ? 58 : 36, lineHeight: 1.12, maxWidth: 420 }}>{input.kind === "pair" ? tr("title") : tr("titleMulti")}</Text>
+          <Text style={{ fontFamily: FONT.serif, fontWeight: 600, fontSize: SIZE.h1, color: C.white, marginTop: input.kind === "pair" ? 58 : many ? 24 : 36, lineHeight: 1.12, maxWidth: 420 }}>{input.kind === "pair" ? tr("title") : tr("titleMulti")}</Text>
           <Text style={{ fontSize: 13, color: "#D6E0EE", marginTop: 12 }}>{subtitle}</Text>
         </View>
       </View>
 
       <View style={{ paddingHorizontal: PAGE.marginX, paddingTop: 24 }}>
+        {isSynthetic(prep) ? <SyntheticBanner tr={tr} /> : null}
         <Eyebrow>{tr("drugsAnalyzed")}</Eyebrow>
         <View style={{ flexDirection: "row", flexWrap: "wrap", marginTop: 8, marginHorizontal: -4 }}>
           {drugs.map((d, i) => {
@@ -100,8 +106,8 @@ function Cover({ prep, tr }: { prep: PreparedExport; tr: Tr }) {
                 <View style={{ borderWidth: 0.6, borderColor: C.hair, borderLeftWidth: 2.6, borderLeftColor: color, borderRadius: 3, padding: compact ? 6 : 9, backgroundColor: C.tint, flexDirection: "row" }}>
                   <Text style={{ fontFamily: FONT.mono, fontSize: 8, color, width: 16 }}>{tag}</Text>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontFamily: FONT.serif, fontWeight: 600, fontSize: compact ? 10.5 : 13, color: C.navy }}>{drugName(d, lang)}</Text>
-                    {lang === "ru" && d.inn ? <Text style={{ fontSize: 7.6, color: C.slate2, marginTop: 1 }}>{clean(d.inn)}{d.name_ru && d.name_ru_is_transliteration ? ` · ${tr("nameRu").toLowerCase()} — ${tr("translit")}` : ""}</Text> : null}
+                    <Text style={{ fontFamily: FONT.serif, fontWeight: 600, fontSize: compact ? 10.5 : 13, color: C.navy }}>{coverName(drugName(d, lang), 34)}</Text>
+                    {lang === "ru" && d.inn && !many ? <Text style={{ fontSize: 7.6, color: C.slate2, marginTop: 1 }}>{coverName(clean(d.inn), 44)}{d.name_ru && d.name_ru_is_transliteration ? ` · ${tr("nameRu").toLowerCase()} — ${tr("translit")}` : ""}</Text> : null}
                     <Text style={{ fontFamily: FONT.mono, fontSize: 7, color: C.muted, marginTop: 2 }}>{d.id}{d.groups ? ` · ${d.groups.replace(/\|/g, ", ")}` : ""}</Text>
                   </View>
                 </View>
@@ -127,7 +133,7 @@ function Cover({ prep, tr }: { prep: PreparedExport; tr: Tr }) {
         <View wrap={false} style={{ marginTop: 14, flexDirection: "row" }}>
           <View style={{ width: "40%", paddingRight: 12 }}>
             <Eyebrow>{tr("contents")}</Eyebrow>
-            {contents(input.kind, tr).map(([n, title]) => (
+            {contents(prep, tr).map(([n, title]) => (
               <View key={n} style={{ flexDirection: "row", marginTop: 2.5 }}>
                 <Text style={{ fontFamily: FONT.mono, fontSize: 7.2, color: C.teal, width: 14 }}>{n}</Text>
                 <Text style={{ fontSize: 7.8, color: C.slate, flex: 1 }}>{title}</Text>
@@ -145,10 +151,21 @@ function Cover({ prep, tr }: { prep: PreparedExport; tr: Tr }) {
   );
 }
 
-function contents(kind: "pair" | "multi", tr: Tr): [string, string][] {
-  const pair: StringKey[] = ["secSummary", "secDrugs", "secDocumented", "secMechanisms", "secModel", "secExplanation", "secSources", "secLimitations"];
-  const multi: StringKey[] = ["secSummary", "secMultiOverview", "secMultiNetwork", "secMultiPairs", "secMultiCoverage", "secSources", "secLimitations"];
-  return [...(kind === "pair" ? pair : multi).map((k, i) => [String(i + 1), tr(k)] as [string, string]), ["A", tr("secAppendix").replace(/^[^.]*\.\s*/, "")]];
+/** Section numbers: the glossary follows the limitations; Supplement S1 exists
+ *  only for a pair report with evidence records. */
+const glossaryNumber = (kind: "pair" | "multi") => (kind === "pair" ? "9" : "8");
+const hasSupplement = (prep: PreparedExport) => prep.input.kind === "pair" && prep.input.report.data.evidence.length > 0;
+
+function contents(prep: PreparedExport, tr: Tr): [string, string][] {
+  const kind = prep.input.kind;
+  const pair: StringKey[] = ["secSummary", "secDrugs", "secDocumented", "secMechanisms", "secModel", "secExplanation", "secSources", "secLimitations", "secGlossary"];
+  const multi: StringKey[] = ["secSummary", "secMultiOverview", "secMultiNetwork", "secMultiPairs", "secMultiCoverage", "secSources", "secLimitations", "secGlossary"];
+  const strip = (x: string) => x.replace(/^[^.]*\.\s*/, "");
+  return [
+    ...(kind === "pair" ? pair : multi).map((k, i) => [String(i + 1), tr(k)] as [string, string]),
+    ...(hasSupplement(prep) ? [["S1", strip(tr("supplementTitle"))] as [string, string]] : []),
+    ["A", strip(tr("secAppendix"))],
+  ];
 }
 
 function originOf(u: string): string {
@@ -163,46 +180,82 @@ function originOf(u: string): string {
 
 function PairBody({ prep, report: r, graph, tr }: { prep: PreparedExport; report: PairReport; graph: MechanismGraph | null; tr: Tr }) {
   const lang = prep.ctx.lang;
+  const gn = glossaryNumber("pair");
   return (
     <>
-      <PairSummary r={r} lang={lang} tr={tr} />
+      <PairSummary r={r} lang={lang} tr={tr} synthetic={isSynthetic(prep)} glossaryN={gn} />
       <DrugInfo r={r} lang={lang} tr={tr} />
       <Documented r={r} lang={lang} tr={tr} />
       <Mechanisms r={r} graph={graph} lang={lang} tr={tr} />
       <ModelSection r={r} lang={lang} tr={tr} />
-      <ExplanationSection r={r} lang={lang} tr={tr} />
+      <ExplanationSection r={r} lang={lang} tr={tr} glossaryN={gn} />
       <SourcesSection prep={prep} lang={lang} tr={tr} />
       <Limitations lang={lang} tr={tr} apiLimits={r.limitations} disclaimer={bi(r.disclaimer, lang)} multi={false} />
+      <Glossary n={gn} lang={lang} tr={tr} />
+      {hasSupplement(prep) ? <Supplement r={r} lang={lang} tr={tr} /> : null}
       <Appendix prep={prep} tr={tr} />
     </>
   );
 }
 
-function PairSummary({ r, lang, tr }: { r: PairReport; lang: Lang; tr: Tr }) {
+function BriefRow({ item, color }: { item: BriefItem; color: string }) {
+  const refs = item.refs ? <Text style={{ fontFamily: FONT.mono, fontStyle: "normal", fontSize: 6.8, color: C.navy3 }}>{` ${item.refs}`}</Text> : null;
+  if (item.quote !== undefined) {
+    return (
+      <View style={{ flexDirection: "row", marginBottom: 5 }}>
+        <View style={{ width: 11 }}><Dot color={color} /></View>
+        <View style={{ flex: 1 }}>
+          {item.lead ? <Text style={{ fontSize: 7, color: C.muted, lineHeight: 1.3 }}>{item.lead}</Text> : null}
+          <Text style={{ fontFamily: FONT.serif, fontStyle: "italic", fontSize: 9, color: C.ink, lineHeight: 1.42, marginTop: 1 }}>
+            “{clean(item.quote)}”{refs}
+          </Text>
+        </View>
+      </View>
+    );
+  }
+  return (
+    <View style={{ flexDirection: "row", marginBottom: 4.5 }}>
+      <View style={{ width: 11 }}><Dot color={color} /></View>
+      <Text style={[st.small, { flex: 1, color: C.slate }]}>{item.text}{refs}</Text>
+    </View>
+  );
+}
+
+function PairSummary({ r, lang, tr, synthetic, glossaryN }: { r: PairReport; lang: Lang; tr: Tr; synthetic: boolean; glossaryN: string }) {
   const f = pairFacts(r);
-  const sum = pairSummary(r, lang);
+  const brief = pairBrief(r, lang);
   const color = STATUS_COLOR[r.evidence_status];
   const missing = problemSources(r.sources_checked);
   const m = r.model;
   const kinds: { title: string; hint: string; body: string; color: string }[] = [
     {
       title: tr("kindDocumented"), hint: tr("kindDocumentedHint"), color: EV.documented,
-      body: r.evidence.length ? tr("kindCountDoc", { db: f.nDb, lab: f.nLabel }) : tr("kindNoneFound"),
+      body: r.evidence.length ? tr("kindCountDoc", { ld: f.nLabelDocs, lab: f.nLabel, db: f.nDb }) : tr("kindNoneFound"),
     },
     { title: tr("kindHypothesis"), hint: tr("kindHypothesisHint"), color: EV.hypothesis, body: tr("kindCountHyp", { n: f.hypotheses.length, p: f.nPathways }) },
     {
       title: tr("kindModel"), hint: tr("kindModelHint"), color: EV.model,
       body: !m.available ? `${tr("modelUnavailable")}${m.unavailable_reason ? ` — ${m.unavailable_reason}` : ""}`
-        : m.abstain ? tr("kindModelAbstain") : tr("kindModelScore", { cal: fixed(m.calibrated_model_score, 3), reg: m.regime }),
+        : m.abstain ? tr("kindModelAbstain") : tr("kindModelScore", { cal: fmtCalibrated(m.calibrated_model_score), reg: m.regime }),
     },
     {
       title: tr("kindMissing"), hint: tr("kindMissingHint"), color: EV.missing,
       body: missing.length ? missing.map((c) => `${sourceLabel(c.source, lang)}: ${sourceStatus(c.status, lang)}`).join("; ") : tr("kindNoMissing"),
     },
   ];
+  const tile = (k: (typeof kinds)[number]) => (
+    <View key={k.title} style={{ width: "50%", paddingHorizontal: 3 }}>
+      <View style={{ borderWidth: 0.6, borderColor: C.hair, borderTopWidth: 2, borderTopColor: k.color, padding: 7, minHeight: 60, backgroundColor: C.white }}>
+        <Text style={{ fontWeight: 600, fontSize: 8.4, color: k.color }}>{k.title}</Text>
+        <Text style={{ fontSize: 8.4, color: C.ink, marginTop: 3, lineHeight: 1.35 }}>{k.body}</Text>
+        <Text style={{ fontSize: 6.8, color: C.muted, marginTop: 3, lineHeight: 1.3 }}>{k.hint}</Text>
+      </View>
+    </View>
+  );
   return (
     <>
       <SectionTitle n="1" title={tr("secSummary")} breakBefore={false} />
+      {synthetic ? <SyntheticBanner tr={tr} /> : null}
       <Card accent={color} background={tint(color, 0.06)}>
         <Chip color={color} filled>{statusLabel(r.evidence_status, lang)}</Chip>
         <Text style={{ fontFamily: FONT.serif, fontSize: 12, color: C.navy, marginTop: 6, lineHeight: 1.3 }}>{bi(r.evidence_status_label, lang)}</Text>
@@ -210,30 +263,42 @@ function PairSummary({ r, lang, tr }: { r: PairReport; lang: Lang; tr: Tr }) {
         <Text style={[st.mono, { marginTop: 4, fontSize: 6.6 }]}>{tr("notSeverity")}</Text>
       </Card>
 
-      <Eyebrow>{tr("kindsTitle")}</Eyebrow>
-      <View style={{ flexDirection: "row", flexWrap: "wrap", marginTop: 6, marginHorizontal: -3 }}>
-        {kinds.map((k) => (
-          <View key={k.title} wrap={false} style={{ width: "50%", paddingHorizontal: 3, marginBottom: 6 }}>
-            <View style={{ borderWidth: 0.6, borderColor: C.hair, borderTopWidth: 2, borderTopColor: k.color, padding: 7, minHeight: 62, backgroundColor: C.white }}>
-              <Text style={{ fontWeight: 600, fontSize: 8.4, color: k.color }}>{k.title}</Text>
-              <Text style={{ fontSize: 8.4, color: C.ink, marginTop: 3, lineHeight: 1.35 }}>{k.body}</Text>
-              <Text style={{ fontSize: 6.8, color: C.muted, marginTop: 3, lineHeight: 1.3 }}>{k.hint}</Text>
-            </View>
-          </View>
-        ))}
+      <View wrap={false} style={{ marginBottom: 8, paddingLeft: 9, borderLeftWidth: 2, borderLeftColor: C.navy }}>
+        <Eyebrow color={C.navy}>{tr("briefTitle")}</Eyebrow>
+        <Text style={{ fontFamily: FONT.serif, fontSize: 10.2, color: C.ink, marginTop: 3, lineHeight: 1.42 }}>{brief.headline}</Text>
       </View>
 
-      <View style={{ marginTop: 6 }}>
-        {sum.lines.map((l, i) => (
-          <View key={i} wrap={false} style={{ flexDirection: "row", marginBottom: 6 }}>
-            <Dot color={l.kind === "drugs" ? C.navy : KIND_COLOR[l.kind]} />
-            <Text style={[st.p, { flex: 1 }]}>{l.text}</Text>
-          </View>
-        ))}
-      </View>
-      <SubTitle color={EV.missing}>{tr("sumGapsTitle")}</SubTitle>
-      <Bullets items={sum.gaps} color={EV.missing} size={SIZE.small} />
+      <View wrap={false} minPresenceAhead={60}><Eyebrow>{tr("kindsTitle")}</Eyebrow></View>
+      <View wrap={false} style={{ flexDirection: "row", marginTop: 5, marginHorizontal: -3, marginBottom: 6 }}>{kinds.slice(0, 2).map(tile)}</View>
+      <View wrap={false} style={{ flexDirection: "row", marginHorizontal: -3, marginBottom: 6 }}>{kinds.slice(2).map(tile)}</View>
+
+      {brief.parts.map((part) => {
+        const c = part.kind === "missing" ? EV.missing : KIND_COLOR[part.kind];
+        const [first, ...rest] = part.items;
+        return (
+          <Fragment key={part.id}>
+            {/* the heading travels with its first item, so it never ends a page */}
+            <View wrap={false} style={{ marginTop: 9 }}>
+              <View style={{ flexDirection: "row", alignItems: "center", borderBottomWidth: 0.6, borderBottomColor: tint(c, 0.45), paddingBottom: 3, marginBottom: 5 }}>
+                <View style={{ width: 3, height: 10, backgroundColor: c, marginRight: 6 }} />
+                <Text style={{ fontWeight: 600, fontSize: SIZE.h3, color: C.navy }}>{part.title}</Text>
+              </View>
+              {first ? <BriefRow item={first} color={c} /> : null}
+            </View>
+            {rest.map((it, i) => <View key={i} wrap={false}><BriefRow item={it} color={c} /></View>)}
+          </Fragment>
+        );
+      })}
+      <Text style={[st.tiny, { marginTop: 4 }]}>{tr("glossaryPointer", { n: glossaryN })}</Text>
     </>
+  );
+}
+
+function SyntheticBanner({ tr }: { tr: Tr }) {
+  return (
+    <View wrap={false} style={{ borderWidth: 1.2, borderColor: EV.missing, backgroundColor: tint(EV.missing, 0.08), borderRadius: 3, padding: 8, marginBottom: 8 }}>
+      <Text style={{ fontWeight: 600, fontSize: 8.4, color: EV.missing, lineHeight: 1.4 }}>{tr("syntheticBanner")}</Text>
+    </View>
   );
 }
 
@@ -267,57 +332,121 @@ function DrugInfo({ r, lang, tr }: { r: PairReport; lang: Lang; tr: Tr }) {
   );
 }
 
-function EvidenceCard({ e, n, lang, tr }: { e: EvidenceRecord; n: number; lang: Lang; tr: Tr }) {
-  const cat = CATEGORY_LABEL[e.category];
-  const color = e.category === "database_interaction_record" ? EV.documented : e.category === "label_mention_no_effect_reported" ? EV.none : EV.label;
-  const dirKey = `dir_${e.direction}` as StringKey;
-  const dc = e.direction_check;
-  const w = CONTENT_WIDTH - 150 - 24;
-  const rows: [string, ReactNode][] = [
-    [tr("source"), clean(e.source_name)],
-    [tr("version"), e.source_version ? clean(e.source_version) : "—"],
-  ];
-  if (e.section) rows.push([tr("section"), clean(e.section)]);
-  rows.push([tr("recordId"), <MonoLines key="rid" text={e.source_record_id ?? "—"} width={w} size={6.6} />]);
-  const ids = Object.entries(e.original_identifiers);
-  if (ids.length) rows.push([tr("identifiers"), <MonoLines key="ids" text={ids.map(([k, v]) => `${k}: ${v}`).join("\n")} width={w} size={6.4} />]);
-  if (e.source_url) rows.push([tr("url"), <Url key="u" url={e.source_url} width={w} size={6.6} />]);
-  if (e.retrieval_url) rows.push([tr("retrievalUrl"), <Url key="ru" url={e.retrieval_url} width={w} size={6.4} />]);
-  rows.push([tr("retrieved"), e.retrieved_at]);
-  if (e.license) rows.push([tr("license"), clean(e.license)]);
-  rows.push([tr("severityBySource"), e.source_severity ? clean(e.source_severity) : tr("severityNone")]);
+/** Inner width of a Seg card (accent rule, right hairline, padding). */
+const SEG_W = CONTENT_WIDTH - 2.4 - 0.6 - 18;
+const KEY_W = 112;
+
+function SegRow({ k, children }: { k: string; children: ReactNode }) {
   return (
-    <Card accent={color} wrap>
-      <View wrap={false} style={{ flexDirection: "row", alignItems: "center", marginBottom: 5 }}>
-        <Text style={{ fontFamily: FONT.mono, fontSize: 8, color: C.navy, width: 22 }}>[{n}]</Text>
-        <Chip color={color}>{pick(cat, lang)}</Chip>
-        {e.direction === "not_verified" ? <Chip color={EV.missing}>{tr("dir_not_verified").split(":")[0]}</Chip> : null}
-        <Text style={{ fontFamily: FONT.mono, fontSize: 6.4, color: C.muted, marginLeft: "auto" }}>{tr("retrieved")} {e.retrieved_at}</Text>
-      </View>
-      <Eyebrow color={C.muted}>{tr("sourceWords")} · {tr(`origin_${e.statement_origin}` as StringKey)}</Eyebrow>
-      <Text style={{ fontFamily: FONT.serif, fontStyle: "italic", fontSize: 9.6, color: C.ink, marginTop: 3, lineHeight: 1.45 }}>“{clean(e.statement)}”</Text>
-      {lang === "ru" && e.statement_ru ? (
-        <View style={{ marginTop: 5 }}>
-          <Eyebrow color={C.muted}>{tr("projectTranslation")}</Eyebrow>
-          <Text style={{ fontSize: 9, color: C.slate, marginTop: 2, lineHeight: 1.45 }}>{clean(e.statement_ru)}</Text>
-        </View>
-      ) : null}
-      <Text style={{ fontSize: 7.6, color: e.direction === "not_verified" ? EV.missing : C.slate2, marginTop: 5 }}>
-        {tr(dirKey)}{dc && dc.n_informative ? `. ${tr("directionCheck", { c: int(dc.n_consistent, lang), n: int(dc.n_informative, lang), p: dc.consistency === null ? "—" : `${(dc.consistency * 100).toFixed(1)}%` })}` : ""}
-      </Text>
-      <View style={{ marginTop: 6 }}><KV rows={rows} keyWidth={150} size={7.4} /></View>
-      {e.qualifiers.length ? (
-        <View style={{ marginTop: 6 }}>
-          <Eyebrow color={C.muted}>{tr("qualifiers")}</Eyebrow>
-          <View style={{ marginTop: 3 }}><Bullets items={e.qualifiers.map(clean)} color={C.faint} size={7.4} /></View>
-        </View>
-      ) : null}
-    </Card>
+    <View style={{ flexDirection: "row", paddingVertical: 1.6, borderTopWidth: 0.4, borderTopColor: C.hair }}>
+      <Text style={{ width: KEY_W, fontSize: 7, color: C.muted, paddingRight: 6, lineHeight: 1.35 }}>{k}</Text>
+      <View style={{ flex: 1 }}>{typeof children === "string" ? <Text style={{ fontSize: 7.2, color: C.ink, lineHeight: 1.35 }}>{children}</Text> : children}</View>
+    </View>
   );
 }
 
+const docColor = (d: SourceDoc) => (d.kind === "database" ? EV.documented : d.excerpts.every((x) => x.category === "label_mention_no_effect_reported") ? EV.none : EV.label);
+const excerptColor = (x: Excerpt) => (x.category === "database_interaction_record" ? EV.documented : x.category === "label_mention_no_effect_reported" ? EV.none : EV.label);
+
+function DocBlock({ d, r, lang, tr }: { d: SourceDoc; r: PairReport; lang: Lang; tr: Tr }) {
+  const first = d.records[0];
+  const name = (id: string | null) => (id === r.drug_a.id ? drugName(r.drug_a, lang) : id === r.drug_b.id ? drugName(r.drug_b, lang) : id ?? "—");
+  const vw = SEG_W - KEY_W - 6;
+  const parts: ReactNode[] = [];
+  parts.push(
+    <View>
+      <View style={{ flexDirection: "row", alignItems: "baseline" }}>
+        <Text style={{ fontFamily: FONT.mono, fontSize: 8.4, color: C.navy, width: 24 }}>[{d.n}]</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontWeight: 600, fontSize: 9.4, color: C.navy, lineHeight: 1.3 }}>
+            {d.kind === "label" ? tr("labelDocTitle", { owner: name(d.ownerId) }) : tr("dbDocTitle")}
+          </Text>
+          <Text style={{ fontSize: 7.6, color: C.slate2, lineHeight: 1.35 }}>
+            {d.kind === "label" ? tr("labelDocSub", { partner: name(d.mentionedId), k: d.excerpts.length }) : tr("dbDocSub", { k: d.records.length })}
+          </Text>
+        </View>
+        <Text style={{ fontFamily: FONT.mono, fontSize: 6.4, color: C.muted }}>{tr("retrieved")} {first.retrieved_at}</Text>
+      </View>
+      <Text style={{ fontSize: 7, color: C.slate2, marginTop: 3, marginLeft: 24, lineHeight: 1.35 }}>
+        {clean(first.source_name)}{first.source_version ? ` · ${clean(first.source_version)}` : ""}
+      </Text>
+      {d.kind === "label" ? <View style={{ marginLeft: 24, marginTop: 1 }}><MonoLines text={`${tr("splSetId")}: ${d.id}`} width={SEG_W - 24} size={6.4} /></View> : null}
+    </View>,
+  );
+  for (const x of d.excerpts) {
+    const e = x.records[0];
+    const chunks = chunkText(clean(x.text));
+    const dc = e.direction_check;
+    const multi = d.excerpts.length > 1;
+    parts.push(
+      <View style={{ marginTop: 5, paddingTop: 5, borderTopWidth: 0.5, borderTopColor: C.hair }}>
+        <View style={{ flexDirection: "row", alignItems: "center", flexWrap: "wrap" }}>
+          {multi ? <Text style={{ fontFamily: FONT.mono, fontSize: 7.6, color: C.navy, width: 30 }}>{x.label}</Text> : null}
+          <Chip color={excerptColor(x)}>{pick(CATEGORY_LABEL[x.category], lang)}</Chip>
+          {e.direction === "not_verified" ? <Chip color={EV.missing}>{tr("dir_not_verified").split(":")[0]}</Chip> : null}
+          <Text style={{ fontSize: 6.6, color: C.muted, marginLeft: 2 }}>{tr("sourceWords")} · {tr(`origin_${e.statement_origin}` as StringKey)}</Text>
+        </View>
+        {x.sections.length ? <Text style={{ fontSize: 7, color: C.slate2, marginTop: 3 }}>{tr("foundIn", { s: x.sections.join(" · ") })}</Text> : null}
+        <Text style={{ fontFamily: FONT.serif, fontStyle: "italic", fontSize: 9.4, color: C.ink, marginTop: 3, lineHeight: 1.45 }}>
+          “{chunks[0]}{chunks.length === 1 ? "”" : ""}
+        </Text>
+      </View>,
+    );
+    for (const [i, c] of chunks.slice(1).entries()) {
+      parts.push(<Text style={{ fontFamily: FONT.serif, fontStyle: "italic", fontSize: 9.4, color: C.ink, lineHeight: 1.45 }}>{c}{i === chunks.length - 2 ? "”" : ""}</Text>);
+    }
+    if (lang === "ru" && x.textRu) {
+      parts.push(
+        <View style={{ marginTop: 3 }}>
+          <Text style={{ fontSize: 6.6, color: C.muted }}>{tr("projectTranslation")}</Text>
+          <Text style={{ fontSize: 8.8, color: C.slate, marginTop: 1, lineHeight: 1.45 }}>{clean(x.textRu)}</Text>
+        </View>,
+      );
+    }
+    if (x.sections.length > 1) parts.push(<Text style={{ fontSize: 7, color: C.slate2, marginTop: 2, lineHeight: 1.35 }}>{tr("repeatNote")}</Text>);
+    if (d.kind === "database") {
+      parts.push(
+        <Text style={{ fontSize: 7.4, color: e.direction === "not_verified" ? EV.missing : C.slate2, marginTop: 3, lineHeight: 1.4 }}>
+          {tr(`dir_${e.direction}` as StringKey)}{dc && dc.n_informative ? `. ${tr("directionCheck", { c: int(dc.n_consistent, lang), n: int(dc.n_informative, lang), p: dc.consistency === null ? "—" : `${(dc.consistency * 100).toFixed(1)}%` })}` : ""}
+        </Text>,
+      );
+    }
+  }
+  // provenance of the document (per-record detail: Supplement S1)
+  parts.push(<Text style={{ fontFamily: FONT.mono, fontSize: 6.2, color: C.muted, marginTop: 6, marginBottom: 1 }}>{tr("docProvenance").toUpperCase()}</Text>);
+  if (first.source_url) parts.push(<SegRow k={tr("url")}><Url url={first.source_url} width={vw} size={6.4} /></SegRow>);
+  const retrievalUrls = Array.from(new Set(d.records.map((e) => e.retrieval_url).filter((u): u is string => !!u)));
+  for (const u of retrievalUrls) parts.push(<SegRow k={tr("retrievalUrl")}><Url url={u} width={vw} size={6.2} /></SegRow>);
+  if (d.kind === "database") {
+    parts.push(<SegRow k={tr("recordId")}><MonoLines text={d.records.map((e) => e.source_record_id ?? e.id).join("\n")} width={vw} size={6.4} /></SegRow>);
+  }
+  parts.push(<SegRow k={tr("retrieved")}>{Array.from(new Set(d.records.map((e) => e.retrieved_at))).join(", ")}</SegRow>);
+  if (first.license) parts.push(<SegRow k={tr("license")}>{clean(first.license)}</SegRow>);
+  const sev = Array.from(new Set(d.records.map((e) => e.source_severity).filter((s): s is string => !!s)));
+  parts.push(<SegRow k={tr("severityBySource")}>{sev.length ? sev.map(clean).join("; ") : tr("severityNone")}</SegRow>);
+  const quals = Array.from(new Set(d.records.flatMap((e) => e.qualifiers)));
+  if (quals.length) {
+    parts.push(<Text style={{ fontFamily: FONT.mono, fontSize: 6.2, color: C.muted, marginTop: 5, marginBottom: 1 }}>{tr("qualifiers").toUpperCase()}</Text>);
+    for (const q of quals) {
+      parts.push(
+        <View style={{ flexDirection: "row", marginBottom: 1.5 }}>
+          <Text style={{ width: 9, color: C.faint, fontSize: 7.2 }}>•</Text>
+          <Text style={{ flex: 1, fontSize: 7.2, color: C.slate, lineHeight: 1.4 }}>{clean(q)}</Text>
+        </View>,
+      );
+    }
+  }
+  return <Seg accent={docColor(d)} parts={parts} />;
+}
+
 function Documented({ r, lang, tr }: { r: PairReport; lang: Lang; tr: Tr }) {
+  const g = pairFacts(r).groups;
   const cols: Col[] = [{ title: tr("source"), width: 1.3 }, { title: tr("status"), width: 1 }, { title: tr("detail"), width: 2.6 }];
+  const dcols: Col[] = [
+    { title: "#", width: 0.35 }, { title: tr("docCol"), width: 1.7 }, { title: tr("docIdCol"), width: 1.75 },
+    { title: tr("versionCol"), width: 1.25 }, { title: tr("excerptsCol"), width: 0.55, align: "right" }, { title: tr("sectionsCol"), width: 1.5 },
+  ];
+  const name = (id: string | null) => (id === r.drug_a.id ? drugName(r.drug_a, lang) : id === r.drug_b.id ? drugName(r.drug_b, lang) : id ?? "—");
   return (
     <>
       <SectionTitle n="3" title={tr("secDocumented")} lead={tr("evidenceIntro")} />
@@ -326,7 +455,27 @@ function Documented({ r, lang, tr }: { r: PairReport; lang: Lang; tr: Tr }) {
           <Text style={{ fontWeight: 600, color: C.navy }}>{tr("noEvidenceTitle")}</Text>
           <Text style={[st.p, { marginTop: 3 }]}>{tr("sumNoEvidence")}</Text>
         </Card>
-      ) : r.evidence.map((e, i) => <EvidenceCard key={e.id} e={e} n={i + 1} lang={lang} tr={tr} />)}
+      ) : (
+        <>
+          <View wrap={false} style={{ marginBottom: 6 }}>
+            <Text style={{ fontWeight: 600, fontSize: 8.6, color: C.navy, lineHeight: 1.4 }}>{evidenceCountsText(g.counts, lang)}</Text>
+            {g.counts.mergedRepeats > 0 ? <Text style={[st.tiny, { marginTop: 2 }]}>{tr("briefOneSource")}</Text> : null}
+          </View>
+          <SubTitle first>{tr("docTable")}</SubTitle>
+          <Table cols={dcols} rows={g.docs.map((d) => {
+            const sections = Array.from(new Set(d.excerpts.flatMap((x) => x.sections)));
+            return [
+              <Text key="n" style={{ fontFamily: FONT.mono, fontSize: 7.2, color: C.navy }}>[{d.n}]</Text>,
+              d.kind === "label" ? tr("labelDocTitle", { owner: name(d.ownerId) }) : tr("dbDocTitle"),
+              <MonoLines key="i" text={d.kind === "label" ? d.id : d.records.map((e) => e.source_record_id ?? e.id).join("\n")} width={colPoints(dcols, 2)} size={6.2} />,
+              d.records[0].source_version ? <SafeText key="v" text={clean(d.records[0].source_version)} width={colPoints(dcols, 3)} /> : "—",
+              String(d.excerpts.length),
+              sections.length ? sections.join("; ") : "—",
+            ];
+          })} />
+          {g.docs.map((d) => <DocBlock key={d.id} d={d} r={r} lang={lang} tr={tr} />)}
+        </>
+      )}
       {r.conflicts.length ? (
         <>
           <SubTitle color={EV.missing}>{tr("conflicts")}</SubTitle>
@@ -465,17 +614,44 @@ function Mechanisms({ r, graph, lang, tr }: { r: PairReport; graph: MechanismGra
   );
 }
 
+/** Which test set the measured figures come from, in plain words (frozen study counts). */
+function regimeNotes(m: PairReport["model"]): Bi[] {
+  const out: Bi[] = [];
+  if (m.regime === "S1") out.push(METRIC_NOTES.s1);
+  else {
+    out.push(m.regime === "S3" ? METRIC_NOTES.s3 : METRIC_NOTES.pooledS2);
+    if (m.measured_performance.some((p) => p.view.includes("both annotated"))) out.push(METRIC_NOTES.bothAnnotated);
+    out.push(METRIC_NOTES.datasetVsPair);
+  }
+  return out;
+}
+
+function studyVars(lang: Lang): Record<string, string | number> {
+  const sc = studyCounts();
+  return { pooled: int(sc.pooled, lang), s2: int(sc.s2, lang), s3: int(sc.s3, lang), seeds: sc.seeds, bothAnnotated: int(sc.bothAnnotated, lang) };
+}
+
 function ModelSection({ r, lang, tr }: { r: PairReport; lang: Lang; tr: Tr }) {
   const m = r.model;
   const rel = m.modality_reliance ?? null;
+  const vars = studyVars(lang);
   const tile = (label: string, value: string, opts?: { strike?: boolean; color?: string; mono?: boolean }) => (
     <View style={{ flex: 1, borderWidth: 0.6, borderColor: C.hair, padding: 7, marginRight: 5, backgroundColor: C.tint }}>
       <Text style={{ fontFamily: FONT.mono, fontSize: 6, color: C.muted }}>{label.toUpperCase()}</Text>
       <Text style={{ fontFamily: opts?.mono === false ? FONT.sans : FONT.mono, fontSize: opts?.mono === false ? 8.4 : 13, color: opts?.color ?? C.navy, marginTop: 3, textDecoration: opts?.strike ? "line-through" : "none" }}>{value}</Text>
     </View>
   );
-  const pcols: Col[] = [{ title: tr("metric"), width: 0.8 }, { title: tr("meanSd"), width: 1.1 }, { title: tr("seeds"), width: 0.6, align: "right" }, { title: tr("view"), width: 2.2 }, { title: tr("source"), width: 2.4 }];
+  const pcols: Col[] = [{ title: tr("metric"), width: 0.7 }, { title: tr("meanSd"), width: 1.05 }, { title: tr("seeds"), width: 0.55, align: "right" }, { title: tr("testSetCol"), width: 2.2 }, { title: tr("source"), width: 2.4 }];
   const relAbsentReason = !m.available ? tr("modelUnavailable") : m.abstain ? tr("rel_training_label_seen") : tr("relianceAbsentApi");
+  const usable = m.available && !m.abstain;
+  const explainer = [
+    fillPlain(pick(SCORE_EXPLAINER.raw, lang), { raw: fmtRaw(m.raw_model_score) }),
+    fillPlain(pick(SCORE_EXPLAINER.calibrated, lang), { cal: fmtCalibrated(m.calibrated_model_score) }),
+    pick(SCORE_EXPLAINER.notProbability, lang),
+    pick(SCORE_EXPLAINER.can, lang),
+    pick(SCORE_EXPLAINER.cannot, lang),
+  ];
+  const valPair = m.split_a === "val" || m.split_b === "val";
   return (
     <>
       <SectionTitle n="5" title={tr("secModel")} />
@@ -485,11 +661,14 @@ function ModelSection({ r, lang, tr }: { r: PairReport; lang: Lang; tr: Tr }) {
           <Text style={[st.p, { marginTop: 2 }]}>{m.unavailable_reason ?? tr("notRecorded")}</Text>
         </Card>
       ) : (
-        <View wrap={false} style={{ flexDirection: "row", marginBottom: 8, marginRight: -5 }}>
-          {tile(tr("calibrated"), fixed(m.calibrated_model_score, 3), { strike: m.abstain, color: m.abstain ? C.faint : EV.model })}
-          {tile(tr("raw"), fixed(m.raw_model_score, 6), { strike: m.abstain, color: m.abstain ? C.faint : C.navy })}
-          {tile(tr("regime"), m.regime)}
-          {tile(tr("reliability"), tr(`rel_${m.reliability}` as StringKey), { mono: false, color: m.abstain ? EV.missing : C.ink })}
+        <View wrap={false} style={{ marginBottom: 8 }}>
+          <View style={{ flexDirection: "row", marginRight: -5 }}>
+            {tile(tr("calibrated"), fmtCalibrated(m.calibrated_model_score), { strike: m.abstain, color: m.abstain ? C.faint : EV.model })}
+            {tile(tr("raw"), fmtRaw(m.raw_model_score), { strike: m.abstain, color: m.abstain ? C.faint : C.navy })}
+            {tile(tr("regime"), m.regime)}
+            {tile(tr("reliability"), tr(`rel_${m.reliability}` as StringKey), { mono: false, color: m.abstain ? EV.missing : C.ink })}
+          </View>
+          <Text style={[st.tiny, { marginTop: 3 }]}>{tr("roundedNote")}</Text>
         </View>
       )}
       <KV rows={[
@@ -500,33 +679,51 @@ function ModelSection({ r, lang, tr }: { r: PairReport; lang: Lang; tr: Tr }) {
         [tr("bioForModel"), `A: ${m.biology_available_a ? tr("yes") : tr("no")} · B: ${m.biology_available_b ? tr("yes") : tr("no")}`],
       ]} />
 
-      <View wrap={false} style={{ marginTop: 8 }}>
-        <Card accent={EV.model} background={C.white}>
-          <Text style={{ fontWeight: 600, fontSize: 8.6, color: C.navy }}>{tr("interpretationTitle")}</Text>
-          <Text style={[st.small, { marginTop: 3 }]}>{tr("interpretation")}</Text>
-        </Card>
-      </View>
+      {usable ? (
+        <>
+          <View style={{ height: 8 }} />
+          <Seg accent={EV.model} background={C.white} parts={[
+            <Text key="t" style={{ fontWeight: 600, fontSize: 8.8, color: C.navy, marginBottom: 2 }}>{pick(SCORE_EXPLAINER.title, lang)}</Text>,
+            ...explainer.map((x, i) => (
+              <View key={i} style={{ flexDirection: "row", marginBottom: 2.5 }}>
+                <Text style={{ width: 9, fontSize: 8, color: EV.model }}>•</Text>
+                <Text style={[st.small, { flex: 1, color: C.slate }]}>{x}</Text>
+              </View>
+            )),
+          ]} />
+        </>
+      ) : (
+        <View wrap={false} style={{ marginTop: 8 }}>
+          <Card accent={EV.model} background={C.white}>
+            <Text style={{ fontWeight: 600, fontSize: 8.6, color: C.navy }}>{tr("interpretationTitle")}</Text>
+            <Text style={[st.small, { marginTop: 3 }]}>{tr("interpretation")}</Text>
+          </Card>
+        </View>
+      )}
+
+      <SubTitle>{tr("measuredTitle")}</SubTitle>
+      {m.measured_performance.length ? (
+        <Table cols={pcols} rows={m.measured_performance.map((p) => [
+          p.metric,
+          <Text key="v" style={{ fontFamily: FONT.mono, fontSize: 7.2 }}>{`${p.mean.toFixed(3)} ± ${p.sd.toFixed(3)}`}</Text>,
+          String(p.n_seeds), clean(p.view),
+          <MonoLines key="s" text={p.source} width={colPoints(pcols, 4)} size={6} />,
+        ])} />
+      ) : null}
+      <Bullets size={SIZE.small} color={EV.model} items={[
+        ...regimeNotes(m).map((n) => fillPlain(pick(n, lang), vars)),
+        ...(valPair ? [tr("briefValPair")] : []),
+      ]} />
 
       <SubTitle>{tr("uncertainty")}</SubTitle>
-      {m.available ? <Text style={[st.small, { marginBottom: 6 }]}>{tr("gapNoCi")}</Text> : null}
-      {m.measured_performance.length ? (
-        <>
-          <Text style={[st.tiny, { marginBottom: 4 }]}>{tr("measured")}</Text>
-          <Table cols={pcols} rows={m.measured_performance.map((p) => [
-            p.metric,
-            <Text key="v" style={{ fontFamily: FONT.mono, fontSize: 7.2 }}>{`${p.mean.toFixed(3)} ± ${p.sd.toFixed(3)}`}</Text>,
-            String(p.n_seeds), clean(p.view),
-            <MonoLines key="s" text={p.source} width={colPoints(pcols, 4)} size={6} />,
-          ])} />
-        </>
-      ) : null}
+      {m.available ? <Text style={[st.small, { marginBottom: 6 }]}>{tr("gapNoCi")}</Text> : <Text style={st.small}>{tr("modelUnavailable")}</Text>}
 
       <SubTitle>{tr("reliance")}</SubTitle>
       {rel && !m.abstain ? (
         <>
           <Text style={[st.tiny, { marginBottom: 5 }]}>{tr("relianceLead")} {tr("relianceParen")}</Text>
           <RelianceChart r={rel} lang={lang} />
-          <Text style={[st.tiny, { marginTop: 3 }]}>{tr("raw")}: {fixed(rel.baseline_raw, 6)}</Text>
+          <Text style={[st.tiny, { marginTop: 3 }]}>{tr("raw")}: {fmtRaw(rel.baseline_raw)}</Text>
           {rel.baseline_raw > 0.999 || rel.baseline_raw < 0.001 ? <Text style={[st.tiny, { color: EV.missing, marginTop: 2 }]}>{tr("relianceSaturated")}</Text> : null}
           <Text style={[st.tiny, { marginTop: 2 }]}>{bi(rel.interpretation, lang)}</Text>
           <Text style={[st.tiny, { marginTop: 2 }]}>{tr("relianceValidated", { n: int(rel.validation.n_rows, lang), d: rel.validation.max_abs_diff.toExponential(1) })}</Text>
@@ -546,10 +743,10 @@ function ModelSection({ r, lang, tr }: { r: PairReport; lang: Lang; tr: Tr }) {
   );
 }
 
-function ExplanationSection({ r, lang, tr }: { r: PairReport; lang: Lang; tr: Tr }) {
+function ExplanationSection({ r, lang, tr, glossaryN }: { r: PairReport; lang: Lang; tr: Tr; glossaryN: string }) {
   return (
     <>
-      <SectionTitle n="6" title={tr("secExplanation")} lead={tr("explanationIntro")} />
+      <SectionTitle n="6" title={tr("secExplanation")} lead={`${tr("explanationIntro")} ${tr("readerNote6", { n: glossaryN })}`} />
       {r.explanation.sections.map((sec) => (
         <Fragment key={sec.id}>
           <SubTitle>{bi(sec.title, lang)}</SubTitle>
@@ -560,7 +757,8 @@ function ExplanationSection({ r, lang, tr }: { r: PairReport; lang: Lang; tr: Tr
                 <View style={{ width: 70 }}><Chip color={KIND_COLOR[s.kind]}>{pick(KIND_TIER[s.kind].label, lang)}</Chip></View>
                 <Text style={[st.small, { flex: 1, color: s.kind === "caveat" ? C.muted : C.slate }]}>
                   {bi(s.text, lang)}
-                  {refs.length ? <Text style={{ fontFamily: FONT.mono, fontSize: 6.6, color: C.navy3 }}>{`  ${refs.join(" ")}`}</Text> : null}
+                  {refs.length ? <Text style={{ fontFamily: FONT.mono, fontSize: 6.6, color: C.navy3 }}>{` ${refs.join(" ")}`}</Text> : null}
+                  {needsPooledNote(s.text, r.model.regime) ? <Text style={{ color: EV.missing }}>{` ${pick(POOLED_NOTE, lang)}`}</Text> : null}
                 </Text>
               </View>
             );
@@ -568,6 +766,63 @@ function ExplanationSection({ r, lang, tr }: { r: PairReport; lang: Lang; tr: Tr
         </Fragment>
       ))}
       <Text style={[st.mono, { marginTop: 4, fontSize: 6.4 }]}>{tr("method")}: {clean(r.explanation.method)}</Text>
+    </>
+  );
+}
+
+function Glossary({ n, lang, tr }: { n: string; lang: Lang; tr: Tr }) {
+  const vars = studyVars(lang);
+  // A definition list of atomic rows, not a Table: the rows are page-level
+  // siblings and break between pages one by one (see components.tsx, PAGE BREAKS).
+  const row = (i: number) => (
+    <View key={i} wrap={false} style={{
+      flexDirection: "row", paddingVertical: 4, paddingHorizontal: 4, backgroundColor: i % 2 ? C.tint : C.white,
+      borderLeftWidth: 0.5, borderRightWidth: 0.5, borderColor: C.rule, borderTopWidth: 0.5, borderTopColor: i ? C.hair : C.rule,
+      borderBottomWidth: i === GLOSSARY.length - 1 ? 0.5 : 0, borderBottomColor: C.rule,
+    }}>
+      <Text style={{ width: 118, paddingRight: 8, fontWeight: 600, fontSize: 7.6, color: C.navy, lineHeight: 1.35 }}>{pick(GLOSSARY[i].term, lang)}</Text>
+      <Text style={{ flex: 1, fontSize: 7.6, color: C.slate, lineHeight: 1.42 }}>{fillPlain(pick(GLOSSARY[i].text, lang), vars)}</Text>
+    </View>
+  );
+  return (
+    <>
+      <SectionTitle n={n} title={tr("secGlossary")} lead={tr("glossaryIntro")} />
+      {GLOSSARY.map((_, i) => row(i))}
+    </>
+  );
+}
+
+/** Supplement S1: every evidence record of the response, with full provenance. */
+function Supplement({ r, lang, tr }: { r: PairReport; lang: Lang; tr: Tr }) {
+  const g = pairFacts(r).groups;
+  const vw = SEG_W - KEY_W - 6;
+  return (
+    <>
+      <SectionTitle n="S1" title={tr("supplementTitle")} lead={tr("supplementIntro")} />
+      {g.docs.flatMap((d) => d.excerpts.flatMap((x) => x.records.map((e, i) => {
+        const ids = Object.entries(e.original_identifiers);
+        const parts: ReactNode[] = [
+          <View style={{ flexDirection: "row", alignItems: "baseline" }}>
+            <Text style={{ fontFamily: FONT.mono, fontSize: 8, color: C.navy, width: 34 }}>{x.label}</Text>
+            <View style={{ flex: 1 }}>
+              <MonoLines text={e.id} width={SEG_W - 34} size={6.6} color={C.ink} />
+              {i > 0 ? <Text style={{ fontSize: 6.8, color: EV.missing, marginTop: 1 }}>{tr("sameAs", { x: x.label })}</Text> : null}
+            </View>
+          </View>,
+          <SegRow k={tr("category")}>{pick(CATEGORY_LABEL[e.category], lang)}</SegRow>,
+        ];
+        if (e.section) parts.push(<SegRow k={tr("section")}>{[e.section, ...(e.also_in_sections ?? [])].map(clean).join(" · ")}</SegRow>);
+        parts.push(<SegRow k={tr("source")}>{`${clean(e.source_name)}${e.source_version ? ` · ${clean(e.source_version)}` : ""}`}</SegRow>);
+        parts.push(<SegRow k={tr("recordId")}><MonoLines text={e.source_record_id ?? "—"} width={vw} size={6.4} /></SegRow>);
+        if (ids.length) parts.push(<SegRow k={tr("identifiers")}><MonoLines text={ids.map(([k, v]) => `${k}: ${v}`).join("\n")} width={vw} size={6.2} /></SegRow>);
+        if (e.source_url) parts.push(<SegRow k={tr("url")}><Url url={e.source_url} width={vw} size={6.2} /></SegRow>);
+        if (e.retrieval_url) parts.push(<SegRow k={tr("retrievalUrl")}><Url url={e.retrieval_url} width={vw} size={6.2} /></SegRow>);
+        parts.push(<SegRow k={tr("retrieved")}>{e.retrieved_at}</SegRow>);
+        if (e.source_template) parts.push(<SegRow k={tr("templateKey")}><Text style={{ fontSize: 7, color: C.ink, lineHeight: 1.35 }}>{clean(e.source_template)}</Text></SegRow>);
+        parts.push(<SegRow k={tr("direction")}>{tr(`dir_${e.direction}` as StringKey)}</SegRow>);
+        if (e.license) parts.push(<SegRow k={tr("license")}>{clean(e.license)}</SegRow>);
+        return <Seg key={e.id} accent={excerptColor(x)} background={C.white} parts={parts} />;
+      })))}
     </>
   );
 }
@@ -614,7 +869,8 @@ function SourcesSection({ prep, lang, tr }: { prep: PreparedExport; lang: Lang; 
   const input = prep.input;
   if (input.kind !== "pair") return null;
   const r = input.report.data;
-  const ecols: Col[] = [{ title: "#", width: 0.35 }, { title: tr("source"), width: 1.8 }, { title: tr("recordId"), width: 1.45 }, { title: tr("retrieved"), width: 0.8 }, { title: tr("url"), width: 2.2 }];
+  const ecols: Col[] = [{ title: "#", width: 0.35 }, { title: tr("source"), width: 1.8 }, { title: tr("docIdCol"), width: 1.45 }, { title: tr("retrieved"), width: 0.8 }, { title: tr("url"), width: 2.2 }];
+  const docs = pairFacts(r).groups.docs;
   const used = Array.from(new Set(r.mechanism.findings.flatMap((f) => f.annotation_ids))).map((id) => r.mechanism.annotations[id]).filter(Boolean);
   const acols: Col[] = [{ title: tr("drug"), width: 1 }, { title: tr("protein"), width: 1 }, { title: tr("roles"), width: 1.4 }, { title: tr("source"), width: 1.6 }, { title: tr("retrieved"), width: 0.8 }, { title: tr("pmids"), width: 1.4 }];
   const name = (id: string) => (id === r.drug_a.id ? drugName(r.drug_a, lang) : id === r.drug_b.id ? drugName(r.drug_b, lang) : id);
@@ -624,14 +880,17 @@ function SourcesSection({ prep, lang, tr }: { prep: PreparedExport; lang: Lang; 
     <>
       <SectionTitle n="7" title={tr("secSources")} />
       <SubTitle first>{tr("evidenceRecords")}</SubTitle>
-      {r.evidence.length ? (
-        <Table cols={ecols} rows={r.evidence.map((e, i) => [
-          <Text key="n" style={{ fontFamily: FONT.mono, fontSize: 7.2, color: C.navy }}>[{i + 1}]</Text>,
-          `${clean(e.source_name)}${e.source_version ? ` · ${clean(e.source_version)}` : ""}`,
-          <MonoLines key="r" text={e.source_record_id ?? "—"} width={colPoints(ecols, 2)} size={6.2} />,
-          e.retrieved_at,
-          e.source_url ? <Url key="u" url={e.source_url} width={colPoints(ecols, 4)} size={6.2} /> : "—",
-        ])} />
+      {docs.length ? (
+        <Table cols={ecols} rows={docs.map((d) => {
+          const e = d.records[0];
+          return [
+            <Text key="n" style={{ fontFamily: FONT.mono, fontSize: 7.2, color: C.navy }}>[{d.n}]</Text>,
+            <SafeText key="s" text={`${clean(e.source_name)}${e.source_version ? ` · ${clean(e.source_version)}` : ""}`} width={colPoints(ecols, 1)} />,
+            <MonoLines key="r" text={d.kind === "label" ? d.id : d.records.map((x) => x.source_record_id ?? x.id).join("\n")} width={colPoints(ecols, 2)} size={6.2} />,
+            Array.from(new Set(d.records.map((x) => x.retrieved_at))).join(", "),
+            e.source_url ? <Url key="u" url={e.source_url} width={colPoints(ecols, 4)} size={6.2} /> : "—",
+          ];
+        })} />
       ) : <Text style={st.small}>{tr("noEvidenceTitle")}.</Text>}
 
       {used.length ? (
@@ -689,9 +948,7 @@ function Appendix({ prep, tr }: { prep: PreparedExport; tr: Tr }) {
   return (
     <>
       <SectionTitle n="A" title={tr("secAppendix")} lead={tr("appendixIntro")} />
-      <View style={{ borderWidth: 0.5, borderColor: C.hair, backgroundColor: C.tint, padding: 7 }}>
-        <JsonBlock value={machineSummary(prep)} width={CONTENT_WIDTH - 16} size={6} />
-      </View>
+      <JsonBox value={machineSummary(prep)} width={CONTENT_WIDTH} size={6} />
     </>
   );
 }
@@ -707,16 +964,18 @@ function MultiBody({ prep, m, tr }: { prep: PreparedExport; m: MultiReport; tr: 
     return d ? drugName(d, lang) : id;
   };
   const missing = problemSources(m.sources_checked);
+  // n_label_documents is absent in responses from API versions before it existed.
+  const hasDocs = m.pairs.every((p) => typeof p.n_label_documents === "number");
   const ocols: Col[] = [{ title: "#", width: 0.3 }, { title: tr("nameEn"), width: 1.5 }, { title: tr("nameRu"), width: 1.5 }, { title: tr("drugbankId"), width: 1 }, { title: tr("groups"), width: 1.4 }, { title: tr("drugType"), width: 1 }];
   const pcols: Col[] = [
     { title: tr("pair"), width: 1.85 }, { title: tr("found"), width: 1.55 }, { title: tr("dbRecords"), width: 0.62, align: "right" },
-    { title: tr("labelRecords"), width: 0.55, align: "right" }, { title: tr("hypCount"), width: 0.45, align: "right" },
+    { title: hasDocs ? tr("labelDocsCol") : tr("labelRecords"), width: hasDocs ? 0.75 : 0.55, align: "right" }, { title: tr("hypCount"), width: 0.45, align: "right" },
     { title: tr("modelCol"), width: 1.08 }, { title: tr("reasons"), width: 1.9 },
   ];
   const reason = (k: string) => (REVIEW_REASON[k] ? pick(REVIEW_REASON[k], lang) : k);
   const scoreCell = (p: MultiReport["pairs"][number]) => (p.calibrated_model_score === null
     ? (p.training_label_seen ? tr("scoreNotCounted") : tr("noModelScore"))
-    : p.calibrated_model_score.toFixed(3));
+    : fmtCalibrated(p.calibrated_model_score));
   const abstained = m.pairs.filter((p) => p.training_label_seen);
   const scols: Col[] = [{ title: tr("source"), width: 1.3 }, { title: tr("status"), width: 1 }, { title: tr("detail"), width: 2.6 }];
   return (
@@ -780,7 +1039,7 @@ function MultiBody({ prep, m, tr }: { prep: PreparedExport; m: MultiReport; tr: 
       </>
 
       <>
-        <SectionTitle n="4" title={tr("secMultiPairs")} lead={tr("mechanismSummaryMulti")} />
+        <SectionTitle n="4" title={tr("secMultiPairs")} lead={`${tr("mechanismSummaryMulti")} ${hasDocs ? tr("labelColNote") : tr("labelColNoteOld")}`} />
         <Table cols={pcols} rows={sortedPairs(m).map((p) => [
           <View key="p">
             <Text style={{ fontSize: 7.6, color: C.ink }}>{`${dn(p.drug_a)} + ${dn(p.drug_b)}`}</Text>
@@ -790,7 +1049,7 @@ function MultiBody({ prep, m, tr }: { prep: PreparedExport; m: MultiReport; tr: 
             <Text style={{ fontSize: 7.4, color: STATUS_COLOR[p.evidence_status] }}>{statusLabel(p.evidence_status, lang)}</Text>
             {p.evidence_status === "no_documented_evidence_found" ? <Text style={{ fontSize: 6.4, color: C.muted }}>{tr("nothingSafe")}</Text> : null}
           </View>,
-          String(p.n_database_records), String(p.n_label_records), String(p.n_mechanism_hypotheses),
+          String(p.n_database_records), hasDocs ? `${p.n_label_documents} (${p.n_label_records})` : String(p.n_label_records), String(p.n_mechanism_hypotheses),
           <View key="m">
             <Text style={{ fontFamily: FONT.mono, fontSize: 7.2, color: p.training_label_seen ? C.faint : C.ink }}>{scoreCell(p)}</Text>
             <Text style={{ fontFamily: FONT.mono, fontSize: 6.2, color: C.muted }}>{p.regime}</Text>
@@ -822,6 +1081,7 @@ function MultiBody({ prep, m, tr }: { prep: PreparedExport; m: MultiReport; tr: 
       </>
 
       <Limitations lang={lang} tr={tr} apiLimits={[]} disclaimer={bi(m.disclaimer, lang)} multi />
+      <Glossary n={glossaryNumber("multi")} lang={lang} tr={tr} />
       <Appendix prep={prep} tr={tr} />
     </>
   );

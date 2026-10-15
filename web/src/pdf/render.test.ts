@@ -11,6 +11,7 @@ import { createRequire } from "node:module";
 import { join } from "node:path";
 import { beforeAll, describe, expect, it } from "vitest";
 import type { MultiReport, PairReport } from "../data/v3";
+import { evidenceCountsText, groupEvidence } from "../data/evidenceGroups";
 import { renderPdf } from "./exportReport";
 import { prepareExport } from "./format";
 import { PAGE } from "./theme";
@@ -79,6 +80,7 @@ const sc = fx("pair_simvastatin_clarithromycin.json");
 const mw = fx("pair_metformin_warfarin.json");
 const m8 = fx("multi_8.json");
 const syn = fx("pair_synthetic_labels_no_model.json");
+const dup = fx("pair_synthetic_duplicated_labels.json");
 
 // SYNTHETIC variants of real responses, for edge cases the real data lacks.
 function longNames(): ExportInput {
@@ -119,6 +121,10 @@ const synthInputs: Record<string, [ExportInput, "en" | "ru"]> = {
   synEn: [missingFields(), "en"],
   longRu: [longNames(), "ru"],
   hostileEn: [hostile(), "en"],
+  // SYNTHETIC label text in the structure of a real old-format label that
+  // repeats its Drug Interactions subsection (as an older API returned it)
+  dupEn: [{ kind: "pair", origin: "analyzer", report: dup.report }, "en"],
+  dupRu: [{ kind: "pair", origin: "analyzer", report: dup.report }, "ru"],
 };
 
 beforeAll(async () => {
@@ -212,8 +218,9 @@ describe("content", () => {
       "DDI-Net 3.0", "Drug–Drug Interaction Research Report", "Warfarin", "Fluconazole", "DB00682", "DB00196",
       "Research use only", "Executive summary", "Drug information", "Documented interactions", "Biological mechanisms",
       "BIO-GINE research analysis", "Sources and reproducibility", "Limitations", "Machine-readable summary",
-      "Europe/Moscow, UTC+03:00", "BIO-GINE M4 · bd45f84e3c1b2c33 · seed 0", "0.811", "0.999972", "0.812 ± 0.010",
+      "Europe/Moscow, UTC+03:00", "BIO-GINE M4 · bd45f84e3c1b2c33 · seed 0", "0.81", "> 0.9999", "0.812 ± 0.010",
       "neither a per-pair confidence interval nor an ensemble estimate", "not a probability of clinical harm",
+      "What the two numbers mean", "Neither number is the probability that the combination harms anyone", "Glossary",
       "Unlabelled pairs are not confirmed safe", "CYP2C9", "H1", "Shared biological pathways (Reactome) · 10",
     ]) expect(d.flat, s).toContain(s);
     expect(d.flat).toContain(d.prep.reportId);
@@ -223,7 +230,7 @@ describe("content", () => {
 
   it("Russian report is in Russian, with the source's English words kept and labelled", () => {
     const d = docs.wfRu, r = wf.report.data as PairReport;
-    for (const s of ["Исследовательский отчёт о взаимодействии препаратов", "Варфарин", "Флуконазол", "Краткое резюме", "Ограничения", "DDI-Net — исследовательский прототип, а не медицинское изделие", "транслитерация", "Стр. 2 из"]) {
+    for (const s of ["Исследовательский отчёт о взаимодействии препаратов", "Варфарин", "Флуконазол", "Краткое резюме", "Ограничения", "DDI-Net — исследовательский прототип, а не медицинское изделие", "транслитерация", "Стр. 2 из", "Что означают эти два числа", "Словарь терминов", "Что остаётся гипотезой"]) {
       expect(d.flat, s).toContain(s);
     }
     expect(d.flat.toLowerCase()).toContain("перевод проекта (не слова источника)");
@@ -232,15 +239,19 @@ describe("content", () => {
   });
 
   it("cites every source record and reference exactly as given", () => {
-    for (const k of ["wfEn", "scEn", "synEn"] as const) {
+    for (const k of ["wfEn", "scEn", "synEn", "dupEn"] as const) {
       const d = docs[k];
       const r = (d.prep.input as Extract<ExportInput, { kind: "pair" }>).report.data;
       const flat = nospace(d.text);
-      r.evidence.forEach((e, i) => {
+      const g = groupEvidence(r.evidence);
+      r.evidence.forEach((e) => {
         if (e.source_url) expect(flat, `${k} url ${e.source_url}`).toContain(nospace(e.source_url));
+        if (e.retrieval_url) expect(flat, `${k} retrieval url`).toContain(nospace(e.retrieval_url));
         if (e.source_record_id) expect(flat, `${k} id`).toContain(nospace(e.source_record_id));
-        expect(d.flat).toContain(`[${i + 1}]`);
+        expect(flat, `${k} API record id in Supplement S1`).toContain(nospace(e.id));
+        expect(d.flat).toContain(g.excerptOf(e.id)!.label);
         expect(d.flat).toContain(e.retrieved_at);
+        if (e.section) expect(d.flat).toContain(e.section);
       });
       for (const f of r.mechanism.findings) {
         for (const id of f.annotation_ids) for (const pmid of r.mechanism.annotations[id]?.pmids ?? []) expect(d.flat, `PMID ${pmid}`).toContain(pmid);
@@ -261,6 +272,8 @@ describe("content", () => {
       const input = d.prep.input;
       const pool = numbers(input.kind === "pair" ? [input.report.data, input.graph?.data] : input.report.data).map(Math.abs);
       const formatted = new Set(pool.flatMap((x) => [0, 1, 2, 3, 4, 6].flatMap((n) => [x.toFixed(n), (x * 100).toFixed(1)])));
+      // a raw score at the edge of the scale is printed as a bound: "> 0.9999", "< 0.0001"
+      const bounds = (d.text.match(/[<>] 0\.(9999|0001)\b/g) ?? []).length;
       const text = d.text
         .replace(/\d{4}-\d{2}-\d{2}T[\d:.]+(Z|[+-]\d{2}:\d{2})?/g, " ")   // timestamps
         .replace(/\b[0-9a-f]{16,}\b/g, " ")                                 // hashes
@@ -270,7 +283,8 @@ describe("content", () => {
       expect(tokens.length, k).toBeGreaterThan(k === "synEn" ? 0 : input.kind === "pair" ? 5 : 10);
       for (const tok of tokens) {
         const v = tok.replace(/^[−+-]/, "");
-        expect(formatted.has(v) || ["3.0", "0.5", "1.1", "5.1"].includes(v), `${k}: ${tok} is not in the payload`).toBe(true);
+        const bound = (v === "0.9999" || v === "0.0001") && bounds > 0;
+        expect(formatted.has(v) || bound || ["3.0", "0.5", "1.1", "5.1"].includes(v), `${k}: ${tok} is not in the payload`).toBe(true);
       }
       // A score is never turned into a percentage of risk.
       expect(/\b\d{1,3}(\.\d)?\s?% (risk|chance|probability)/i.test(d.flat), k).toBe(false);
@@ -361,5 +375,60 @@ describe("content", () => {
       /не принимайте/i, /рекомендуем/i,
     ];
     for (const [k, d] of all()) for (const p of forbidden) expect(p.test(d.flat), `${p} in ${k}`).toBe(false);
+  });
+
+  it("counts source documents, shows a sentence a label repeats once, and keeps every record's provenance", () => {
+    const r = dup.report.data as PairReport;
+    const g = groupEvidence(r.evidence);
+    expect(r.evidence.filter((e) => e.category !== "database_interaction_record")).toHaveLength(6);   // as the old API sent them
+    expect([g.counts.labelDocuments, g.counts.labelExcerpts, g.counts.mergedRepeats]).toEqual([2, 4, 2]);
+    for (const [k, lang] of [["dupEn", "en"], ["dupRu", "ru"]] as const) {
+      const d = docs[k];
+      // the counts line is word for word the site's (data/evidenceGroups.ts)
+      expect(d.flat).toContain(evidenceCountsText(g.counts, lang));
+      // section 3 (before Supplement S1) quotes the repeated sentence once
+      const start = d.flat.indexOf(lang === "en" ? "Source documents" : "Документы-источники");
+      const end = d.flat.indexOf(lang === "en" ? "Supplement S1. Evidence records" : "Приложение S1. Записи-доказательства");
+      expect(start, k).toBeGreaterThan(0);
+      expect(end, k).toBeGreaterThan(start);
+      const body = d.flat.slice(start, end);
+      const sentence = "Careful monitoring of prothrombin time in patients receiving fluconazole and warfarin";
+      expect(body.split(sentence).length - 1, `${k}: repeated sentence in section 3`).toBe(1);
+      expect(d.flat).toContain(lang === "en" ? "not separate confirmations" : "не отдельные подтверждения");
+      expect(d.flat).toContain(lang === "en" ? "Found in sections: PRECAUTIONS · DRUG INTERACTIONS" : "Найдено в разделах: PRECAUTIONS · DRUG INTERACTIONS");
+      // the duplicate records are still listed, and marked as the same text
+      expect(d.flat).toContain(lang === "en" ? "same text as [2.1]" : "тот же текст, что [2.1]");
+      expect(d.flat).toContain(lang === "en" ? "SYNTHETIC TEST DATA" : "СИНТЕТИЧЕСКИЕ ТЕСТОВЫЕ ДАННЫЕ");
+    }
+  });
+
+  it("labels the pooled test metric as pooled and never as an S2 figure", () => {
+    for (const k of ["wfEn", "wfRu", "scEn"] as const) {
+      const d = docs[k];
+      const r = (d.prep.input as Extract<ExportInput, { kind: "pair" }>).report.data;
+      expect(r.model.regime).toBe("S2");
+      if (k.endsWith("Ru")) {
+        expect(d.flat).toContain("Отдельной оценки только для S2 нет");
+        expect(d.flat).toContain("объединённом отложенном тесте (пары S2 и S3 вместе");
+      } else {
+        expect(d.flat).toContain("No S2-only estimate exists");
+        expect(d.flat).toContain("pooled held-out test (S2 and S3 pairs together; no S2-only estimate exists): AUPRC 0.812 ± 0.010");
+        expect(d.flat).toContain("84,690 pairs, 76,932 of them S2 and 7,758 S3");
+        expect(d.flat).not.toMatch(/Measured (performance|quality) for this regime/);
+        // the stored response predates the backend fix and says "(as here): AUPRC"; the report labels it
+        expect(d.flat).toContain("(as here): AUPRC 0.812 ± 0.010");
+        expect(d.flat).toContain("Note added by the report: this figure comes from the pooled held-out test");
+        // no figure presented as S2's own: "S2 AUPRC 0.81", "AUPRC on S2", "S2-only … 0.8"
+        expect(d.flat).not.toMatch(/\bS2\b(-only)?\s*(test\s*)?(AUPRC|AUROC)\s*[:=]?\s*0\.\d|(AUPRC|AUROC)\s*(for|on|in)\s*(the\s*)?S2\b|S2-only[^.]{0,15}0\.\d/);
+      }
+    }
+  });
+
+  it("prints scores with the precision they have, and the exact values in the appendix", () => {
+    const d = docs.wfEn, m = (wf.report.data as PairReport).model;
+    expect(d.flat).toMatch(new RegExp(`CALIBRATED SCORE\\s*${m.calibrated_model_score!.toFixed(2).replace(".", "\\.")}\\b`));
+    expect(d.flat).not.toContain(m.raw_model_score!.toFixed(6));
+    expect(nospace(d.text)).toContain(`"calibrated_score":${m.calibrated_model_score}`);
+    expect(nospace(d.text)).toContain(`"raw_score":${m.raw_model_score}`);
   });
 });

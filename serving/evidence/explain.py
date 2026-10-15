@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import re
 
+from .adapters.openfda import same_finding
 from .schema import (
     Bi, Conflict, EvidenceCategory, EvidenceRecord, EvidenceStatus, Explanation,
     MechanismBlock, MechanismFinding, ModelBlock, Section, SourceCheck, Statement,
@@ -96,6 +97,33 @@ class Names:
 
 
 # --------------------------------------------------------------- known ------
+def _label_documents(records: list[EvidenceRecord]) -> list[list[EvidenceRecord]]:
+    """Label records grouped by source document (SPL set ID), in first-seen order."""
+    docs: dict[str, list[EvidenceRecord]] = {}
+    for e in records:
+        docs.setdefault(e.source_record_id or e.id, []).append(e)
+    return list(docs.values())
+
+
+def _sections(doc: list[EvidenceRecord]) -> list[str]:
+    seen: list[str] = []
+    for e in doc:
+        for x in [e.section or "", *e.also_in_sections]:
+            if x and x not in seen:
+                seen.append(x)
+    return seen
+
+
+def _distinct_excerpts(doc: list[EvidenceRecord]) -> int:
+    """Distinct sentences in one document. Records from an older engine may
+    repeat a sentence under two sections; those count once."""
+    texts: list[str] = []
+    for e in doc:
+        if not any(same_finding(e.statement.rstrip("…"), t) for t in texts):
+            texts.append(e.statement.rstrip("…"))
+    return len(texts)
+
+
 def _known(n: Names, a: str, b: str, evidence: list[EvidenceRecord], conflicts: list[Conflict],
            checks: list[SourceCheck]) -> list[Statement]:
     out: list[Statement] = []
@@ -105,17 +133,25 @@ def _known(n: Names, a: str, b: str, evidence: list[EvidenceRecord], conflicts: 
     no_effect = [e for e in evidence if e.category == EvidenceCategory.LABEL_MENTION_NO_EFFECT_REPORTED]
     db = [e for e in evidence if e.category == EvidenceCategory.DATABASE_INTERACTION_RECORD]
 
-    for e in labels[:MAX_LISTED]:
-        sec_ru = SECTION_RU.get(e.section or "", e.section or "")
-        out.append(Statement(kind="documented", refs=[e.id], text=Bi(
-            ru=f"В официальной инструкции к препарату {n.ru(e.drug1_id)} (раздел «{sec_ru}») упоминается препарат {n.ru(e.drug2_id)}. Цитата на английском — в карточке источника.",
-            en=f"The official label of {n.en(e.drug1_id)} names {n.en(e.drug2_id)} in its {(e.section or '').title()} section. The quotation is in the source card.",
+    # One statement per label DOCUMENT (SPL set ID), not per excerpt: several
+    # excerpts of one label are one source, and must not read as several.
+    docs = _label_documents(labels)
+    for doc in docs[:MAX_LISTED]:
+        e = doc[0]
+        sections = _sections(doc)
+        k = _distinct_excerpts(doc)
+        sec_ru = ", ".join(f"«{SECTION_RU.get(x, x)}»" for x in sections)
+        sec_en = ", ".join(x.title() for x in sections)
+        out.append(Statement(kind="documented", refs=[x.id for x in doc], text=Bi(
+            ru=f"В официальной инструкции к препарату {n.ru(e.drug1_id)} упоминается препарат {n.ru(e.drug2_id)}: {k} {_plural_ru(k, ('фрагмент', 'фрагмента', 'фрагментов'))} (разделы {sec_ru}). Цитаты на английском — в карточках источника.",
+            en=f"The official label of {n.en(e.drug1_id)} names {n.en(e.drug2_id)} in {k} excerpt(s) (sections: {sec_en}). The quotations are in the source cards.",
         )))
-    if len(labels) > MAX_LISTED:
-        rest = labels[MAX_LISTED:]
-        out.append(Statement(kind="documented", refs=[e.id for e in rest], text=Bi(
-            ru=f"Ещё {len(rest)} {_plural_ru(len(rest), ('фрагмент', 'фрагмента', 'фрагментов'))} инструкций — в списке источников.",
-            en=f"{len(rest)} more label excerpt(s) are in the source list.")))
+    if len(docs) > MAX_LISTED:
+        rest = [x for doc in docs[MAX_LISTED:] for x in doc]
+        k = len(docs) - MAX_LISTED
+        out.append(Statement(kind="documented", refs=[x.id for x in rest], text=Bi(
+            ru=f"Ещё {k} {_plural_ru(k, ('инструкция', 'инструкции', 'инструкций'))} — в списке источников.",
+            en=f"{k} more label(s) are in the source list.")))
     for e in no_effect[:2]:
         out.append(Statement(kind="documented", refs=[e.id], text=Bi(
             ru=f"В инструкции к препарату {n.ru(e.drug1_id)} есть фрагмент о препарате {n.ru(e.drug2_id)}, где сообщается, что в изученных условиях заметного эффекта не наблюдали. Это описание конкретных условий исследования, а не гарантия безопасности.",
@@ -284,10 +320,21 @@ def _certainty(evidence: list[EvidenceRecord], mech: MechanismBlock, model: Mode
     out: list[Statement] = []
     docs = [e for e in evidence if e.category != EvidenceCategory.LABEL_MENTION_NO_EFFECT_REPORTED]
     if docs:
-        k = len(docs)
+        label_docs = _label_documents([e for e in docs if e.category != EvidenceCategory.DATABASE_INTERACTION_RECORD])
+        n_db = sum(e.category == EvidenceCategory.DATABASE_INTERACTION_RECORD for e in docs)
+        n_ex = sum(_distinct_excerpts(d) for d in label_docs)
+        parts_ru, parts_en = [], []
+        if label_docs:
+            nl = len(label_docs)
+            parts_ru.append(f"{nl} {_plural_ru(nl, ('инструкция', 'инструкции', 'инструкций'))} FDA "
+                            f"({n_ex} {_plural_ru(n_ex, ('фрагмент', 'фрагмента', 'фрагментов'))})")
+            parts_en.append(f"{nl} FDA label(s) ({n_ex} distinct excerpt(s))")
+        if n_db:
+            parts_ru.append(f"{n_db} {_plural_ru(n_db, ('запись', 'записи', 'записей'))} DrugBank")
+            parts_en.append(f"{n_db} DrugBank record(s)")
         out.append(Statement(kind="documented", refs=[e.id for e in docs], text=Bi(
-            ru=f"Задокументировано: {k} {_plural_ru(k, ('запись', 'записи', 'записей'))} в источниках. Это самая надёжная часть страницы.",
-            en=f"Documented: {k} source record(s). This is the most reliable part of the page.")))
+            ru=f"Задокументировано: {' и '.join(parts_ru)}. Несколько фрагментов одной инструкции — один источник, а не отдельные подтверждения; запись DrugBank тоже может опираться на текст инструкции. Это самая надёжная часть страницы.",
+            en=f"Documented: {' and '.join(parts_en)}. Several excerpts of one label are one source, not separate confirmations, and a DrugBank record may itself rest on label text. This is the most reliable part of the page.")))
     out.append(Statement(kind="caveat", text=Bi(
         ru="Степень тяжести здесь не присваивается: в выгрузке DrugBank её нет, а для инструкций показан только раздел, в котором упомянут препарат.",
         en="No severity is assigned: the DrugBank export has none, and for labels only the section that names the drug is shown.")))
@@ -300,12 +347,17 @@ def _certainty(evidence: list[EvidenceRecord], mech: MechanismBlock, model: Mode
     if model.available and not model.abstain and model.measured_performance:
         p = model.measured_performance[0]
         if model.regime == "S3":
-            ru_view, en_view = "где оба препарата модель не видела при обучении (как здесь)", "where the model saw neither drug in training (as here)"
+            ru_view = "на отложенных парах, где модель не видела при обучении ни один из препаратов (S3, как здесь)"
+            en_view = "on held-out pairs where the model saw neither drug in training (S3, as here)"
         else:
-            ru_view, en_view = "где один из препаратов модель не видела при обучении (как здесь)", "where the model did not see one of the drugs in training (as here)"
+            # The frozen study reports S2 only pooled with S3; no S2-only figure exists.
+            ru_view = ("на объединённом отложенном тесте (пары S2 и S3 вместе, 91 % — S2; отдельной оценки только для S2 "
+                       "в замороженных результатах нет)")
+            en_view = ("on the pooled held-out test (S2 and S3 pairs together, 91% S2; the frozen results hold no "
+                       "S2-only figure)")
         out.append(Statement(kind="model", refs=["model"], text=Bi(
-            ru=f"Качество модели на отложенных парах, {ru_view}: {p.metric} {p.mean:.3f} ± {p.sd:.3f} по {p.n_seeds} запускам. Это средняя характеристика по многим парам, а не уверенность в этой конкретной паре.",
-            en=f"Model quality on held-out pairs {en_view}: {p.metric} {p.mean:.3f} ± {p.sd:.3f} over {p.n_seeds} runs. That is an average over many pairs, not confidence in this particular pair.")))
+            ru=f"Качество модели {ru_view}: {p.metric} {p.mean:.3f} ± {p.sd:.3f} (разброс между {p.n_seeds} запусками обучения). Это средняя характеристика по многим парам, а не уверенность в этой конкретной паре.",
+            en=f"Model quality {en_view}: {p.metric} {p.mean:.3f} ± {p.sd:.3f} (spread across {p.n_seeds} training runs). That is an average over many pairs, not confidence in this particular pair.")))
     elif model.available and model.regime == "S1" and not model.training_label_seen:
         out.append(Statement(kind="model", refs=["model"], text=Bi(
             ru="Для пар из двух препаратов, на которых модель обучалась, её точность не измерялась.",

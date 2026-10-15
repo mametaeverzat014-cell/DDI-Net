@@ -85,6 +85,7 @@ class EvidenceRecord(BaseModel):
     direction_check: dict | None = Field(None, description="Measured agreement of the export's drug order with documented roles for this interaction type.")
     statement_ru: str | None = Field(None, description="Project translation of the source statement. Not the source's words; the English statement is.")
     section: str | None = Field(None, description="Label section the excerpt comes from, as named in the source.")
+    also_in_sections: list[str] = Field([], description="Other sections of the same label containing the same sentence. The excerpt is listed once; repeated text in one document is not separate evidence.")
     drug1_id: str | None = Field(None, description="Drug in the source's '#Drug1' / label-owner position.")
     drug2_id: str | None = Field(None, description="Drug in the source's '#Drug2' / mentioned position.")
     retrieved_at: str
@@ -267,7 +268,8 @@ class MultiPair(BaseModel):
     drug_b: str
     evidence_status: EvidenceStatus
     n_database_records: int
-    n_label_records: int
+    n_label_records: int = Field(description="Distinct label excerpts (a sentence repeated across sections of one label counts once).")
+    n_label_documents: int | None = Field(None, description="Distinct FDA label documents (SPL set IDs) the excerpts come from. Absent from older APIs.")
     n_mechanism_hypotheses: int
     calibrated_model_score: float | None
     regime: str

@@ -140,7 +140,7 @@ export function Analyzer({ pair, setPair, setView }: {
               <div style={{ display: "grid", gridTemplateColumns: mode === "research" ? "minmax(0, 1.5fr) minmax(0, 1fr)" : "minmax(0, 1fr)", gap: 22, alignItems: "start" }} className="collapse">
                 <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>
                   <ExplanationView report={report} refs={refs} />
-                  <EvidenceList report={report} research={mode === "research"} />
+                  <EvidenceList report={report} research={mode === "research"} groups={refs?.groups} />
                 </div>
                 {mode === "research" && (
                   <div style={{ display: "flex", flexDirection: "column", gap: 22 }}>

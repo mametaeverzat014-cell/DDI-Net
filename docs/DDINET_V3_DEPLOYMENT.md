@@ -71,6 +71,39 @@ scientific results are read, never modified.
 `render.yaml` describes the *production* service (Starter plan) with the same
 settings; it is not needed for the test service.
 
+### 3.1 Redeploying after backend changes
+
+Auto-Deploy is off, so a push to `feature/ddinet-v3` does **not** update the
+test API. After a commit that changes `serving/` (for example the label
+deduplication and metric wording of the report quality pass,
+`docs/DDINET_V3_REPORT_QUALITY_PASS.md`):
+
+1. Render Dashboard → `ddinet-api-test` → **Manual Deploy** → **Deploy latest
+   commit**. Check that the commit shown is the one you pushed.
+2. Wait for the deploy to go live (the image is rebuilt, roughly 10–20 minutes).
+3. Verify that the new backend is serving:
+
+   ```bash
+   API=https://ddinet-api-test.onrender.com
+   curl -s $API/api/health/ready
+   # multi-drug pairs now carry n_label_documents:
+   curl -s -X POST $API/api/v3/multi -H 'Content-Type: application/json' \
+     -d '{"drugs":["DB00682","DB00196","DB00641"]}' | grep -o '"n_label_documents":[0-9]*' | head -3
+   # the explanation calls the test metric pooled:
+   curl -s -X POST $API/api/v3/report -H 'Content-Type: application/json' \
+     -d '{"drug_a":"DB00682","drug_b":"DB00196"}' | grep -o 'pooled held-out test[^"]*' | head -1
+   ```
+
+   Both greps must print something. If they print nothing, the old image is
+   still serving.
+4. Re-export the warfarin + fluconazole PDF from the Preview. With openFDA
+   reachable, section 3 shows each FDA label once, with its distinct excerpts.
+
+Until step 3 succeeds, do not describe the Preview frontend and the test API as
+synchronised. The site and the PDF stay correct with the old API: they group
+repeated label text themselves and annotate the old metric sentence. But the
+API's own explanation text remains the old version.
+
 ## 4. Vercel: Preview connected to the test API
 
 1. Vercel → Project → **Settings → Environment Variables** → Add:

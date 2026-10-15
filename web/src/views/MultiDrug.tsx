@@ -10,6 +10,7 @@ import { nameOf } from "../components/DrugPicker";
 import { loadDrugs, matchesQuery, type Drug } from "../data/drugs";
 import { apiConfigured } from "../data/analyze";
 import { fetchMulti, MAX_MULTI, type MultiPair, type MultiReport, type Remote } from "../data/v3";
+import { fmtCalibrated } from "../data/scoreFormat";
 import { useI18n, pick, type Bi } from "../i18n";
 import { RemoteNotice, SourcesChecked } from "../components/v3/ReportParts";
 import { REVIEW_REASON, STATUS_TIER } from "../components/v3/evidenceStyle";
@@ -208,7 +209,7 @@ function PairTable({ pairs, label, onPick }: { pairs: MultiPair[]; label: (id: s
                   {p.evidence_status === "no_documented_evidence_found" && <div style={{ fontSize: 11, color: "var(--text-3)", marginTop: 4 }}>{pick(T.nothing, lang)}</div>}
                 </td>
                 <td style={{ fontSize: 12 }}>{p.review_reasons.map((r) => (REVIEW_REASON[r] ? pick(REVIEW_REASON[r], lang) : r)).join("; ")}</td>
-                <td className="mono" style={{ fontSize: 12 }}>{p.calibrated_model_score === null ? (p.training_label_seen ? pick(T.abstain, lang) : "—") : p.calibrated_model_score.toFixed(3)}<div style={{ fontSize: 10, color: "var(--text-3)" }}>{p.regime}</div></td>
+                <td className="mono" style={{ fontSize: 12 }}>{p.calibrated_model_score === null ? (p.training_label_seen ? pick(T.abstain, lang) : "—") : fmtCalibrated(p.calibrated_model_score)}<div style={{ fontSize: 10, color: "var(--text-3)" }}>{p.regime}</div></td>
               </tr>
             );
           })}

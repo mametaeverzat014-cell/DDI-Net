@@ -1,0 +1,933 @@
+{
+ "report": {
+  "data": {
+   "report_version": "3.0",
+   "drug_a": {
+    "id": "DB06789",
+    "inn": "hydroxyprogesterone caproate",
+    "name_ru": "гидроксипрогестерон капроат",
+    "name_ru_is_transliteration": true,
+    "groups": "approved|investigational",
+    "drug_type": "small molecule",
+    "query": "DB06789",
+    "matched_on": null
+   },
+   "drug_b": {
+    "id": "DB06154",
+    "inn": "pentaerithrityl tetranitrate",
+    "name_ru": "пентеритритил тетранитрат",
+    "name_ru_is_transliteration": true,
+    "groups": "approved",
+    "drug_type": "small molecule",
+    "query": "DB06154",
+    "matched_on": null
+   },
+   "evidence_status": "documented_no_severity",
+   "evidence_status_label": {
+    "ru": "Взаимодействие задокументировано в базе данных; степень тяжести источником не указана",
+    "en": "Interaction documented in a database; the source gives no severity"
+   },
+   "evidence": [
+    {
+     "id": "drugbank-tdc:DB06789>DB06154:t70",
+     "category": "database_interaction_record",
+     "source_name": "DrugBank DDI records via Therapeutics Data Commons",
+     "source_version": "PyTDC 1.1.15, tdc.multi_pred.DDI(name='DrugBank')",
+     "source_record_id": "DB06789|DB06154|Y=70",
+     "source_url": "https://tdcommons.ai/multi_pred_tasks/ddi/",
+     "retrieval_url": null,
+     "original_identifiers": {
+      "drugbank_id_drug1_as_exported": "DB06789",
+      "drugbank_id_drug2_as_exported": "DB06154",
+      "tdc_interaction_type": "70"
+     },
+     "statement": "The therapeutic efficacy of one of the two drugs can be decreased when used in combination with the other drug.",
+     "statement_origin": "source_template_direction_neutral",
+     "source_template": "The therapeutic efficacy of #Drug2 can be decreased when used in combination with #Drug1.",
+     "direction": "not_verified",
+     "direction_check": null,
+     "statement_ru": "Терапевтическая эффективность одного из двух препаратов может снижаться при сочетании с другим препаратом.",
+     "section": null,
+     "also_in_sections": [],
+     "drug1_id": null,
+     "drug2_id": null,
+     "retrieved_at": "2026-08-24",
+     "license": "TDC: CC BY 4.0; underlying DrugBank content: DrugBank non-commercial licence",
+     "source_severity": null,
+     "qualifiers": [
+      "DrugBank's standard sentence for this interaction type, not a quotation from a study or a label.",
+      "This export carries no severity grade. None is implied.",
+      "The export does not state the basis of each record (clinical study, label text, or inference from pharmacological properties).",
+      "The export's drug order for this interaction type cannot be checked, and for checkable types it proved unreliable (reversed in about 90% of records for types 47 and 73), so the statement is shown without naming which drug is affected."
+     ]
+    }
+   ],
+   "conflicts": [],
+   "mechanism": {
+    "findings": [],
+    "shared_pathways": [],
+    "n_shared_pathways_total": 0,
+    "annotations": {},
+    "coverage": {
+     "DB06789": {
+      "target": 1,
+      "enzyme": 3,
+      "transporter": 0,
+      "carrier": 0
+     },
+     "DB06154": {
+      "target": 6,
+      "enzyme": 3,
+      "transporter": 0,
+      "carrier": 0
+     }
+    },
+    "note": {
+     "ru": "Ниже — задокументированные роли каждого препарата по отдельности (DrugBank, ChEMBL) и то, как они складываются. Это гипотезы о механизме, а не доказательство взаимодействия: базы не указывают силу действия и долю участия белка в переработке препарата.",
+     "en": "Below are each drug's documented roles on their own (DrugBank, ChEMBL) and how they line up. These are mechanism hypotheses, not evidence of an interaction: the databases do not record strength of effect or how much of a drug's processing a protein handles."
+    }
+   },
+   "model": {
+    "available": true,
+    "unavailable_reason": null,
+    "model": "BIO-GINE M4",
+    "checkpoint": "bd45f84e3c1b2c33",
+    "raw_model_score": 0.0008341100776898329,
+    "calibrated_model_score": 0.2720108262613777,
+    "band": "low",
+    "regime": "S2",
+    "split_a": "train",
+    "split_b": "val",
+    "training_label_seen": false,
+    "reliability": "held_out_like",
+    "measured_performance": [
+     {
+      "view": "pooled drug-disjoint test (S2 and S3; 91% S2)",
+      "metric": "AUPRC",
+      "mean": 0.8117107056824635,
+      "sd": 0.009671090046444024,
+      "n_seeds": 5,
+      "source": "paper/FACTS.json models.M4_pooled (v2_final_test.csv @ frozen tag)"
+     },
+     {
+      "view": "pooled, both annotated",
+      "metric": "AUROC",
+      "mean": 0.8176889406938518,
+      "sd": 0.009571260994343847,
+      "n_seeds": 5,
+      "source": "reports/v3_coverage_reliability.json"
+     }
+    ],
+    "biology_available_a": true,
+    "biology_available_b": true,
+    "notes": [
+     {
+      "ru": "Один из препаратов входил в проверочную выборку: модель на нём не обучалась, но по нему выбирали конфигурацию и калибровку.",
+      "en": "One drug was in the validation set: the model was not trained on it, but it was used to choose the configuration and the calibration."
+     },
+     {
+      "ru": "Калиброванная оценка подобрана на проверочных парах, где задокументированных и случайно набранных пар поровну. Это не вероятность вреда и не частота взаимодействий в реальной практике.",
+      "en": "The calibrated score was fitted on validation pairs with equal numbers of documented and randomly drawn pairs. It is not a probability of harm, nor how often interactions happen in practice."
+     }
+    ],
+    "abstain": false,
+    "modality_reliance": {
+     "baseline_raw": 0.0008341100776898329,
+     "without_molecular_raw": 6.651839801249109e-06,
+     "without_protein_raw": 0.0015252881162544875,
+     "without_pathway_raw": 0.18344324035483361,
+     "delta_molecular": 0.0008274582378885837,
+     "delta_protein": -0.0006911780385646546,
+     "delta_pathway": -0.1826091302771438,
+     "method": "branch zeroed before the frozen fusion layer for both drugs; mask unchanged (as scripts/49_v2_interpretability.py at the frozen tag)",
+     "validation": {
+      "n_rows": 84690,
+      "max_abs_diff": 6.051126069828161e-06,
+      "source": "reports/v3_modality_parity.json (vs reports/v2_interpretability/seed0_modality_contribution.csv @ frozen tag)"
+     },
+     "interpretation": {
+      "ru": "Это показывает, на какие данные модель опирается для этой пары, а не почему препараты взаимодействуют: модель никогда не видела «обнулённые» данные при обучении.",
+      "en": "This shows which data the model leans on for this pair, not why the drugs interact: the model never saw zeroed inputs in training."
+     }
+    }
+   },
+   "explanation": {
+    "method": "deterministic templates over retrieved records; no language model",
+    "sections": [
+     {
+      "id": "known",
+      "title": {
+       "ru": "Что известно",
+       "en": "What is known"
+      },
+      "statements": [
+       {
+        "kind": "documented",
+        "text": {
+         "ru": "В базе DrugBank это сочетание описано так: «Терапевтическая эффективность одного из двух препаратов может снижаться при сочетании с другим препаратом.» (перевод проекта; оригинал — в карточке источника).",
+         "en": "DrugBank describes this combination as: “The therapeutic efficacy of one of the two drugs can be decreased when used in combination with the other drug.”"
+        },
+        "refs": [
+         "drugbank-tdc:DB06789>DB06154:t70"
+        ]
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Для этого типа записей порядок препаратов в выгрузке DrugBank оказался ненадёжным (мы это измерили), поэтому здесь не сказано, какой из двух препаратов на какой влияет.",
+         "en": "For this record type the drug order in the DrugBank export proved unreliable (we measured it), so the text does not say which drug affects which."
+        },
+        "refs": [
+         "drugbank-tdc:DB06789>DB06154:t70"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "why",
+      "title": {
+       "ru": "Почему это может происходить",
+       "en": "Why this may happen"
+      },
+      "statements": [
+       {
+        "kind": "missing",
+        "text": {
+         "ru": "Среди задокументированных ролей этих препаратов нет общего белка, через который они могли бы влиять друг на друга. Механизм может быть иным или ещё не изученным.",
+         "en": "The documented roles of these drugs share no protein through which they might affect each other. The mechanism may be different, or not yet studied."
+        },
+        "refs": []
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Источник, описывающий взаимодействие, не указывает его механизм.",
+         "en": "The source that documents the interaction does not state its mechanism."
+        },
+        "refs": []
+       }
+      ]
+     },
+     {
+      "id": "ai",
+      "title": {
+       "ru": "Что нашла модель",
+       "en": "What the AI found"
+      },
+      "statements": [
+       {
+        "kind": "model",
+        "text": {
+         "ru": "Модель BIO-GINE считает, что эта пара мало похожа на пары, уже описанные как взаимодействующие. Это сходство с уже описанными парами, а не оценка вреда.",
+         "en": "BIO-GINE finds this pair bears little resemblance to pairs already recorded as interacting. This is resemblance to recorded pairs, not an estimate of harm."
+        },
+        "refs": [
+         "model"
+        ]
+       },
+       {
+        "kind": "model",
+        "text": {
+         "ru": "Сильнее всего оценка модели для этой пары зависит от данных о биологических путях: без них она меняется на 0.18. Это говорит о том, на что опирается модель, а не о том, почему препараты взаимодействуют.",
+         "en": "For this pair the model's score depends most on the pathway data: without it the score moves by 0.18. This says what the model leans on, not why the drugs interact."
+        },
+        "refs": [
+         "model"
+        ]
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Один из препаратов входил в проверочную выборку: модель на нём не обучалась, но по нему выбирали конфигурацию и калибровку.",
+         "en": "One drug was in the validation set: the model was not trained on it, but it was used to choose the configuration and the calibration."
+        },
+        "refs": [
+         "model"
+        ]
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Калиброванная оценка подобрана на проверочных парах, где задокументированных и случайно набранных пар поровну. Это не вероятность вреда и не частота взаимодействий в реальной практике.",
+         "en": "The calibrated score was fitted on validation pairs with equal numbers of documented and randomly drawn pairs. It is not a probability of harm, nor how often interactions happen in practice."
+        },
+        "refs": [
+         "model"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "certainty",
+      "title": {
+       "ru": "Насколько это надёжно",
+       "en": "How certain is this?"
+      },
+      "statements": [
+       {
+        "kind": "documented",
+        "text": {
+         "ru": "Задокументировано: 1 запись DrugBank. Несколько фрагментов одной инструкции — один источник, а не отдельные подтверждения; запись DrugBank тоже может опираться на текст инструкции. Это самая надёжная часть страницы.",
+         "en": "Documented: 1 DrugBank record(s). Several excerpts of one label are one source, not separate confirmations, and a DrugBank record may itself rest on label text. This is the most reliable part of the page."
+        },
+        "refs": [
+         "drugbank-tdc:DB06789>DB06154:t70"
+        ]
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Степень тяжести здесь не присваивается: в выгрузке DrugBank её нет, а для инструкций показан только раздел, в котором упомянут препарат.",
+         "en": "No severity is assigned: the DrugBank export has none, and for labels only the section that names the drug is shown."
+        },
+        "refs": []
+       },
+       {
+        "kind": "model",
+        "text": {
+         "ru": "Качество модели на объединённом отложенном тесте (пары S2 и S3 вместе, 91 % — S2; отдельной оценки только для S2 в замороженных результатах нет): AUPRC 0.812 ± 0.010 (разброс между 5 запусками обучения). Это средняя характеристика по многим парам, а не уверенность в этой конкретной паре.",
+         "en": "Model quality on the pooled held-out test (S2 and S3 pairs together, 91% S2; the frozen results hold no S2-only figure): AUPRC 0.812 ± 0.010 (spread across 5 training runs). That is an average over many pairs, not confidence in this particular pair."
+        },
+        "refs": [
+         "model"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "missing",
+      "title": {
+       "ru": "Чего мы не знаем",
+       "en": "What is missing"
+      },
+      "statements": [
+       {
+        "kind": "missing",
+        "text": {
+         "ru": "Источник «официальные инструкции FDA (openFDA)» сейчас не удалось проверить. Его данные в этот ответ не вошли.",
+         "en": "The source “FDA labels (openFDA)” could not be checked right now. Its data is not part of this answer."
+        },
+        "refs": []
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Здесь не учитываются дозы, длительность приёма, возраст, работа почек и печени, другие лекарства и особенности конкретного человека — всё, от чего зависит, проявится ли взаимодействие и насколько сильно.",
+         "en": "Doses, duration, age, kidney and liver function, other medicines and individual factors are not taken into account — everything that decides whether an interaction shows up and how strongly."
+        },
+        "refs": []
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Решения о приёме лекарств принимают врач или фармацевт. Эта страница не может их заменить.",
+         "en": "Decisions about medicines belong to a doctor or pharmacist. This page cannot replace them."
+        },
+        "refs": []
+       }
+      ]
+     }
+    ]
+   },
+   "sources_checked": [
+    {
+     "source": "drugbank_tdc",
+     "status": "ok",
+     "detail": "1 record(s) in the local DrugBank export (TDC, retrieved 2026-08-24)."
+    },
+    {
+     "source": "openfda_label",
+     "status": "unavailable",
+     "detail": "openfda_label: recently unreachable; retrying after a cooldown"
+    }
+   ],
+   "limitations": [
+    {
+     "ru": "Только 1 705 препаратов исследовательского набора данных; международные названия есть у 1 497 из них.",
+     "en": "Only the 1,705 drugs of the research dataset; 1,497 of them have an international name."
+    },
+    {
+     "ru": "Записи DrugBank не содержат степени тяжести и не указывают, на чём основаны. Для многих типов записей порядок препаратов в выгрузке ненадёжен (измерено).",
+     "en": "DrugBank records carry no severity and do not state their basis. For many record types the drug order in the export is unreliable (measured)."
+    },
+    {
+     "ru": "Инструкции ищутся по названию препарата. Утверждения о целых группах препаратов («сильные ингибиторы CYP3A4») не распознаются, поэтому отсутствие совпадения не означает, что в инструкции ничего нет.",
+     "en": "Labels are searched by drug name. Statements about whole drug classes (“strong CYP3A4 inhibitors”) are not recognised, so no match does not mean the label is silent."
+    },
+    {
+     "ru": "Гипотезы о механизме собраны из ролей каждого препарата по отдельности; сила действия и доля участия белка неизвестны.",
+     "en": "Mechanism hypotheses are assembled from each drug's roles separately; strength of effect and the protein's share of the work are unknown."
+    },
+    {
+     "ru": "Оценка BIO-GINE — исследовательский сигнал сходства с задокументированными парами. Это не вероятность вреда.",
+     "en": "The BIO-GINE score is a research signal of resemblance to documented pairs. It is not a probability of harm."
+    }
+   ],
+   "disclaimer": {
+    "ru": "Это исследовательский прототип, а не медицинское изделие. Он не заменяет врача или фармацевта и не может сказать, безопасно ли сочетание лекарств для конкретного человека.",
+    "en": "This is a research prototype, not a medical device. It does not replace a doctor or pharmacist and cannot say whether a combination is safe for a particular person."
+   },
+   "generated_at": "2026-10-15T11:06:29+00:00"
+  },
+  "meta": {
+   "endpoint": "http://127.0.0.1:8765/api/v3/report",
+   "request": {
+    "drug_a": "DB06789",
+    "drug_b": "DB06154",
+    "include_labels": true
+   },
+   "receivedAt": "2026-10-15T11:06:29.176Z"
+  }
+ },
+ "graph": {
+  "data": {
+   "drug_a": "DB06789",
+   "drug_b": "DB06154",
+   "nodes": [
+    {
+     "id": "DB06789",
+     "kind": "drug",
+     "label": "hydroxyprogesterone caproate",
+     "side": "a",
+     "detail": {
+      "inn": "hydroxyprogesterone caproate",
+      "name_ru": "гидроксипрогестерон капроат"
+     }
+    },
+    {
+     "id": "DB06154",
+     "kind": "drug",
+     "label": "pentaerithrityl tetranitrate",
+     "side": "b",
+     "detail": {
+      "inn": "pentaerithrityl tetranitrate",
+      "name_ru": "пентеритритил тетранитрат"
+     }
+    },
+    {
+     "id": "P:P33261",
+     "kind": "protein",
+     "label": "CYP2C19",
+     "side": "a",
+     "detail": {
+      "uniprot": "P33261",
+      "gene": "CYP2C19",
+      "name": "Cytochrome P450 2C19",
+      "organism": "Humans",
+      "family": "cytochrome_p450",
+      "plain": {
+       "ru": "Фермент из семейства цитохромов P450. Такие ферменты работают в основном в печени и кишечнике и расщепляют многие лекарства, чтобы организм мог их вывести.",
+       "en": "An enzyme of the cytochrome P450 family. These work mainly in the liver and gut and break down many medicines so the body can clear them."
+      }
+     }
+    },
+    {
+     "id": "P:P08684",
+     "kind": "protein",
+     "label": "CYP3A4",
+     "side": "a",
+     "detail": {
+      "uniprot": "P08684",
+      "gene": "CYP3A4",
+      "name": "Cytochrome P450 3A4",
+      "organism": "Humans",
+      "family": "cytochrome_p450",
+      "plain": {
+       "ru": "Фермент из семейства цитохромов P450. Такие ферменты работают в основном в печени и кишечнике и расщепляют многие лекарства, чтобы организм мог их вывести.",
+       "en": "An enzyme of the cytochrome P450 family. These work mainly in the liver and gut and break down many medicines so the body can clear them."
+      }
+     }
+    },
+    {
+     "id": "P:P20815",
+     "kind": "protein",
+     "label": "CYP3A5",
+     "side": "a",
+     "detail": {
+      "uniprot": "P20815",
+      "gene": "CYP3A5",
+      "name": "Cytochrome P450 3A5",
+      "organism": "Humans",
+      "family": "cytochrome_p450",
+      "plain": {
+       "ru": "Фермент из семейства цитохромов P450. Такие ферменты работают в основном в печени и кишечнике и расщепляют многие лекарства, чтобы организм мог их вывести.",
+       "en": "An enzyme of the cytochrome P450 family. These work mainly in the liver and gut and break down many medicines so the body can clear them."
+      }
+     }
+    },
+    {
+     "id": "P:P06401",
+     "kind": "protein",
+     "label": "PGR",
+     "side": "a",
+     "detail": {
+      "uniprot": "P06401",
+      "gene": "PGR",
+      "name": "Progesterone receptor",
+      "organism": "Humans",
+      "family": "other",
+      "plain": {
+       "ru": "Мишень: белок, на который лекарство действует, чтобы оказать свой эффект.",
+       "en": "A target: a protein the drug acts on to produce its effect."
+      }
+     }
+    },
+    {
+     "id": "P:P05091",
+     "kind": "protein",
+     "label": "ALDH2",
+     "side": "b",
+     "detail": {
+      "uniprot": "P05091",
+      "gene": "ALDH2",
+      "name": "Aldehyde dehydrogenase, mitochondrial",
+      "organism": "Humans",
+      "family": "other",
+      "plain": {
+       "ru": "Фермент: белок, который химически перерабатывает вещества, в том числе лекарства.",
+       "en": "An enzyme: a protein that chemically processes substances, including drugs."
+      }
+     }
+    },
+    {
+     "id": "P:P33402",
+     "kind": "protein",
+     "label": "GUCY1A2",
+     "side": "b",
+     "detail": {
+      "uniprot": "P33402",
+      "gene": "GUCY1A2",
+      "name": "Guanylate cyclase soluble subunit alpha-2",
+      "organism": "Humans",
+      "family": "other",
+      "plain": {
+       "ru": "Фермент: белок, который химически перерабатывает вещества, в том числе лекарства.",
+       "en": "An enzyme: a protein that chemically processes substances, including drugs."
+      }
+     }
+    },
+    {
+     "id": "P:P29474",
+     "kind": "protein",
+     "label": "NOS3",
+     "side": "b",
+     "detail": {
+      "uniprot": "P29474",
+      "gene": "NOS3",
+      "name": "Nitric oxide synthase 3",
+      "organism": "Humans",
+      "family": "other",
+      "plain": {
+       "ru": "Фермент: белок, который химически перерабатывает вещества, в том числе лекарства.",
+       "en": "An enzyme: a protein that chemically processes substances, including drugs."
+      }
+     }
+    },
+    {
+     "id": "P:Q02108",
+     "kind": "protein",
+     "label": "GUCY1A1",
+     "side": "b",
+     "detail": {
+      "uniprot": "Q02108",
+      "gene": "GUCY1A1",
+      "name": "Guanylate cyclase soluble subunit alpha-1",
+      "organism": "Homo sapiens",
+      "family": "other",
+      "plain": {
+       "ru": "Мишень: белок, на который лекарство действует, чтобы оказать свой эффект.",
+       "en": "A target: a protein the drug acts on to produce its effect."
+      }
+     }
+    },
+    {
+     "id": "P:Q02153",
+     "kind": "protein",
+     "label": "GUCY1B1",
+     "side": "b",
+     "detail": {
+      "uniprot": "Q02153",
+      "gene": "GUCY1B1",
+      "name": "Guanylate cyclase soluble subunit beta-1",
+      "organism": "Homo sapiens",
+      "family": "other",
+      "plain": {
+       "ru": "Мишень: белок, на который лекарство действует, чтобы оказать свой эффект.",
+       "en": "A target: a protein the drug acts on to produce its effect."
+      }
+     }
+    },
+    {
+     "id": "P:O75343",
+     "kind": "protein",
+     "label": "GUCY1B2",
+     "side": "b",
+     "detail": {
+      "uniprot": "O75343",
+      "gene": "GUCY1B2",
+      "name": "Guanylate cyclase soluble subunit beta-2",
+      "organism": "Homo sapiens",
+      "family": "other",
+      "plain": {
+       "ru": "Мишень: белок, на который лекарство действует, чтобы оказать свой эффект.",
+       "en": "A target: a protein the drug acts on to produce its effect."
+      }
+     }
+    },
+    {
+     "id": "P:P69905",
+     "kind": "protein",
+     "label": "HBA1",
+     "side": "b",
+     "detail": {
+      "uniprot": "P69905",
+      "gene": "HBA1",
+      "name": "Hemoglobin subunit alpha",
+      "organism": "Humans",
+      "family": "other",
+      "plain": {
+       "ru": "Мишень: белок, на который лекарство действует, чтобы оказать свой эффект.",
+       "en": "A target: a protein the drug acts on to produce its effect."
+      }
+     }
+    },
+    {
+     "id": "P:P68871",
+     "kind": "protein",
+     "label": "HBB",
+     "side": "b",
+     "detail": {
+      "uniprot": "P68871",
+      "gene": "HBB",
+      "name": "Hemoglobin subunit beta",
+      "organism": "Humans",
+      "family": "other",
+      "plain": {
+       "ru": "Мишень: белок, на который лекарство действует, чтобы оказать свой эффект.",
+       "en": "A target: a protein the drug acts on to produce its effect."
+      }
+     }
+    }
+   ],
+   "edges": [
+    {
+     "id": "annot:drugbank:DB06789:P33261:enzyme",
+     "source": "DB06789",
+     "target": "P:P33261",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "enzyme",
+      "roles": [
+       "inducer"
+      ],
+      "raw_action": "inducer",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "24681287"
+      ],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB06789:P08684:enzyme",
+     "source": "DB06789",
+     "target": "P:P08684",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "enzyme",
+      "roles": [
+       "substrate"
+      ],
+      "raw_action": "substrate",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "25256193"
+      ],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB06789:P20815:enzyme",
+     "source": "DB06789",
+     "target": "P:P20815",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "enzyme",
+      "roles": [
+       "substrate"
+      ],
+      "raw_action": "substrate",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "25256193"
+      ],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB06789:P06401:target",
+     "source": "DB06789",
+     "target": "P:P06401",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "target",
+      "roles": [
+       "activating"
+      ],
+      "raw_action": "agonist",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "26558340"
+      ],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "annot:chembl-moa:DB06789:P06401:target",
+     "source": "DB06789",
+     "target": "P:P06401",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "target",
+      "roles": [
+       "activating"
+      ],
+      "raw_action": "agonist",
+      "source": "ChEMBL curated mechanism of action",
+      "source_version": "36",
+      "pmids": [],
+      "known_action": null
+     }
+    },
+    {
+     "id": "annot:drugbank:DB06154:P05091:enzyme",
+     "source": "DB06154",
+     "target": "P:P05091",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "enzyme",
+      "roles": [
+       "substrate"
+      ],
+      "raw_action": "substrate",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB06154:P33402:enzyme",
+     "source": "DB06154",
+     "target": "P:P33402",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "enzyme",
+      "roles": [
+       "inducer"
+      ],
+      "raw_action": "inducer",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB06154:P29474:enzyme",
+     "source": "DB06154",
+     "target": "P:P29474",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "enzyme",
+      "roles": [
+       "inducer"
+      ],
+      "raw_action": "inducer",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "annot:chembl-moa:DB06154:Q02108:target",
+     "source": "DB06154",
+     "target": "P:Q02108",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "target",
+      "roles": [
+       "activating"
+      ],
+      "raw_action": "activator",
+      "source": "ChEMBL curated mechanism of action",
+      "source_version": "36",
+      "pmids": [],
+      "known_action": null
+     }
+    },
+    {
+     "id": "annot:chembl-moa:DB06154:P33402:target",
+     "source": "DB06154",
+     "target": "P:P33402",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "target",
+      "roles": [
+       "activating"
+      ],
+      "raw_action": "activator",
+      "source": "ChEMBL curated mechanism of action",
+      "source_version": "36",
+      "pmids": [],
+      "known_action": null
+     }
+    },
+    {
+     "id": "annot:chembl-moa:DB06154:Q02153:target",
+     "source": "DB06154",
+     "target": "P:Q02153",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "target",
+      "roles": [
+       "activating"
+      ],
+      "raw_action": "activator",
+      "source": "ChEMBL curated mechanism of action",
+      "source_version": "36",
+      "pmids": [],
+      "known_action": null
+     }
+    },
+    {
+     "id": "annot:chembl-moa:DB06154:O75343:target",
+     "source": "DB06154",
+     "target": "P:O75343",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "target",
+      "roles": [
+       "activating"
+      ],
+      "raw_action": "activator",
+      "source": "ChEMBL curated mechanism of action",
+      "source_version": "36",
+      "pmids": [],
+      "known_action": null
+     }
+    },
+    {
+     "id": "annot:drugbank:DB06154:P69905:target",
+     "source": "DB06154",
+     "target": "P:P69905",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "target",
+      "roles": [
+       "activating"
+      ],
+      "raw_action": "agonist",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [],
+      "known_action": "yes"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB06154:P68871:target",
+     "source": "DB06154",
+     "target": "P:P68871",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "target",
+      "roles": [
+       "activating"
+      ],
+      "raw_action": "agonist",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [],
+      "known_action": "yes"
+     }
+    },
+    {
+     "id": "drugbank-tdc:DB06789>DB06154:t70",
+     "source": "DB06789",
+     "target": "DB06154",
+     "kind": "documented_interaction",
+     "established": true,
+     "directed": false,
+     "detail": {
+      "statement": "The therapeutic efficacy of one of the two drugs can be decreased when used in combination with the other drug.",
+      "direction": "not_verified",
+      "source": "DrugBank DDI records via Therapeutics Data Commons"
+     }
+    }
+   ],
+   "truncated": {
+    "proteins_a": 0,
+    "proteins_b": 0
+   },
+   "legend": {
+    "annotation": {
+     "ru": "Задокументированная связь препарата с белком (DrugBank / ChEMBL)",
+     "en": "Documented drug-protein relation (DrugBank / ChEMBL)"
+    },
+    "pathway_membership": {
+     "ru": "Белок участвует в биологическом пути (Reactome)",
+     "en": "Protein belongs to a biological pathway (Reactome)"
+    },
+    "documented_interaction": {
+     "ru": "Задокументированное взаимодействие (запись DrugBank)",
+     "en": "Documented interaction (DrugBank record)"
+    },
+    "shared": {
+     "ru": "Общий белок или путь — повод присмотреться, а не доказательство",
+     "en": "Shared protein or pathway — a reason to look closer, not proof"
+    }
+   }
+  },
+  "meta": {
+   "endpoint": "http://127.0.0.1:8765/api/v3/graph",
+   "request": {
+    "drug_a": "DB06789",
+    "drug_b": "DB06154"
+   },
+   "receivedAt": "2026-10-15T11:06:29.182Z"
+  }
+ }
+}
