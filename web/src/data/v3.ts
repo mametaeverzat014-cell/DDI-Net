@@ -217,10 +217,21 @@ export interface GraphEdge {
 }
 export interface MechanismGraph { drug_a: string; drug_b: string; nodes: GraphNode[]; edges: GraphEdge[]; truncated: Record<string, number>; legend: Record<string, Bi> }
 
+/** Where a response came from: recorded once, when it arrived, so an export can
+ *  cite the exact request instead of re-running it. */
+export interface FetchMeta {
+  /** Full URL that answered, e.g. https://…/api/v3/report */
+  endpoint: string;
+  /** The JSON body that was sent, verbatim. */
+  request: unknown;
+  /** Browser clock, ISO 8601 UTC, when the response body was read. */
+  receivedAt: string;
+}
+
 export type Remote<T> =
   | { kind: "unconfigured" }
   | { kind: "loading" }
-  | { kind: "ok"; data: T }
+  | { kind: "ok"; data: T; meta?: FetchMeta }
   | { kind: "unresolved"; resolutions: ResolveOut[]; message: string }
   | { kind: "unavailable"; message: string }
   | { kind: "rate_limited"; retryAfter: number }
@@ -229,13 +240,15 @@ export type Remote<T> =
 async function post<T>(path: string, body: unknown, signal?: AbortSignal): Promise<Remote<T>> {
   if (!apiConfigured()) return { kind: "unconfigured" };
   try {
-    const r = await fetch(`${API_BASE}${path}`, {
+    const endpoint = `${API_BASE}${path}`;
+    const r = await fetch(endpoint, {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(body),
       signal,
     });
-    return await interpret<T>(r);
+    const out = await interpret<T>(r);
+    return out.kind === "ok" ? { ...out, meta: { endpoint, request: body, receivedAt: new Date().toISOString() } } : out;
   } catch (e) {
     if (e instanceof DOMException && e.name === "AbortError") throw e;
     return { kind: "error", message: String(e) };

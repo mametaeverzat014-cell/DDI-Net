@@ -11,7 +11,7 @@ passing that was not run. Commands are given so each line can be reproduced.
 | Check | Before (baseline at `aa04493`) | After |
 |---|---|---|
 | Python test suite (`pytest tests/`) | 613 passed, 21 skipped, **2 failed, 11 errors** | **743 passed, 3 skipped, 1 failed** |
-| Web unit tests (`npx vitest run`) | 66 passed | **84 passed** |
+| Web unit tests (`npx vitest run`) | 66 passed | **128 passed** (44 of them for the PDF export) |
 | TypeScript (`npx tsc --noEmit`) | clean | clean |
 | ESLint (`--max-warnings 0`) | clean | clean |
 | Production build (`npm run build`) | — | succeeds; regenerating `frozen.json` from the tag gives no diff |
@@ -67,6 +67,18 @@ possible from this container (network policy; see the audit).
 | `src/lib/route.test.ts` | 3 | hash routes round-trip; malformed IDs, unknown views and same-drug pairs are ignored |
 | `src/components/v3/evidence.test.tsx` | 7 | no evidence tier token has a green hue; no green literal in v3 views; "nothing found" says it is not safe in both languages; no advice or safety wording in v3 copy and the Limitations page; every tier labelled in both languages; the banner never shows the model score; five sections render and a statement links to its numbered source |
 
+### Web — PDF export, 44 tests
+
+| File | Tests | What they establish |
+|---|---|---|
+| `src/pdf/units.test.ts` | 20 | SHA-256 (standard vectors, equal to WebCrypto), key-order-independent payload hash and report ID; ASCII file names with local date and `_RU`; time with zone and offset; Russian noun forms; control and bidi characters removed, markup kept literal; only http(s) links; mono wrapping loses nothing; the JSON appendix parses back to the same value; summary counts and machine summary equal the payload; companion JSON hash; diagram labels inside the frame and never overlapping (4 graphs × 2 languages), no trunk through a pill, documented link present exactly when a record exists and never directed; network labels for 2–8 drugs; no green evidence colour; no advice wording in the PDF sources; every string in both languages with the same placeholders |
+| `src/pdf/render.test.ts` | 17 | ten PDFs generated through the browser's code path and read back with pdfjs-dist: valid, A4, ≥ 5 pages; no drawing coordinate above 10,000 pt; every font embedded and IBM Plex; every extracted character present in the font files (rendering several reports in one process); no text outside the margins; no blank page; required sections and values; every source URL, record ID, retrieval date, PMID and UniProt ID cited; no 2–6-decimal number absent from the payload; no orientation-filled DrugBank template; "nothing found ≠ safe"; missing model, meta and INN handled; multi-drug covers all 28 pairs, no overall score; long names wrap; markup printed literally and no `javascript:`/`data:` link; no advice wording in either language |
+| `src/components/v3/ExportReport.test.tsx` | 7 | disabled with a reason before results; Russian by default; exports the given analysis in the page language and announces the file; loading state blocks a second export; failure explained as an alert, nothing downloaded; companion JSON; message cleared for a new analysis |
+
+Two of these were mutation-checked: re-adding a line height to the page style
+makes the suite fail (renderer overflow), and removing the per-document font
+reset makes the glyph test fail (`Clarithromycin` extracts as `\u0016larithromycin`).
+
 ## 5. Browser end-to-end
 
 Playwright (Chromium 1194) against `vite preview` of a production build pointed
@@ -85,6 +97,9 @@ sources enabled but unreachable from the container):
 | Console errors across all scenarios | 0 |
 | After rate limiting (second run): Multi-drug, repeated clicks | 5th request within a minute shows "Слишком много запросов … через 59 с." (`role=alert`), never an empty report; the only console message is the browser's own 429 resource error |
 | After the edge-direction fix: Mechanisms, simvastatin + clarithromycin and fluconazole + warfarin | documented arc has no arrowhead; its tooltip is the label in Russian and the direction-neutral statement in English |
+| PDF export (EN and RU): Analyzer warfarin + fluconazole | button disabled while loading, enabled with the report; Enter on the focused button downloads `DDI-Net_Report_Warfarin_Fluconazole_2026-10-15.pdf` (`_RU` in Russian) in about 6 s; status "File saved: …"; JSON companion downloads, its hash equals the one printed in the PDF |
+| PDF export: Mechanisms simvastatin + clarithromycin; Multi-drug with 4 and 6 drugs | files download with descriptive names; Multi-drug button disabled until "Check pairs" returns; 0 console errors |
+| Exported files | poppler `pdfinfo`/`pdffonts`/`pdftotext`: no errors, all fonts embedded; `pypdf` strict mode reads every file; pages inspected at 40, 60, 110 and 220 dpi; samples in `docs/samples/pdf-export/` |
 
 ## 6. Reproducing
 

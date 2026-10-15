@@ -122,6 +122,25 @@ Issues found and fixed during this step:
   API, in both languages and both request orders.
 * `docs/DDINET_V3_DEPLOYMENT.md`.
 
+## Step 9 — PDF report export
+
+* Export PDF and JSON buttons on the Analyzer, Mechanisms and Multi-Drug pages,
+  disabled until results exist, with loading, success and error states in both
+  languages. The PDF is generated in the browser with `@react-pdf/renderer`
+  from the response the page already holds; the API client now records each
+  response's endpoint, request body and arrival time for the report's
+  provenance. Nothing is re-requested; no server, service or key is involved.
+* A4 report: cover, executive summary, drugs, documented interactions,
+  mechanism schematic (vector), model analysis, the service's explanation,
+  sources and reproducibility (payload SHA-256 shared with the JSON), limitations
+  and a machine-readable appendix. Multi-drug: network, pair matrix, all pairs,
+  coverage, no overall score. IBM Plex fonts embedded (Cyrillic).
+* Three renderer problems found by the tests and handled (line height
+  compounding across pages, font objects shared between documents, long-word
+  splitting); see `docs/DDINET_V3_PDF_EXPORT.md` §3.
+* 44 web tests; real-browser exports in both languages; samples in
+  `docs/samples/pdf-export/`.
+
 ---
 
 ## What was not done, and why

@@ -1,0 +1,875 @@
+{
+ "_comment": "SYNTHETIC TEST FIXTURE. Real local DrugBank evidence and annotations, but the openFDA label responses are the synthetic fixtures of tests/test_v3_adapters.py (all-zero set IDs, 'SYNTHETIC TEST FIXTURE' manufacturer) and the model is deliberately absent. Never present as a real label statement.",
+ "report": {
+  "meta": {
+   "endpoint": "synthetic://engine-with-fake-transport/api/v3/report",
+   "request": {
+    "drug_a": "DB00682",
+    "drug_b": "DB00196",
+    "include_labels": true
+   },
+   "receivedAt": "2026-10-14T16:12:06.360Z"
+  },
+  "data": {
+   "report_version": "3.0",
+   "drug_a": {
+    "id": "DB00682",
+    "inn": "warfarin",
+    "name_ru": "варфарин",
+    "name_ru_is_transliteration": true,
+    "groups": "approved",
+    "drug_type": "small molecule",
+    "query": "DB00682",
+    "matched_on": null
+   },
+   "drug_b": {
+    "id": "DB00196",
+    "inn": "fluconazole",
+    "name_ru": "флуконазол",
+    "name_ru_is_transliteration": true,
+    "groups": "approved|investigational",
+    "drug_type": "small molecule",
+    "query": "DB00196",
+    "matched_on": null
+   },
+   "evidence_status": "warning_in_label",
+   "evidence_status_label": {
+    "ru": "Упоминается в предупреждениях или разделе о взаимодействиях официальной инструкции",
+    "en": "Named in the warnings or drug-interactions section of an official label"
+   },
+   "evidence": [
+    {
+     "id": "label:00000000-0000-0000-0000-000000000003:boxed_warning:0:DB00196",
+     "category": "label_boxed_warning",
+     "source_name": "FDA drug label (Structured Product Labeling via openFDA)",
+     "source_version": "SPL version 3, effective 2024-01-01",
+     "source_record_id": "00000000-0000-0000-0000-000000000003",
+     "source_url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=00000000-0000-0000-0000-000000000003",
+     "retrieval_url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name%3A%22warfarin%22&limit=10",
+     "original_identifiers": {
+      "spl_set_id": "00000000-0000-0000-0000-000000000003",
+      "spl_id": "00000000-0000-0000-0000-00000000aaaa",
+      "label_generic_name": "WARFARIN SODIUM",
+      "label_drug_drugbank_id": "DB00682",
+      "mentioned_drug_drugbank_id": "DB00196",
+      "matched_term": "fluconazole"
+     },
+     "statement": "WARNING: BLEEDING RISK [synthetic test text] Drugs such as fluconazole may increase bleeding risk in this fixture.",
+     "statement_origin": "verbatim_excerpt",
+     "source_template": null,
+     "direction": "not_applicable",
+     "direction_check": null,
+     "statement_ru": null,
+     "section": "BOXED WARNING",
+     "drug1_id": "DB00682",
+     "drug2_id": "DB00196",
+     "retrieved_at": "2026-10-14",
+     "license": "openFDA: public domain (CC0); label text is a US government record",
+     "source_severity": null,
+     "qualifiers": [
+      "Matched by the name 'fluconazole' in the label of warfarin. The sentence may concern a different context (another formulation, a class statement, a study condition).",
+      "The section is a structural fact of the label; no severity grade is derived from it."
+     ]
+    },
+    {
+     "id": "label:00000000-0000-0000-0000-000000000001:drug_interactions:0:DB00682",
+     "category": "label_warning_or_interaction",
+     "source_name": "FDA drug label (Structured Product Labeling via openFDA)",
+     "source_version": "SPL version 3, effective 2025-01-01",
+     "source_record_id": "00000000-0000-0000-0000-000000000001",
+     "source_url": "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=00000000-0000-0000-0000-000000000001",
+     "retrieval_url": "https://api.fda.gov/drug/label.json?search=openfda.generic_name%3A%22fluconazole%22&limit=10",
+     "original_identifiers": {
+      "spl_set_id": "00000000-0000-0000-0000-000000000001",
+      "spl_id": "00000000-0000-0000-0000-00000000aaaa",
+      "label_generic_name": "FLUCONAZOLE",
+      "label_drug_drugbank_id": "DB00196",
+      "mentioned_drug_drugbank_id": "DB00682",
+      "matched_term": "warfarin"
+     },
+     "statement": "7 DRUG INTERACTIONS [synthetic test text] Coadministration with warfarin was associated with increased prothrombin time in a fixture study.",
+     "statement_origin": "verbatim_excerpt",
+     "source_template": null,
+     "direction": "not_applicable",
+     "direction_check": null,
+     "statement_ru": null,
+     "section": "DRUG INTERACTIONS",
+     "drug1_id": "DB00196",
+     "drug2_id": "DB00682",
+     "retrieved_at": "2026-10-14",
+     "license": "openFDA: public domain (CC0); label text is a US government record",
+     "source_severity": null,
+     "qualifiers": [
+      "Matched by the name 'warfarin' in the label of fluconazole. The sentence may concern a different context (another formulation, a class statement, a study condition).",
+      "The section is a structural fact of the label; no severity grade is derived from it."
+     ]
+    },
+    {
+     "id": "drugbank-tdc:DB00682>DB00196:t73",
+     "category": "database_interaction_record",
+     "source_name": "DrugBank DDI records via Therapeutics Data Commons",
+     "source_version": "PyTDC 1.1.15, tdc.multi_pred.DDI(name='DrugBank')",
+     "source_record_id": "DB00682|DB00196|Y=73",
+     "source_url": "https://tdcommons.ai/multi_pred_tasks/ddi/",
+     "retrieval_url": null,
+     "original_identifiers": {
+      "drugbank_id_drug1_as_exported": "DB00682",
+      "drugbank_id_drug2_as_exported": "DB00196",
+      "tdc_interaction_type": "73"
+     },
+     "statement": "The serum concentration of one of the two drugs can be increased when it is combined with the other drug.",
+     "statement_origin": "source_template_direction_neutral",
+     "source_template": "The serum concentration of #Drug2 can be increased when it is combined with #Drug1.",
+     "direction": "not_verified",
+     "direction_check": {
+      "checkable": true,
+      "consistency": 0.10318492037699058,
+      "n_consistent": 1270,
+      "n_informative": 12308,
+      "n_reversed": 11038,
+      "n_rows": 23779
+     },
+     "statement_ru": "Концентрация одного из двух препаратов в сыворотке может повышаться при сочетании с другим препаратом.",
+     "section": null,
+     "drug1_id": null,
+     "drug2_id": null,
+     "retrieved_at": "2026-08-24",
+     "license": "TDC: CC BY 4.0; underlying DrugBank content: DrugBank non-commercial licence",
+     "source_severity": null,
+     "qualifiers": [
+      "DrugBank's standard sentence for this interaction type, not a quotation from a study or a label.",
+      "This export carries no severity grade. None is implied.",
+      "The export does not state the basis of each record (clinical study, label text, or inference from pharmacological properties).",
+      "Drug order for this interaction type matched documented DrugBank roles in only 1,270 of 12,308 checkable records, so the statement is shown without naming which drug is affected."
+     ]
+    }
+   ],
+   "conflicts": [],
+   "mechanism": {
+    "findings": [
+     {
+      "id": "mech:P33261:enzyme:inhibitor_substrate:DB00196",
+      "protein": {
+       "uniprot": "P33261",
+       "gene": "CYP2C19",
+       "name": "Cytochrome P450 2C19",
+       "organism": "Humans",
+       "family": "cytochrome_p450",
+       "plain": {
+        "ru": "Фермент из семейства цитохромов P450. Такие ферменты работают в основном в печени и кишечнике и расщепляют многие лекарства, чтобы организм мог их вывести.",
+        "en": "An enzyme of the cytochrome P450 family. These work mainly in the liver and gut and break down many medicines so the body can clear them."
+       }
+      },
+      "relation": "enzyme",
+      "pattern": "inhibitor_substrate",
+      "actor_drug_id": "DB00196",
+      "affected_drug_id": "DB00682",
+      "roles_a": [
+       "inhibitor",
+       "substrate"
+      ],
+      "roles_b": [
+       "inhibitor"
+      ],
+      "annotation_ids": [
+       "annot:drugbank:DB00196:P33261:enzyme",
+       "annot:drugbank:DB00682:P33261:enzyme"
+      ],
+      "consistent_with_records": [
+       "drugbank-tdc:DB00682>DB00196:t73"
+      ],
+      "status": "hypothesis"
+     },
+     {
+      "id": "mech:P11712:enzyme:inhibitor_substrate:DB00196",
+      "protein": {
+       "uniprot": "P11712",
+       "gene": "CYP2C9",
+       "name": "Cytochrome P450 2C9",
+       "organism": "Humans",
+       "family": "cytochrome_p450",
+       "plain": {
+        "ru": "Фермент из семейства цитохромов P450. Такие ферменты работают в основном в печени и кишечнике и расщепляют многие лекарства, чтобы организм мог их вывести.",
+        "en": "An enzyme of the cytochrome P450 family. These work mainly in the liver and gut and break down many medicines so the body can clear them."
+       }
+      },
+      "relation": "enzyme",
+      "pattern": "inhibitor_substrate",
+      "actor_drug_id": "DB00196",
+      "affected_drug_id": "DB00682",
+      "roles_a": [
+       "inducer",
+       "substrate"
+      ],
+      "roles_b": [
+       "inhibitor"
+      ],
+      "annotation_ids": [
+       "annot:drugbank:DB00196:P11712:enzyme",
+       "annot:drugbank:DB00682:P11712:enzyme"
+      ],
+      "consistent_with_records": [
+       "drugbank-tdc:DB00682>DB00196:t73"
+      ],
+      "status": "hypothesis"
+     },
+     {
+      "id": "mech:P08684:enzyme:inhibitor_substrate:DB00196",
+      "protein": {
+       "uniprot": "P08684",
+       "gene": "CYP3A4",
+       "name": "Cytochrome P450 3A4",
+       "organism": "Humans",
+       "family": "cytochrome_p450",
+       "plain": {
+        "ru": "Фермент из семейства цитохромов P450. Такие ферменты работают в основном в печени и кишечнике и расщепляют многие лекарства, чтобы организм мог их вывести.",
+        "en": "An enzyme of the cytochrome P450 family. These work mainly in the liver and gut and break down many medicines so the body can clear them."
+       }
+      },
+      "relation": "enzyme",
+      "pattern": "inhibitor_substrate",
+      "actor_drug_id": "DB00196",
+      "affected_drug_id": "DB00682",
+      "roles_a": [
+       "inducer",
+       "substrate"
+      ],
+      "roles_b": [
+       "inhibitor"
+      ],
+      "annotation_ids": [
+       "annot:drugbank:DB00196:P08684:enzyme",
+       "annot:drugbank:DB00682:P08684:enzyme"
+      ],
+      "consistent_with_records": [
+       "drugbank-tdc:DB00682>DB00196:t73"
+      ],
+      "status": "hypothesis"
+     }
+    ],
+    "shared_pathways": [
+     {
+      "id": "R-HSA-9027307",
+      "name": "Biosynthesis of maresin-like SPMs",
+      "n_proteins_in_pathway": 6,
+      "via_a": [
+       "CYP1A2",
+       "CYP2C8",
+       "CYP2C9",
+       "CYP3A4"
+      ],
+      "via_b": [
+       "CYP2C9",
+       "CYP3A4"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-5423646",
+      "name": "Aflatoxin activation and detoxification",
+      "n_proteins_in_pathway": 8,
+      "via_a": [
+       "CYP1A2",
+       "CYP3A4"
+      ],
+      "via_b": [
+       "CYP3A4",
+       "CYP3A5"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-9754706",
+      "name": "Atorvastatin ADME",
+      "n_proteins_in_pathway": 8,
+      "via_a": [
+       "CYP3A4"
+      ],
+      "via_b": [
+       "ABCB1",
+       "CYP3A4"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-211999",
+      "name": "CYP2E1 reactions",
+      "n_proteins_in_pathway": 8,
+      "via_a": [
+       "CYP2C19",
+       "CYP2C8",
+       "CYP2C9"
+      ],
+      "via_b": [
+       "CYP2C19",
+       "CYP2C9"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-2142816",
+      "name": "Synthesis of (16-20)-hydroxyeicosatetraenoic acids (HETE)",
+      "n_proteins_in_pathway": 8,
+      "via_a": [
+       "CYP1A2",
+       "CYP2C19",
+       "CYP2C8",
+       "CYP2C9"
+      ],
+      "via_b": [
+       "CYP2C19",
+       "CYP2C9"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-2142670",
+      "name": "Synthesis of epoxy (EET) and dihydroxyeicosatrienoic acids (DHET)",
+      "n_proteins_in_pathway": 8,
+      "via_a": [
+       "CYP1A2",
+       "CYP2C19",
+       "CYP2C8",
+       "CYP2C9"
+      ],
+      "via_b": [
+       "CYP2C19",
+       "CYP2C9"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-9757110",
+      "name": "Prednisone ADME",
+      "n_proteins_in_pathway": 10,
+      "via_a": [
+       "ALB",
+       "CYP3A4"
+      ],
+      "via_b": [
+       "ABCB1",
+       "CYP3A4"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-211945",
+      "name": "Phase I - Functionalization of compounds",
+      "n_proteins_in_pathway": 13,
+      "via_a": [
+       "CYP3A4"
+      ],
+      "via_b": [
+       "CYP3A4"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-211981",
+      "name": "Xenobiotics",
+      "n_proteins_in_pathway": 16,
+      "via_a": [
+       "CYP2C18",
+       "CYP2C19",
+       "CYP2C8",
+       "CYP2C9",
+       "CYP3A4"
+      ],
+      "via_b": [
+       "CYP2C19",
+       "CYP2C9",
+       "CYP3A4",
+       "CYP3A5"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-9749641",
+      "name": "Aspirin ADME",
+      "n_proteins_in_pathway": 25,
+      "via_a": [
+       "ALB",
+       "CYP2C19",
+       "CYP2C8",
+       "CYP2C9",
+       "CYP3A4"
+      ],
+      "via_b": [
+       "CYP2C19",
+       "CYP2C9",
+       "CYP3A4"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     }
+    ],
+    "n_shared_pathways_total": 10,
+    "annotations": {
+     "annot:drugbank:DB00682:P33261:enzyme": {
+      "id": "annot:drugbank:DB00682:P33261:enzyme",
+      "drug_id": "DB00682",
+      "uniprot": "P33261",
+      "relation": "enzyme",
+      "roles": [
+       "inhibitor",
+       "substrate"
+      ],
+      "raw_action": "substrate|inhibitor",
+      "source_name": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "known_action": "unknown",
+      "pmids": [
+       "19515014",
+       "16162970",
+       "16372822"
+      ],
+      "organism": "Humans",
+      "retrieved_at": "2026-08-28"
+     },
+     "annot:drugbank:DB00196:P33261:enzyme": {
+      "id": "annot:drugbank:DB00196:P33261:enzyme",
+      "drug_id": "DB00196",
+      "uniprot": "P33261",
+      "relation": "enzyme",
+      "roles": [
+       "inhibitor"
+      ],
+      "raw_action": "inhibitor",
+      "source_name": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "known_action": "unknown",
+      "pmids": [
+       "16141567",
+       "10709776"
+      ],
+      "organism": "Humans",
+      "retrieved_at": "2026-08-28"
+     },
+     "annot:drugbank:DB00682:P11712:enzyme": {
+      "id": "annot:drugbank:DB00682:P11712:enzyme",
+      "drug_id": "DB00682",
+      "uniprot": "P11712",
+      "relation": "enzyme",
+      "roles": [
+       "inducer",
+       "substrate"
+      ],
+      "raw_action": "substrate|inducer",
+      "source_name": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "known_action": "unknown",
+      "pmids": [
+       "29283396",
+       "16372822",
+       "20735727"
+      ],
+      "organism": "Humans",
+      "retrieved_at": "2026-08-28"
+     },
+     "annot:drugbank:DB00196:P11712:enzyme": {
+      "id": "annot:drugbank:DB00196:P11712:enzyme",
+      "drug_id": "DB00196",
+      "uniprot": "P11712",
+      "relation": "enzyme",
+      "roles": [
+       "inhibitor"
+      ],
+      "raw_action": "inhibitor",
+      "source_name": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "known_action": "unknown",
+      "pmids": [
+       "16141567",
+       "8801056",
+       "10952477",
+       "11475469",
+       "10709776"
+      ],
+      "organism": "Humans",
+      "retrieved_at": "2026-08-28"
+     },
+     "annot:drugbank:DB00682:P08684:enzyme": {
+      "id": "annot:drugbank:DB00682:P08684:enzyme",
+      "drug_id": "DB00682",
+      "uniprot": "P08684",
+      "relation": "enzyme",
+      "roles": [
+       "inducer",
+       "substrate"
+      ],
+      "raw_action": "substrate|inducer",
+      "source_name": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "known_action": "unknown",
+      "pmids": [
+       "19515014",
+       "16372822",
+       "20735727"
+      ],
+      "organism": "Humans",
+      "retrieved_at": "2026-08-28"
+     },
+     "annot:drugbank:DB00196:P08684:enzyme": {
+      "id": "annot:drugbank:DB00196:P08684:enzyme",
+      "drug_id": "DB00196",
+      "uniprot": "P08684",
+      "relation": "enzyme",
+      "roles": [
+       "inhibitor"
+      ],
+      "raw_action": "inhibitor",
+      "source_name": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "known_action": "unknown",
+      "pmids": [
+       "16141567",
+       "8801056",
+       "15969931"
+      ],
+      "organism": "Humans",
+      "retrieved_at": "2026-08-28"
+     }
+    },
+    "coverage": {
+     "DB00682": {
+      "target": 2,
+      "enzyme": 6,
+      "transporter": 0,
+      "carrier": 2
+     },
+     "DB00196": {
+      "target": 1,
+      "enzyme": 4,
+      "transporter": 1,
+      "carrier": 0
+     }
+    },
+    "note": {
+     "ru": "Ниже — задокументированные роли каждого препарата по отдельности (DrugBank, ChEMBL) и то, как они складываются. Это гипотезы о механизме, а не доказательство взаимодействия: базы не указывают силу действия и долю участия белка в переработке препарата.",
+     "en": "Below are each drug's documented roles on their own (DrugBank, ChEMBL) and how they line up. These are mechanism hypotheses, not evidence of an interaction: the databases do not record strength of effect or how much of a drug's processing a protein handles."
+    }
+   },
+   "model": {
+    "available": false,
+    "unavailable_reason": "model not loaded in this synthetic test fixture",
+    "model": "BIO-GINE M4",
+    "checkpoint": "bd45f84e3c1b2c33",
+    "raw_model_score": null,
+    "calibrated_model_score": null,
+    "band": null,
+    "regime": "S2",
+    "split_a": "val",
+    "split_b": "train",
+    "training_label_seen": false,
+    "reliability": "held_out_like",
+    "measured_performance": [
+     {
+      "view": "pooled drug-disjoint test (S2 and S3; 91% S2)",
+      "metric": "AUPRC",
+      "mean": 0.8117107056824635,
+      "sd": 0.009671090046444024,
+      "n_seeds": 5,
+      "source": "paper/FACTS.json models.M4_pooled (v2_final_test.csv @ frozen tag)"
+     },
+     {
+      "view": "pooled, both annotated",
+      "metric": "AUROC",
+      "mean": 0.8176889406938518,
+      "sd": 0.009571260994343847,
+      "n_seeds": 5,
+      "source": "reports/v3_coverage_reliability.json"
+     }
+    ],
+    "biology_available_a": true,
+    "biology_available_b": true,
+    "notes": [
+     {
+      "ru": "Один из препаратов входил в проверочную выборку: модель на нём не обучалась, но по нему выбирали конфигурацию и калибровку.",
+      "en": "One drug was in the validation set: the model was not trained on it, but it was used to choose the configuration and the calibration."
+     },
+     {
+      "ru": "Калиброванная оценка подобрана на проверочных парах, где задокументированных и случайно набранных пар поровну. Это не вероятность вреда и не частота взаимодействий в реальной практике.",
+      "en": "The calibrated score was fitted on validation pairs with equal numbers of documented and randomly drawn pairs. It is not a probability of harm, nor how often interactions happen in practice."
+     }
+    ],
+    "abstain": true,
+    "modality_reliance": null
+   },
+   "explanation": {
+    "method": "deterministic templates over retrieved records; no language model",
+    "sections": [
+     {
+      "id": "known",
+      "title": {
+       "ru": "Что известно",
+       "en": "What is known"
+      },
+      "statements": [
+       {
+        "kind": "documented",
+        "text": {
+         "ru": "В официальной инструкции к препарату варфарин (раздел «Предупреждение в рамке») упоминается препарат флуконазол. Цитата на английском — в карточке источника.",
+         "en": "The official label of warfarin names fluconazole in its Boxed Warning section. The quotation is in the source card."
+        },
+        "refs": [
+         "label:00000000-0000-0000-0000-000000000003:boxed_warning:0:DB00196"
+        ]
+       },
+       {
+        "kind": "documented",
+        "text": {
+         "ru": "В официальной инструкции к препарату флуконазол (раздел «Лекарственные взаимодействия») упоминается препарат варфарин. Цитата на английском — в карточке источника.",
+         "en": "The official label of fluconazole names warfarin in its Drug Interactions section. The quotation is in the source card."
+        },
+        "refs": [
+         "label:00000000-0000-0000-0000-000000000001:drug_interactions:0:DB00682"
+        ]
+       },
+       {
+        "kind": "documented",
+        "text": {
+         "ru": "В базе DrugBank это сочетание описано так: «Концентрация одного из двух препаратов в сыворотке может повышаться при сочетании с другим препаратом.» (перевод проекта; оригинал — в карточке источника).",
+         "en": "DrugBank describes this combination as: “The serum concentration of one of the two drugs can be increased when it is combined with the other drug.”"
+        },
+        "refs": [
+         "drugbank-tdc:DB00682>DB00196:t73"
+        ]
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Для этого типа записей порядок препаратов в выгрузке DrugBank оказался ненадёжным (мы это измерили), поэтому здесь не сказано, какой из двух препаратов на какой влияет.",
+         "en": "For this record type the drug order in the DrugBank export proved unreliable (we measured it), so the text does not say which drug affects which."
+        },
+        "refs": [
+         "drugbank-tdc:DB00682>DB00196:t73"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "why",
+      "title": {
+       "ru": "Почему это может происходить",
+       "en": "Why this may happen"
+      },
+      "statements": [
+       {
+        "kind": "hypothesis",
+        "text": {
+         "ru": "Препарат флуконазол отмечен в базах как вещество, подавляющее белок CYP2C19, а препарат варфарин — как вещество, которое этот белок перерабатывает. Когда белок подавлен, препарат варфарин может перерабатываться медленнее обычного.",
+         "en": "fluconazole is recorded as inhibiting CYP2C19, and warfarin as something CYP2C19 processes. With CYP2C19 inhibited, warfarin may be broken down more slowly than usual."
+        },
+        "refs": [
+         "mech:P33261:enzyme:inhibitor_substrate:DB00196",
+         "annot:drugbank:DB00196:P33261:enzyme",
+         "annot:drugbank:DB00682:P33261:enzyme"
+        ]
+       },
+       {
+        "kind": "hypothesis",
+        "text": {
+         "ru": "Препарат флуконазол отмечен в базах как вещество, подавляющее белок CYP2C9, а препарат варфарин — как вещество, которое этот белок перерабатывает. Когда белок подавлен, препарат варфарин может перерабатываться медленнее обычного.",
+         "en": "fluconazole is recorded as inhibiting CYP2C9, and warfarin as something CYP2C9 processes. With CYP2C9 inhibited, warfarin may be broken down more slowly than usual."
+        },
+        "refs": [
+         "mech:P11712:enzyme:inhibitor_substrate:DB00196",
+         "annot:drugbank:DB00196:P11712:enzyme",
+         "annot:drugbank:DB00682:P11712:enzyme"
+        ]
+       },
+       {
+        "kind": "hypothesis",
+        "text": {
+         "ru": "Препарат флуконазол отмечен в базах как вещество, подавляющее белок CYP3A4, а препарат варфарин — как вещество, которое этот белок перерабатывает. Когда белок подавлен, препарат варфарин может перерабатываться медленнее обычного.",
+         "en": "fluconazole is recorded as inhibiting CYP3A4, and warfarin as something CYP3A4 processes. With CYP3A4 inhibited, warfarin may be broken down more slowly than usual."
+        },
+        "refs": [
+         "mech:P08684:enzyme:inhibitor_substrate:DB00196",
+         "annot:drugbank:DB00196:P08684:enzyme",
+         "annot:drugbank:DB00682:P08684:enzyme"
+        ]
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Эти гипотезы согласуются с записью DrugBank о взаимодействии. Но это не независимое подтверждение: DrugBank мог составить запись по тем же сведениям о белках.",
+         "en": "These hypotheses agree with a DrugBank interaction record. That is not independent confirmation: DrugBank may have derived the record from the same protein annotations."
+        },
+        "refs": [
+         "mech:P33261:enzyme:inhibitor_substrate:DB00196",
+         "mech:P11712:enzyme:inhibitor_substrate:DB00196",
+         "mech:P08684:enzyme:inhibitor_substrate:DB00196",
+         "drugbank-tdc:DB00682>DB00196:t73"
+        ]
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Базы не указывают, насколько сильно препарат подавляет или усиливает белок и какую долю работы с препаратом этот белок выполняет. Поэтому это гипотезы, а не вывод о том, что взаимодействие произойдёт.",
+         "en": "The databases record neither how strongly a drug inhibits or induces a protein nor how much of a drug's handling that protein does. These are hypotheses, not a conclusion that an interaction will happen."
+        },
+        "refs": [
+         "mech:P33261:enzyme:inhibitor_substrate:DB00196",
+         "mech:P11712:enzyme:inhibitor_substrate:DB00196",
+         "mech:P08684:enzyme:inhibitor_substrate:DB00196"
+        ]
+       },
+       {
+        "kind": "annotation",
+        "text": {
+         "ru": "Белки обоих препаратов участвуют в 10 общих биологических процессах по базе Reactome — например, «Biosynthesis of maresin-like SPMs». Общий процесс — это фон, а не причина взаимодействия.",
+         "en": "Proteins of both drugs take part in 10 shared biological process(es) in Reactome — for example “Biosynthesis of maresin-like SPMs”. A shared process is background, not a cause of interaction."
+        },
+        "refs": [
+         "pathway:R-HSA-9027307"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "ai",
+      "title": {
+       "ru": "Что нашла модель",
+       "en": "What the AI found"
+      },
+      "statements": [
+       {
+        "kind": "missing",
+        "text": {
+         "ru": "Исследовательская модель сейчас недоступна, поэтому её оценка не показана.",
+         "en": "The research model is not available right now, so no score is shown."
+        },
+        "refs": []
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Один из препаратов входил в проверочную выборку: модель на нём не обучалась, но по нему выбирали конфигурацию и калибровку.",
+         "en": "One drug was in the validation set: the model was not trained on it, but it was used to choose the configuration and the calibration."
+        },
+        "refs": [
+         "model"
+        ]
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Калиброванная оценка подобрана на проверочных парах, где задокументированных и случайно набранных пар поровну. Это не вероятность вреда и не частота взаимодействий в реальной практике.",
+         "en": "The calibrated score was fitted on validation pairs with equal numbers of documented and randomly drawn pairs. It is not a probability of harm, nor how often interactions happen in practice."
+        },
+        "refs": [
+         "model"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "certainty",
+      "title": {
+       "ru": "Насколько это надёжно",
+       "en": "How certain is this?"
+      },
+      "statements": [
+       {
+        "kind": "documented",
+        "text": {
+         "ru": "Задокументировано: 3 записи в источниках. Это самая надёжная часть страницы.",
+         "en": "Documented: 3 source record(s). This is the most reliable part of the page."
+        },
+        "refs": [
+         "label:00000000-0000-0000-0000-000000000003:boxed_warning:0:DB00196",
+         "label:00000000-0000-0000-0000-000000000001:drug_interactions:0:DB00682",
+         "drugbank-tdc:DB00682>DB00196:t73"
+        ]
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Степень тяжести здесь не присваивается: в выгрузке DrugBank её нет, а для инструкций показан только раздел, в котором упомянут препарат.",
+         "en": "No severity is assigned: the DrugBank export has none, and for labels only the section that names the drug is shown."
+        },
+        "refs": []
+       },
+       {
+        "kind": "hypothesis",
+        "text": {
+         "ru": "Гипотезы о механизме (3) собраны из задокументированных ролей каждого препарата по отдельности. Для этой пары они не проверялись.",
+         "en": "The 3 mechanism hypothesis(es) are assembled from each drug's documented roles separately. None was tested for this pair."
+        },
+        "refs": [
+         "mech:P33261:enzyme:inhibitor_substrate:DB00196",
+         "mech:P11712:enzyme:inhibitor_substrate:DB00196",
+         "mech:P08684:enzyme:inhibitor_substrate:DB00196"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "missing",
+      "title": {
+       "ru": "Чего мы не знаем",
+       "en": "What is missing"
+      },
+      "statements": [
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Здесь не учитываются дозы, длительность приёма, возраст, работа почек и печени, другие лекарства и особенности конкретного человека — всё, от чего зависит, проявится ли взаимодействие и насколько сильно.",
+         "en": "Doses, duration, age, kidney and liver function, other medicines and individual factors are not taken into account — everything that decides whether an interaction shows up and how strongly."
+        },
+        "refs": []
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Решения о приёме лекарств принимают врач или фармацевт. Эта страница не может их заменить.",
+         "en": "Decisions about medicines belong to a doctor or pharmacist. This page cannot replace them."
+        },
+        "refs": []
+       }
+      ]
+     }
+    ]
+   },
+   "sources_checked": [
+    {
+     "source": "drugbank_tdc",
+     "status": "ok",
+     "detail": "1 record(s) in the local DrugBank export (TDC, retrieved 2026-08-24)."
+    },
+    {
+     "source": "openfda_label",
+     "status": "ok",
+     "detail": "Labels checked — warfarin: set ID 00000000-0000-0000-0000-000000000003; fluconazole: set ID 00000000-0000-0000-0000-000000000001"
+    }
+   ],
+   "limitations": [
+    {
+     "ru": "Только 1 705 препаратов исследовательского набора данных; международные названия есть у 1 497 из них.",
+     "en": "Only the 1,705 drugs of the research dataset; 1,497 of them have an international name."
+    },
+    {
+     "ru": "Записи DrugBank не содержат степени тяжести и не указывают, на чём основаны. Для многих типов записей порядок препаратов в выгрузке ненадёжен (измерено).",
+     "en": "DrugBank records carry no severity and do not state their basis. For many record types the drug order in the export is unreliable (measured)."
+    },
+    {
+     "ru": "Инструкции ищутся по названию препарата. Утверждения о целых группах препаратов («сильные ингибиторы CYP3A4») не распознаются, поэтому отсутствие совпадения не означает, что в инструкции ничего нет.",
+     "en": "Labels are searched by drug name. Statements about whole drug classes (“strong CYP3A4 inhibitors”) are not recognised, so no match does not mean the label is silent."
+    },
+    {
+     "ru": "Гипотезы о механизме собраны из ролей каждого препарата по отдельности; сила действия и доля участия белка неизвестны.",
+     "en": "Mechanism hypotheses are assembled from each drug's roles separately; strength of effect and the protein's share of the work are unknown."
+    },
+    {
+     "ru": "Оценка BIO-GINE — исследовательский сигнал сходства с задокументированными парами. Это не вероятность вреда.",
+     "en": "The BIO-GINE score is a research signal of resemblance to documented pairs. It is not a probability of harm."
+    }
+   ],
+   "disclaimer": {
+    "ru": "Это исследовательский прототип, а не медицинское изделие. Он не заменяет врача или фармацевта и не может сказать, безопасно ли сочетание лекарств для конкретного человека.",
+    "en": "This is a research prototype, not a medical device. It does not replace a doctor or pharmacist and cannot say whether a combination is safe for a particular person."
+   },
+   "generated_at": "2026-10-14T16:12:06+00:00"
+  }
+ }
+}

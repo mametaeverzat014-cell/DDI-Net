@@ -15,6 +15,8 @@ import { MechanismGraphView } from "../components/v3/MechanismGraphView";
 import { RemoteNotice } from "../components/v3/ReportParts";
 import { PATTERN_LABEL } from "../components/v3/evidenceStyle";
 import { RelianceBars } from "../components/v3/RelianceBars";
+import { ExportReport } from "../components/v3/ExportReport";
+import type { ExportInput } from "../pdf/types";
 
 const T = {
   eyebrow: { ru: "DDI-Net 3.0 · Биологические механизмы", en: "DDI-Net 3.0 · Biological mechanisms" },
@@ -63,6 +65,16 @@ export function Mechanisms({ pair, setPair }: { pair: [string, string]; setPair:
   const byId = useMemo(() => new Map((dataset ?? []).map((d) => [d.id, d])), [dataset]);
   const label = (id: string) => nameOf(byId.get(id), lang) ?? id;
   const findings = report.kind === "ok" ? report.data.mechanism.findings : [];
+  // Enabled once the report is in and the graph request has settled: the PDF
+  // draws the graph response when there is one, else the report's own block.
+  const exportInput = useMemo<ExportInput | null>(() => {
+    if (report.kind !== "ok" || graph.kind === "loading" || a === b) return null;
+    return {
+      kind: "pair", origin: "mechanisms",
+      report: { data: report.data, meta: report.meta },
+      graph: graph.kind === "ok" ? { data: graph.data, meta: graph.meta } : null,
+    };
+  }, [report, graph, a, b]);
 
   return (
     <section className="section" style={{ paddingTop: "16vh" }}>
@@ -76,7 +88,11 @@ export function Mechanisms({ pair, setPair }: { pair: [string, string]; setPair:
           <DrugPicker label="B" value={b} onChange={(v) => setPair([a, v])} dataset={dataset} accent="var(--cyan)" />
         </div>
 
-        <div style={{ marginTop: 28 }}>
+        <div style={{ marginTop: 20 }}>
+          <ExportReport input={exportInput} id="export-mechanisms" />
+        </div>
+
+        <div style={{ marginTop: 22 }}>
           {graph.kind === "ok" ? (
             <MechanismGraphView graph={graph.data} findings={findings} nameOf={label} />
           ) : (

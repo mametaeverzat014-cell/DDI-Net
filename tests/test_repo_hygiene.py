@@ -41,6 +41,10 @@ ALLOWED_SYMBOLS = set(
                            # the ⇒ ∈ ≡ already listed; ≫ states that an effect
                            # is not near its threshold (dz = 7.72 ≫ 0.2), which
                            # ">" would understate.
+    "©"                    # the copyright notice of the IBM Plex font licence
+                           # (web/public/fonts/pdf/LICENSE-IBM-Plex.txt). The
+                           # SIL OFL requires it to travel with the fonts
+                           # unchanged, so it cannot be spelled "(c)".
     "⁰¹²³⁴⁵⁶⁷⁸⁹⁻"          # superscripts. R² appears throughout (degree-shortcut
                            # probe, adversarial debiasing); the digits and the
                            # superscript minus carry scientific notation for

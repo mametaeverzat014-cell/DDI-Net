@@ -21,6 +21,8 @@ import {
   EvidenceList, ExplanationView, MechanismTable, ModelPanelV3, RemoteNotice, SourcesChecked, StatusBanner,
 } from "../components/v3/ReportParts";
 import { buildRefIndex } from "../components/v3/refs";
+import { ExportReport } from "../components/v3/ExportReport";
+import type { ExportInput } from "../pdf/types";
 
 // Real DrugBank IDs, chosen to show different kinds of result: a documented
 // pair with a pharmacokinetic hypothesis, a statin + macrolide, and a pair with
@@ -87,6 +89,11 @@ export function Analyzer({ pair, setPair, setView }: {
   const label = (id: string) => nameOf(byId.get(id), lang) ?? id;
   const report = state.kind === "ok" ? state.data : null;
   const refs = useMemo(() => (report ? buildRefIndex(report) : undefined), [report]);
+  // The export uses the very response on screen, with its recorded provenance.
+  const exportInput = useMemo<ExportInput | null>(
+    () => (state.kind === "ok" && a !== b ? { kind: "pair", origin: "analyzer", report: { data: state.data, meta: state.meta } } : null),
+    [state, a, b],
+  );
 
   return (
     <section className="section" style={{ paddingTop: "16vh" }}>
@@ -118,7 +125,11 @@ export function Analyzer({ pair, setPair, setView }: {
           </div>
         </div>
 
-        <div style={{ marginTop: 34, display: "flex", flexDirection: "column", gap: 22 }}>
+        <div style={{ marginTop: 22 }}>
+          <ExportReport input={exportInput} id="export-analyzer" />
+        </div>
+
+        <div style={{ marginTop: 26, display: "flex", flexDirection: "column", gap: 22 }}>
           {a === b ? (
             <p style={{ color: "var(--ev-missing)" }}>{pick(T.same, lang)}</p>
           ) : !report ? (

@@ -13,6 +13,8 @@ import { fetchMulti, MAX_MULTI, type MultiPair, type MultiReport, type Remote } 
 import { useI18n, pick, type Bi } from "../i18n";
 import { RemoteNotice, SourcesChecked } from "../components/v3/ReportParts";
 import { REVIEW_REASON, STATUS_TIER } from "../components/v3/evidenceStyle";
+import { ExportReport } from "../components/v3/ExportReport";
+import type { ExportInput } from "../pdf/types";
 
 const T = {
   eyebrow: { ru: "DDI-Net 3.0 · Несколько препаратов", en: "DDI-Net 3.0 · Multiple drugs" },
@@ -65,6 +67,10 @@ export function MultiDrug({ setPair, setView }: { setPair: (p: [string, string])
   };
 
   const report = state?.kind === "ok" ? state.data : null;
+  const exportInput = useMemo<ExportInput | null>(
+    () => (state?.kind === "ok" ? { kind: "multi", report: { data: state.data, meta: state.meta } } : null),
+    [state],
+  );
   const pairs = useMemo(() => report ? [...report.pairs].sort((x, y) =>
     Number(y.needs_review) - Number(x.needs_review) ||
     STATUS_ORDER.indexOf(x.evidence_status) - STATUS_ORDER.indexOf(y.evidence_status)) : [], [report]);
@@ -109,7 +115,11 @@ export function MultiDrug({ setPair, setView }: { setPair: (p: [string, string])
           </div>
         </div>
 
-        <div style={{ marginTop: 26, display: "flex", flexDirection: "column", gap: 22 }}>
+        <div style={{ marginTop: 18 }}>
+          <ExportReport input={exportInput} id="export-multi" />
+        </div>
+
+        <div style={{ marginTop: 22, display: "flex", flexDirection: "column", gap: 22 }}>
           {state && !report && <RemoteNotice state={state} />}
           {report && (
             <>
