@@ -55,7 +55,7 @@ def test_report_contract(client):
     assert [s["id"] for s in body["explanation"]["sections"]] == ["known", "why", "ai", "certainty", "missing"]
     # The three kinds of statement live in different fields.
     assert {"evidence", "mechanism", "model"} <= set(body)
-    assert all(e["category"].startswith(("label_", "database_")) for e in body["evidence"])
+    assert all(e["category"].startswith(("label_", "database_", "reference_")) for e in body["evidence"])
     assert all(f["status"] == "hypothesis" for f in body["mechanism"]["findings"])
 
 

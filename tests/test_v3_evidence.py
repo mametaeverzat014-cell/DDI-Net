@@ -56,6 +56,15 @@ def real(real_artifact) -> EvidenceStore:
 
 
 @pytest.fixture(scope="session")
+def real_noref(real_artifact) -> EvidenceStore:
+    """The real store without the CRESCENDDI reference set: DrugBank and label semantics alone."""
+    s = EvidenceStore.load(real_artifact)
+    s.reference.clear()
+    s.sources.pop("crescenddi", None)
+    return s
+
+
+@pytest.fixture(scope="session")
 def engine(real) -> EvidenceEngine:
     return EvidenceEngine(real, model=None, external=False)
 

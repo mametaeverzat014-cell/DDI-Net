@@ -1,10 +1,15 @@
 # Sample PDF reports
 
-These reports were generated on 2026-10-15, after the Clinical Outcome Engine
+**Dates.** The warfarin + fluconazole reports were regenerated on 2026-10-16, after the
+CRESCENDDI reference set was integrated (`docs/DATASET_AUDIT.md`). The other reports are from
+2026-10-15, before that, so they show no CRESCENDDI source even where the current API would list
+one.
+
+These reports were generated after the Clinical Outcome Engine
 was added (`docs/DDINET_V3_CLINICAL_OUTCOMES_ARCHITECTURE.md`).
 
 **How they were generated.** Unless marked SYNTHETIC, each one was made by
-clicking **Quick PDF**, **Export PDF** or **JSON** in Chromium (Playwright):
+clicking **Quick PDF** or **Export PDF** in Chromium (Playwright):
 
 * on a production build of the site from `feature/ddinet-v3`, served locally;
 * connected to a local DDI-Net 3.0 API (`uvicorn serving.api:app`, lean engine,
@@ -24,11 +29,8 @@ chain figure, and every record.
 
 | File | Page | Language |
 |---|---|---|
-| `DDI-Net_QuickReport_Warfarin_Fluconazole_2026-10-15.pdf` | Analyzer, Quick | English |
-| `DDI-Net_QuickReport_Warfarin_Fluconazole_2026-10-15_RU.pdf` | Analyzer, Quick | Russian |
-| `DDI-Net_Report_Warfarin_Fluconazole_2026-10-15.pdf` | Analyzer, Full | English |
-| `DDI-Net_Report_Warfarin_Fluconazole_2026-10-15_RU.pdf` | Analyzer, Full | Russian |
-| `DDI-Net_Report_Warfarin_Fluconazole_2026-10-15.json` | companion JSON of the English full PDF (same `payload_sha256`) | — |
+| `DDI-Net_QuickReport_Warfarin_Fluconazole_2026-10-16.pdf` / `_RU` | Analyzer, Quick; **with the CRESCENDDI reference set** (documented bleeding, "Haemorrhage") | EN / RU |
+| `DDI-Net_Report_Warfarin_Fluconazole_2026-10-16.pdf` / `_RU` | Analyzer, Full; CRESCENDDI shown as its own source document, severity grades not reproduced | EN / RU |
 | `DDI-Net_QuickReport_Warfarin_Acetylsalicylic-acid_2026-10-15.pdf` / `_RU` | Analyzer, Quick; a documented pharmacodynamic effect | EN / RU |
 | `DDI-Net_Report_Warfarin_Acetylsalicylic-acid_2026-10-15.pdf` / `_RU` | Analyzer, Full | EN / RU |
 | `DDI-Net_QuickReport_Metformin_Warfarin_2026-10-15.pdf` | Analyzer, Quick; nothing documented | English |

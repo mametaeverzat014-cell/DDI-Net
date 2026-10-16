@@ -72,6 +72,11 @@ class EvidenceStore:
         self.direction_audit: dict[int, dict] = {
             int(k): v for k, v in payload.get("direction_audit", {}).items()}
 
+        #: Reference-set positive controls: unordered pair -> [(meddra_code, term, event_source)].
+        self.reference: dict[tuple[int, int], list[tuple[int, str, str]]] = defaultdict(list)
+        for a, b, code, term, src in payload.get("reference_outcomes", []):
+            self.reference[(min(a, b), max(a, b))].append((code, term, src))
+
         self.pathways: list[dict] = payload["pathways"]
         self.pathway_index = {pw["id"]: i for i, pw in enumerate(self.pathways)}
         self.pathways_of: dict[int, dict[int, str]] = defaultdict(dict)
@@ -99,6 +104,9 @@ class EvidenceStore:
     # -- queries ----------------------------------------------------------------
     def pair_records(self, a: int, b: int) -> list[tuple[int, int, int]]:
         return sorted(self.records.get((min(a, b), max(a, b)), []))
+
+    def reference_outcomes(self, a: int, b: int) -> list[tuple[int, str, str]]:
+        return sorted(self.reference.get((min(a, b), max(a, b)), []))
 
     def is_documented(self, a: int, b: int) -> bool:
         return (min(a, b), max(a, b)) in self.records

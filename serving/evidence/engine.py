@@ -22,11 +22,16 @@ from .mechanism import mechanism_block, mechanism_graph
 from .model_context import model_block
 from .outcomes import CATEGORIES, build_outcomes
 from .records import database_evidence
+from .reference_sets import reference_evidence
 from .schema import (
     Bi, DrugOut, EvidenceCategory, EvidenceStatus, MechanismGraph, MultiPair, MultiReport,
     PairReport, ResolveCandidate, ResolveOut, SourceCheck,
 )
 from .store import EvidenceStore
+
+#: Categories that come from an FDA label (the no-effect mention included).
+LABEL_CATEGORIES = {EvidenceCategory.LABEL_CONTRAINDICATION, EvidenceCategory.LABEL_BOXED_WARNING,
+                    EvidenceCategory.LABEL_WARNING_OR_INTERACTION, EvidenceCategory.LABEL_MENTION_NO_EFFECT_REPORTED}
 
 MAX_MULTI = 8
 
@@ -161,6 +166,11 @@ class EvidenceEngine:
         checks = [SourceCheck(source="drugbank_tdc", status="ok" if db else "no_match",
                               detail=f"{len(db)} record(s) in the local DrugBank export (TDC, retrieved "
                                      f"{self.store.sources['tdc_drugbank']['retrieved']}).")]
+        ref = reference_evidence(self.store, ea.index, eb.index)
+        if "crescenddi" in self.store.sources:
+            checks.append(SourceCheck(source="crescenddi", status="ok" if ref else "no_match",
+                                      detail=f"{len(ref)} pair–event record(s) in the CRESCENDDI reference set "
+                                             f"(positive controls, compendia of 2018–2019)."))
         labels = []
         if include_labels:
             labels, chk = self.labels.for_pair(ea, eb)
@@ -168,7 +178,7 @@ class EvidenceEngine:
         else:
             checks.append(SourceCheck(source="openfda_label", status="disabled",
                                       detail="Not requested for this report."))
-        return labels + db, conflicts, checks
+        return labels + db + ref, conflicts, checks
 
     # -- public -------------------------------------------------------------------------
     def report(self, qa: str, qb: str, include_labels: bool = True) -> PairReport:
@@ -231,9 +241,9 @@ class EvidenceEngine:
             pairs.append(MultiPair(
                 drug_a=ea.id, drug_b=eb.id, evidence_status=status,
                 n_database_records=sum(e.category == EvidenceCategory.DATABASE_INTERACTION_RECORD for e in evidence),
-                n_label_records=sum(e.category != EvidenceCategory.DATABASE_INTERACTION_RECORD for e in evidence),
-                n_label_documents=len({e.source_record_id for e in evidence
-                                       if e.category != EvidenceCategory.DATABASE_INTERACTION_RECORD}),
+                n_label_records=sum(e.category in LABEL_CATEGORIES for e in evidence),
+                n_label_documents=len({e.source_record_id for e in evidence if e.category in LABEL_CATEGORIES}),
+                n_reference_records=sum(e.category == EvidenceCategory.REFERENCE_SET_OUTCOME for e in evidence),
                 n_mechanism_hypotheses=sum(f.pattern != "shared_annotation" for f in mech.findings),
                 calibrated_model_score=None if model.abstain else model.calibrated_model_score,
                 regime=model.regime, training_label_seen=model.training_label_seen,

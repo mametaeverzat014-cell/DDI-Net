@@ -132,6 +132,7 @@ def _known(n: Names, a: str, b: str, evidence: list[EvidenceRecord], conflicts: 
         EvidenceCategory.LABEL_WARNING_OR_INTERACTION)]
     no_effect = [e for e in evidence if e.category == EvidenceCategory.LABEL_MENTION_NO_EFFECT_REPORTED]
     db = [e for e in evidence if e.category == EvidenceCategory.DATABASE_INTERACTION_RECORD]
+    ref = [e for e in evidence if e.category == EvidenceCategory.REFERENCE_SET_OUTCOME]
 
     # One statement per label DOCUMENT (SPL set ID), not per excerpt: several
     # excerpts of one label are one source, and must not read as several.
@@ -169,6 +170,15 @@ def _known(n: Names, a: str, b: str, evidence: list[EvidenceRecord], conflicts: 
         out.append(Statement(kind="documented", refs=[e.id for e in rest], text=Bi(
             ru=f"Ещё {len(rest)} {_plural_ru(len(rest), ('запись', 'записи', 'записей'))} DrugBank — в списке источников.",
             en=f"{len(rest)} more DrugBank record(s) are in the source list.")))
+    if ref:
+        terms = sorted({e.original_identifiers.get("meddra_term", "") for e in ref} - {""})
+        shown = ", ".join(f"«{t}»" for t in terms[:6]) + (" …" if len(terms) > 6 else "")
+        shown_en = ", ".join(f"“{t}”" for t in terms[:6]) + (" …" if len(terms) > 6 else "")
+        k = len(terms)
+        out.append(Statement(kind="documented", refs=[e.id for e in ref], text=Bi(
+            ru=f"Справочный набор CRESCENDDI (по клиническим справочникам BNF, Micromedex и ANSM, 2018–2019) называет для этой пары {k} {_plural_ru(k, ('нежелательное явление', 'нежелательных явления', 'нежелательных явлений'))}: {shown} (термины MedDRA).",
+            en=f"The CRESCENDDI reference set (built from the BNF, Micromedex and ANSM compendia, 2018–2019) names {k} adverse event(s) for this pair: {shown_en} (MedDRA terms).",
+        )))
     unverified = [e.id for e in db if e.direction == "not_verified"]
     if unverified:
         out.append(Statement(kind="caveat", refs=unverified, text=Bi(
@@ -320,8 +330,10 @@ def _certainty(evidence: list[EvidenceRecord], mech: MechanismBlock, model: Mode
     out: list[Statement] = []
     docs = [e for e in evidence if e.category != EvidenceCategory.LABEL_MENTION_NO_EFFECT_REPORTED]
     if docs:
-        label_docs = _label_documents([e for e in docs if e.category != EvidenceCategory.DATABASE_INTERACTION_RECORD])
+        label_docs = _label_documents([e for e in docs if e.category not in (
+            EvidenceCategory.DATABASE_INTERACTION_RECORD, EvidenceCategory.REFERENCE_SET_OUTCOME)])
         n_db = sum(e.category == EvidenceCategory.DATABASE_INTERACTION_RECORD for e in docs)
+        n_ref = sum(e.category == EvidenceCategory.REFERENCE_SET_OUTCOME for e in docs)
         n_ex = sum(_distinct_excerpts(d) for d in label_docs)
         parts_ru, parts_en = [], []
         if label_docs:
@@ -332,12 +344,19 @@ def _certainty(evidence: list[EvidenceRecord], mech: MechanismBlock, model: Mode
         if n_db:
             parts_ru.append(f"{n_db} {_plural_ru(n_db, ('запись', 'записи', 'записей'))} DrugBank")
             parts_en.append(f"{n_db} DrugBank record(s)")
+        if n_ref:
+            parts_ru.append(f"{n_ref} {_plural_ru(n_ref, ('запись', 'записи', 'записей'))} справочного набора CRESCENDDI")
+            parts_en.append(f"{n_ref} CRESCENDDI reference-set record(s)")
         out.append(Statement(kind="documented", refs=[e.id for e in docs], text=Bi(
             ru=f"Задокументировано: {' и '.join(parts_ru)}. Несколько фрагментов одной инструкции — один источник, а не отдельные подтверждения; запись DrugBank тоже может опираться на текст инструкции. Это самая надёжная часть страницы.",
             en=f"Documented: {' and '.join(parts_en)}. Several excerpts of one label are one source, not separate confirmations, and a DrugBank record may itself rest on label text. This is the most reliable part of the page.")))
     out.append(Statement(kind="caveat", text=Bi(
         ru="Степень тяжести здесь не присваивается: в выгрузке DrugBank её нет, а для инструкций показан только раздел, в котором упомянут препарат.",
         en="No severity is assigned: the DrugBank export has none, and for labels only the section that names the drug is shown.")))
+    if any(e.category == EvidenceCategory.REFERENCE_SET_OUTCOME for e in evidence):
+        out.append(Statement(kind="caveat", text=Bi(
+            ru="Справочники, на которых основан CRESCENDDI, оценивают тяжесть взаимодействий, но эти оценки — их собственная редакционная классификация и здесь не воспроизводятся.",
+            en="The compendia behind CRESCENDDI grade interaction severity, but those grades are their own editorial classifications and are not reproduced here.")))
     hyps = [f for f in mech.findings if f.pattern != "shared_annotation"]
     if hyps:
         k = len(hyps)

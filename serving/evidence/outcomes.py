@@ -27,6 +27,7 @@ import re
 from dataclasses import dataclass
 
 from .explain import _FORBIDDEN
+from .reference_sets import EFFECTS as REF_EFFECTS, MEDDRA_MAP_VERSION
 from .schema import (
     Bi,
     ChainLink,
@@ -43,7 +44,7 @@ from .schema import (
 )
 
 TYPE_MAP_VERSION = "drugbank_type_map/v1"
-LEXICON_VERSION = "label_lexicon/v2"
+LEXICON_VERSION = "label_lexicon/v3"
 ANNOTATION_METHOD = "annotation_chain/v1"
 
 # ------------------------------------------------------------------ categories --
@@ -70,7 +71,12 @@ CATEGORIES: dict[str, Bi] = {
     "gastrointestinal": Bi(ru="Желудочно-кишечный тракт", en="Gastrointestinal tract"),
     "respiratory_airway": Bi(ru="Дыхательные пути", en="Airways"),
     "adverse_unspecified": Bi(ru="Нежелательные эффекты (не уточнены)", en="Adverse effects (not specified)"),
+    "general_other": Bi(ru="Другие задокументированные явления", en="Other documented events"),
 }
+
+REF_CLINICAL_TEXT = Bi(
+    ru="Справочный набор называет это последствие для данной пары. Частоту он не указывает; оценки тяжести, которые дают справочники, здесь не воспроизводятся.",
+    en="The reference set names this consequence for this pair. It gives no frequency; the severity grades the compendia give are not reproduced here.")
 
 LEVEL_TEXT: dict[str, Bi] = {
     "clinical_outcome": Bi(
@@ -304,6 +310,12 @@ STRENGTH_TEXT: dict[str, Bi] = {
                                      en="DrugBank standard sentence; the source does not state what the record is based on."),
     "label_and_database": Bi(ru="И инструкция FDA, и запись DrugBank. Это не обязательно независимые источники: DrugBank может опираться на текст инструкции.",
                              en="Both an FDA label and a DrugBank record. They are not necessarily independent: DrugBank may rest on label text."),
+    "reference_set_statement": Bi(
+        ru="Справочный набор CRESCENDDI: пара задокументирована в трёх клинических справочниках (2018–2019), явление взято из их описания взаимодействия. Текст справочников не приводится.",
+        en="CRESCENDDI reference set: the pair is documented in three clinical compendia (2018–2019) and the event comes from their interaction description. The compendium text is not reproduced."),
+    "reference_set_and_other": Bi(
+        ru="Справочный набор CRESCENDDI и ещё один источник (инструкция FDA или DrugBank). Источники не обязательно независимы.",
+        en="The CRESCENDDI reference set and another source (an FDA label or DrugBank). The sources are not necessarily independent."),
     "annotation_hypothesis": Bi(ru="Только роли препаратов по отдельности (аннотации белков). Это гипотеза.",
                                 en="Only the drugs' separate protein roles (annotations). This is a hypothesis."),
 }
@@ -462,6 +474,19 @@ def _supports_from_records(evidence: list[EvidenceRecord]) -> dict[tuple[str, st
                 affected_drug_id=affected, source_seriousness=None, retrieved_at=e.retrieved_at,
                 qualifiers=["DrugBank gives no severity and does not state the basis of the record."],
             ))
+        elif e.category == EvidenceCategory.REFERENCE_SET_OUTCOME:
+            key = e.original_identifiers.get("effect_key", "")
+            eff = REF_EFFECTS.get(key)
+            if eff is None:
+                continue
+            add(eff.category, key, eff.level, eff.en, eff.ru, OutcomeSupport(
+                evidence_record_id=e.id, source_type="reference_set", source_name=e.source_name,
+                source_document_id=e.source_record_id, source_url=e.source_url, section=None,
+                excerpt=e.statement, matched_terms=[e.original_identifiers.get("meddra_term", "")],
+                extraction_method=f"{MEDDRA_MAP_VERSION}:meddra={e.original_identifiers.get('meddra_code', '')}",
+                direction="not_applicable", affected_drug_id=None, source_seriousness=None,
+                retrieved_at=e.retrieved_at, qualifiers=list(e.qualifiers),
+            ))
         elif e.category in (EvidenceCategory.LABEL_CONTRAINDICATION, EvidenceCategory.LABEL_BOXED_WARNING,
                             EvidenceCategory.LABEL_WARNING_OR_INTERACTION):
             sentence = e.statement
@@ -502,11 +527,17 @@ def _seriousness_basis(cls: str, supports: list[OutcomeSupport]) -> Bi:
         quoted = sorted({s.source_seriousness for s in supports if s.source_seriousness})
         base = SERIOUSNESS_TEXT[cls]
         return Bi(ru=f"{base.ru} Основание: {'; '.join(quoted)}.", en=f"{base.en} Basis: {'; '.join(quoted)}.")
+    if cls == "documented_no_standard_severity" and any(s.source_type == "reference_set" for s in supports):
+        base = SERIOUSNESS_TEXT[cls]
+        return Bi(ru=f"{base.ru} Справочники, на которых основан CRESCENDDI, оценивают тяжесть, но их оценки здесь не воспроизводятся.",
+                  en=f"{base.en} The compendia behind CRESCENDDI grade severity, but their grades are not reproduced here.")
     return SERIOUSNESS_TEXT[cls]
 
 
 def _strength(supports: list[OutcomeSupport]) -> str:
     kinds = {s.source_type for s in supports}
+    if "reference_set" in kinds:
+        return "reference_set_and_other" if kinds & {"fda_label", "drugbank_tdc"} else "reference_set_statement"
     if {"fda_label", "drugbank_tdc"} <= kinds:
         return "label_and_database"
     if "fda_label" in kinds:
@@ -519,8 +550,8 @@ def _strength(supports: list[OutcomeSupport]) -> str:
 def _n_documents(supports: list[OutcomeSupport]) -> int:
     docs = set()
     for s in supports:
-        if s.source_type == "drugbank_tdc":
-            docs.add("drugbank_tdc")       # the export is one source, however many records
+        if s.source_type in ("drugbank_tdc", "reference_set"):
+            docs.add(s.source_type)        # one export / one reference set, however many records
         elif s.source_document_id:
             docs.add(s.source_document_id)
     return len(docs)
@@ -595,7 +626,7 @@ def build_outcomes(store, a: str, b: str, evidence: list[EvidenceRecord], mech: 
                            en="The drug is named in a list; the statement may concern the whole group."))
         outcomes.append(ClinicalOutcome(
             id=f"outcome:{key}:{category}:{effect}", drug_a=a, drug_b=b, category=category, effect=effect,
-            effect_level=d.level, label=Bi(ru=d.ru, en=d.en), explanation=LEVEL_TEXT[d.level],
+            effect_level=d.level, label=Bi(ru=d.ru, en=d.en), explanation=REF_CLINICAL_TEXT if (d.level == C and all(s.source_type == "reference_set" for s in d.supports)) else LEVEL_TEXT[d.level],
             evidence_status=status, supports=d.supports, n_source_documents=_n_documents(d.supports),
             affected_drug_id=affected, direction_note=direction_note,
             seriousness=cls, seriousness_basis=_seriousness_basis(cls, d.supports),
@@ -681,6 +712,8 @@ def build_outcomes(store, a: str, b: str, evidence: list[EvidenceRecord], mech: 
 def _method_family(supports: list[OutcomeSupport]) -> str:
     if any(s.source_type == "fda_label" for s in supports):
         return LEXICON_VERSION
+    if any(s.source_type == "reference_set" for s in supports):
+        return MEDDRA_MAP_VERSION
     return TYPE_MAP_VERSION
 
 
@@ -689,12 +722,15 @@ def _method_family(supports: list[OutcomeSupport]) -> str:
 #: describes the rules, never the probability that an outcome occurs.
 EXTRACTION_NOTES: dict[str, Bi] = {
     LEXICON_VERSION: Bi(
-        ru="Правила извлечения проверены только на пилотном наборе из 40 составленных предложений (тот же автор, "
-           "не реальные инструкции): найдено 25 из 32 размеченных последствий, 1 из 26 найденных — лишнее. "
-           "Перефразированные формулировки часто пропускаются. Это не клиническая валидация.",
-        en="The extraction rules were checked only on a pilot set of 40 constructed sentences (same author, "
-           "not real labels): 25 of 32 annotated outcomes found, 1 of 26 extractions unsupported. "
-           "Paraphrased wording is often missed. This is not a clinical validation."),
+        ru="Правила извлечения проверены на корпусе DDI Corpus 2013 (независимая разметка текстов о взаимодействиях из DrugBank, "
+           "отложенная часть): из 61 пары, которой правило приписало последствие, взаимодействие размечено у 51; из 164 пар, "
+           "лишь названных вместе, последствие приписано 10; последствие найдено для 51 из 233 взаимодействующих пар. "
+           "Перефразированные формулировки и упоминания групп препаратов часто пропускаются. На инструкциях FDA правила не "
+           "проверялись; это не клиническая валидация.",
+        en="The extraction rules were measured on the DDI Corpus 2013 (independently annotated DrugBank interaction text, "
+           "held-out part): of 61 pairs the rule gave an outcome, 51 are annotated as interacting; 10 of 164 pairs that were only "
+           "named together were given one; an outcome was found for 51 of 233 interacting pairs. Paraphrases and drug-class "
+           "statements are often missed. Not measured on FDA labels; not a clinical validation."),
 }
 
 
@@ -719,6 +755,10 @@ def _coverage(evidence, checks, mech) -> list[Bi]:
             n = sum(e.category == EvidenceCategory.DATABASE_INTERACTION_RECORD for e in evidence)
             out.append(Bi(ru=f"DrugBank (локальная выгрузка TDC): записей для пары — {n}. Степень тяжести и основание записей не указаны.",
                           en=f"DrugBank (local TDC export): {n} record(s) for the pair. No severity and no stated basis."))
+        elif c.source == "crescenddi":
+            n = sum(e.category == EvidenceCategory.REFERENCE_SET_OUTCOME for e in evidence)
+            out.append(Bi(ru=f"Справочный набор CRESCENDDI (BNF, Micromedex, ANSM; 2018–2019): записей «пара — явление» — {n}. Охватывает только пары, общие для трёх справочников.",
+                          en=f"CRESCENDDI reference set (BNF, Micromedex, ANSM; 2018–2019): {n} pair–event record(s). It covers only pairs common to all three compendia."))
         elif c.source == "openfda_label":
             txt = {"ok": ("инструкции FDA проверены", "FDA labels checked"),
                    "no_match": ("инструкции FDA проверены, другой препарат по названию не найден", "FDA labels checked, partner not named"),

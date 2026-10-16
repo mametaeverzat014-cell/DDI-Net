@@ -25,6 +25,7 @@ COPY data/mechanism_v1/ /app/data/mechanism_v1/
 # DDI-Net 3.0 evidence artifact inputs, compiled once at build time.
 COPY data/raw/drugbank.tab.gz /app/data/raw/drugbank.tab.gz
 COPY web/public/data/drugs.json /app/web/public/data/drugs.json
+COPY data/reference_sets/ /app/data/reference_sets/
 RUN cd /app && PYTHONPATH=/app:/app/src python -m serving.evidence.build
 
 # The 18 MB checkpoint is a GitHub Release asset, never a layer in git history.

@@ -124,6 +124,23 @@ still works: it shows a notice that the outcome view needs the updated
 service, together with the previous evidence report. The Quick PDF then
 carries that notice as well.
 
+**After the evidence-coverage commit** (`docs/DATASET_AUDIT.md`), the image also copies
+`data/reference_sets/` and builds the CRESCENDDI reference set into the evidence artifact. The
+label rule is now `label_lexicon/v3`. Redeploy as in steps 1–2, then check:
+
+```bash
+API=https://ddinet-api-test.onrender.com
+# warfarin + fluconazole now carries reference-set evidence (CRESCENDDI):
+curl -s -X POST $API/api/v3/report -H 'Content-Type: application/json' \
+  -d '{"drug_a":"DB00682","drug_b":"DB00196"}' | grep -o '"reference_set_outcome"' | head -1
+# and the source check lists it:
+curl -s -X POST $API/api/v3/report -H 'Content-Type: application/json' \
+  -d '{"drug_a":"DB00682","drug_b":"DB00196"}' | grep -o '"source":"crescenddi","status":"ok"'
+```
+
+Both greps must print something. If they do not, the old image is still serving. The site works
+with the old API too: it simply shows no CRESCENDDI document.
+
 Until step 3 (and, after the outcome commit, the checks above) succeeds, do not
 describe the Preview frontend and the test API as synchronised. The site and the PDF stay correct with the old API: they group
 repeated label text themselves and annotate the old metric sentence. But the

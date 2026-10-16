@@ -128,7 +128,7 @@ def test_inference_inputs_are_in_the_context():
 
 
 def test_nothing_else_is_sent():
-    allowed_roots = ("serving/", "src/", "data/mechanism_v1/")
+    allowed_roots = ("serving/", "src/", "data/mechanism_v1/", "data/reference_sets/")
     allowed_files = {"data/raw/drugbank.tab.gz", "web/public/data/drugs.json"}
     stray = [p for p in context_files() if not p.startswith(allowed_roots) and p not in allowed_files]
     assert not stray, f"unexpected files in the build context: {stray[:10]}"

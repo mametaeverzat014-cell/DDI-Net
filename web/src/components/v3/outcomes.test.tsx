@@ -33,6 +33,19 @@ describe("outcome overview", () => {
     expect(text).toContain("Степень серьёзности не установлена по доступным данным.");
   });
 
+  it("reference-set outcome: MedDRA term and CRESCENDDI shown, compendium severity grades not reproduced", () => {
+    const r = pair("pair_reference_warfarin_fluconazole.json");
+    const { container } = view(r);
+    const text = container.textContent!;
+    const bleed = r.outcomes!.outcomes.find((o) => o.effect === "bleeding")!;
+    expect(bleed.supports.every((s) => s.source_type === "reference_set")).toBe(true);
+    expect(text).toContain(bleed.label.ru);
+    for (const s of bleed.supports) expect(text).toContain(s.excerpt);
+    expect(text).toContain("CRESCENDDI");
+    expect(text).toContain("оценки здесь не воспроизводятся");
+    for (const grade of ["Major", "Severe", "Contraindicated", "Not recommended"]) expect(text).not.toContain(grade);
+  });
+
   it("no documentation, label source down: says it cannot assess, not that it is safe; no outcome card", () => {
     // captured from a local API whose network blocked openFDA
     const r = pair("pair_outcomes_metformin_warfarin.json");

@@ -55,6 +55,7 @@ from serving.evidence.outcomes import (
     TYPE_MAP,
     label_terms,
 )
+from serving.evidence.reference_sets import EFFECTS as REF_EFFECTS  # noqa: E402
 from serving.evidence.schema import Bi
 from serving.evidence.store import EvidenceStore
 
@@ -299,7 +300,10 @@ def check_pair(store, rep, y) -> dict:
     db_types = {int(e.original_identifiers["tdc_interaction_type"]) for e in rep.evidence
                 if e.category.value == "database_interaction_record"}
     levels = {TYPE_MAP[t].level for t in db_types}
-    if db_types:
+    # Reference-set (CRESCENDDI) records name their own outcomes (meddra_effect_map/v1).
+    ref_keys = {e.original_identifiers["effect_key"] for e in rep.evidence if e.category.value == "reference_set_outcome"}
+    levels |= {REF_EFFECTS[k].level for k in ref_keys}
+    if db_types or ref_keys:
         want = "documented_interaction" if levels & {"clinical_outcome", "pharmacodynamic_effect",
                                                       "reduced_effectiveness"} else "documented_outcome_unclear"
     else:
@@ -308,6 +312,7 @@ def check_pair(store, rep, y) -> dict:
         issues.append(f"status {o.interaction_status} != {want}")
     # every documented outcome maps from a record of this pair
     expected = {(TYPE_MAP[t].category, TYPE_MAP[t].effect) for t in db_types}
+    expected |= {(REF_EFFECTS[k].category, k) for k in ref_keys}
     got = {(x.category, x.effect) for x in shown}
     if got != expected:
         issues.append(f"outcomes {sorted(got)} != records {sorted(expected)}")
@@ -648,6 +653,9 @@ def md(res: dict) -> str:
 
 def main() -> None:
     store = EvidenceStore.load()
+    noref = EvidenceStore.load()
+    noref.reference.clear()
+    noref.sources.pop("crescenddi", None)
     res = {
         "method": {"lexicon": LEXICON_VERSION, "seed": SEED, "store_sha256": store.sha256,
                    "note": "Pilot set by the rules' author; constructed sentences; not a clinical validation."},
@@ -655,7 +663,9 @@ def main() -> None:
         "holdout": pilot(store, HOLDOUT),
         "pair_level": pair_level(store),
         "attribution": attribution(store),
-        "adversarial": adversarial(store),
+        # label-rule cases: without the reference set, so a CRESCENDDI outcome for
+        # the same pair cannot mask what the label rule did
+        "adversarial": adversarial(noref),
         "dev_round1_v1": json.loads(DEV_V1.read_text()) if DEV_V1.exists() else None,
     }
     OUT_JSON.write_text(json.dumps(res, indent=1, ensure_ascii=False) + "\n")

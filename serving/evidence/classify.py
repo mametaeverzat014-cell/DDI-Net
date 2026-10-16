@@ -24,8 +24,8 @@ STATUS_LABEL: dict[EvidenceStatus, Bi] = {
         ru="Упоминается в предупреждениях или разделе о взаимодействиях официальной инструкции",
         en="Named in the warnings or drug-interactions section of an official label"),
     EvidenceStatus.DOCUMENTED_NO_SEVERITY: Bi(
-        ru="Взаимодействие задокументировано в базе данных; степень тяжести источником не указана",
-        en="Interaction documented in a database; the source gives no severity"),
+        ru="Взаимодействие задокументировано в базе данных или справочном наборе; степень тяжести в отчёте не указывается",
+        en="Interaction documented in a database or reference set; no severity grade is shown in this report"),
     EvidenceStatus.CONFLICTING_EVIDENCE: Bi(
         ru="Записи источника противоречат друг другу",
         en="Source records contradict each other"),
@@ -46,7 +46,7 @@ def classify(evidence: list[EvidenceRecord], conflicts: list[Conflict], model: M
         return EvidenceStatus.CONTRAINDICATION_IN_LABEL
     if cats & WARNING_CATEGORIES:
         return EvidenceStatus.WARNING_IN_LABEL
-    if EvidenceCategory.DATABASE_INTERACTION_RECORD in cats:
+    if cats & {EvidenceCategory.DATABASE_INTERACTION_RECORD, EvidenceCategory.REFERENCE_SET_OUTCOME}:
         return EvidenceStatus.CONFLICTING_EVIDENCE if conflicts else EvidenceStatus.DOCUMENTED_NO_SEVERITY
     if (model.available and not model.abstain and model.calibrated_model_score is not None
             and model.calibrated_model_score >= MODEL_SIGNAL_THRESHOLD):

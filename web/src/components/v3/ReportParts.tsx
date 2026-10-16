@@ -32,6 +32,7 @@ const T = {
   labelOf: { ru: "Инструкция FDA: {owner}", en: "FDA label: {owner}" },
   namesIn: { ru: "упоминает препарат {partner}; различных фрагментов: {n}", en: "names {partner} in {n} distinct excerpt(s)" },
   dbRecords: { ru: "записей: {n}", en: "{n} record(s)" },
+  refRecords: { ru: "записей «пара — нежелательное явление»: {n}", en: "{n} pair–adverse-event record(s)" },
   inSections: { ru: "разделы: {s}", en: "sections: {s}" },
   repeatNote: {
     ru: "Этот же текст стоит в нескольких разделах инструкции; он показан один раз и считается одним фрагментом.",
@@ -146,13 +147,13 @@ const shortName = (d: PairReport["drug_a"], lang: "ru" | "en") => (lang === "ru"
 function SourceDocCard({ d, nameOf, research }: { d: SourceDoc; nameOf: (id: string | null) => string; research: boolean }) {
   const { lang } = useI18n();
   const first = d.records[0];
-  const color = d.kind === "database" ? CATEGORY_LABEL.database_interaction_record.color : CATEGORY_LABEL.label_warning_or_interaction.color;
+  const color = d.kind === "label" ? CATEGORY_LABEL.label_warning_or_interaction.color : CATEGORY_LABEL.database_interaction_record.color;
   const title = d.kind === "label"
     ? fill(pick(T.labelOf, lang), { owner: nameOf(d.ownerId) })
-    : pick(SOURCE_NAME.drugbank_tdc, lang);
+    : pick(d.kind === "reference" ? SOURCE_NAME.crescenddi : SOURCE_NAME.drugbank_tdc, lang);
   const sub = d.kind === "label"
     ? fill(pick(T.namesIn, lang), { partner: nameOf(d.mentionedId), n: d.excerpts.length })
-    : fill(pick(T.dbRecords, lang), { n: d.records.length });
+    : fill(pick(d.kind === "reference" ? T.refRecords : T.dbRecords, lang), { n: d.records.length });
   const qualifiers = Array.from(new Set(d.records.flatMap((e) => e.qualifiers)));
   return (
     <article id={`ev-${d.n}`} className="v3-card" style={{ borderLeft: `3px solid ${color}`, scrollMarginTop: 120 }}>

@@ -8,7 +8,7 @@
     "drug_b": "DB00196",
     "include_labels": true
    },
-   "receivedAt": "2026-10-15T19:51:19.934Z"
+   "receivedAt": "2026-10-16T04:57:01.000Z"
   },
   "data": {
    "report_version": "3.0",
@@ -64,7 +64,7 @@
      "also_in_sections": [],
      "drug1_id": "DB00682",
      "drug2_id": "DB00196",
-     "retrieved_at": "2026-10-15",
+     "retrieved_at": "2026-10-16",
      "license": "openFDA: public domain (CC0); label text is a US government record",
      "source_severity": null,
      "qualifiers": [
@@ -98,7 +98,7 @@
      "also_in_sections": [],
      "drug1_id": "DB00682",
      "drug2_id": "DB00196",
-     "retrieved_at": "2026-10-15",
+     "retrieved_at": "2026-10-16",
      "license": "openFDA: public domain (CC0); label text is a US government record",
      "source_severity": null,
      "qualifiers": [
@@ -134,7 +134,7 @@
      ],
      "drug1_id": "DB00196",
      "drug2_id": "DB00682",
-     "retrieved_at": "2026-10-15",
+     "retrieved_at": "2026-10-16",
      "license": "openFDA: public domain (CC0); label text is a US government record",
      "source_severity": null,
      "qualifiers": [
@@ -171,7 +171,7 @@
      ],
      "drug1_id": "DB00196",
      "drug2_id": "DB00682",
-     "retrieved_at": "2026-10-15",
+     "retrieved_at": "2026-10-16",
      "license": "openFDA: public domain (CC0); label text is a US government record",
      "source_severity": null,
      "qualifiers": [
@@ -218,6 +218,41 @@
       "This export carries no severity grade. None is implied.",
       "The export does not state the basis of each record (clinical study, label text, or inference from pharmacological properties).",
       "Drug order for this interaction type matched documented DrugBank roles in only 1,270 of 12,308 checkable records, so the statement is shown without naming which drug is affected."
+     ]
+    },
+    {
+     "id": "crescenddi:DB00196+DB00682:10055798",
+     "category": "reference_set_outcome",
+     "source_name": "CRESCENDDI reference set (Kontsioti et al., Sci Data 2022)",
+     "source_version": "elpidakon/CRESCENDDI@1734d7c12ac1 (data records, index crescenddi_index/v1)",
+     "source_record_id": "positive_control:DB00196|DB00682|MedDRA 10055798",
+     "source_url": "https://github.com/elpidakon/CRESCENDDI",
+     "retrieval_url": null,
+     "original_identifiers": {
+      "meddra_code": "10055798",
+      "meddra_term": "Haemorrhage",
+      "event_source": "Micromedex",
+      "effect_key": "bleeding",
+      "event_map": "meddra_effect_map/v1"
+     },
+     "statement": "CRESCENDDI lists “Haemorrhage” (MedDRA 10055798) as an adverse event of the interaction between fluconazole and warfarin, mapped from the Micromedex interaction description.",
+     "statement_origin": "source_template_filled",
+     "source_template": "CRESCENDDI positive control: drug pair + MedDRA event + event source",
+     "direction": "symmetric",
+     "direction_check": null,
+     "statement_ru": "В CRESCENDDI нежелательное явление «Haemorrhage» (MedDRA 10055798) указано как последствие взаимодействия препаратов флуконазол и варфарин; оно взято из описания взаимодействия в Micromedex.",
+     "section": null,
+     "also_in_sections": [],
+     "drug1_id": null,
+     "drug2_id": null,
+     "retrieved_at": "2026-10-16",
+     "license": "MIT License (authors' GitHub repository, which contains the data records); figshare licence not verified from the build environment",
+     "source_severity": null,
+     "qualifiers": [
+      "CRESCENDDI positive control: the pair is documented as interacting in all three compendia the authors used (BNF, Nov 2018; IBM Micromedex, Sep 2018; ANSM Thesaurus, Sep 2019).",
+      "The adverse event is the MedDRA term the authors mapped from the compendium's interaction description; the compendium text itself is not reproduced.",
+      "The compendia grade severity, but those grades are proprietary editorial classifications and are not shown here. Severity is therefore not established from the evidence shown.",
+      "Snapshot of 2018–2019 sources; later changes to the compendia are not reflected."
      ]
     }
    ],
@@ -732,6 +767,16 @@
         ]
        },
        {
+        "kind": "documented",
+        "text": {
+         "ru": "Справочный набор CRESCENDDI (по клиническим справочникам BNF, Micromedex и ANSM, 2018–2019) называет для этой пары 1 нежелательное явление: «Haemorrhage» (термины MedDRA).",
+         "en": "The CRESCENDDI reference set (built from the BNF, Micromedex and ANSM compendia, 2018–2019) names 1 adverse event(s) for this pair: “Haemorrhage” (MedDRA terms)."
+        },
+        "refs": [
+         "crescenddi:DB00196+DB00682:10055798"
+        ]
+       },
+       {
         "kind": "caveat",
         "text": {
          "ru": "Для этого типа записей порядок препаратов в выгрузке DrugBank оказался ненадёжным (мы это измерили), поэтому здесь не сказано, какой из двух препаратов на какой влияет.",
@@ -882,15 +927,16 @@
        {
         "kind": "documented",
         "text": {
-         "ru": "Задокументировано: 2 инструкции FDA (4 фрагмента) и 1 запись DrugBank. Несколько фрагментов одной инструкции — один источник, а не отдельные подтверждения; запись DrugBank тоже может опираться на текст инструкции. Это самая надёжная часть страницы.",
-         "en": "Documented: 2 FDA label(s) (4 distinct excerpt(s)) and 1 DrugBank record(s). Several excerpts of one label are one source, not separate confirmations, and a DrugBank record may itself rest on label text. This is the most reliable part of the page."
+         "ru": "Задокументировано: 2 инструкции FDA (4 фрагмента) и 1 запись DrugBank и 1 запись справочного набора CRESCENDDI. Несколько фрагментов одной инструкции — один источник, а не отдельные подтверждения; запись DrugBank тоже может опираться на текст инструкции. Это самая надёжная часть страницы.",
+         "en": "Documented: 2 FDA label(s) (4 distinct excerpt(s)) and 1 DrugBank record(s) and 1 CRESCENDDI reference-set record(s). Several excerpts of one label are one source, not separate confirmations, and a DrugBank record may itself rest on label text. This is the most reliable part of the page."
         },
         "refs": [
          "label:00000000-0000-0000-0000-0000000000a1:warnings_and_cautions:0:DB00196",
          "label:00000000-0000-0000-0000-0000000000a1:drug_interactions:1:DB00196",
          "label:00000000-0000-0000-0000-0000000000f1:precautions:0:DB00682",
          "label:00000000-0000-0000-0000-0000000000f1:precautions:1:DB00682",
-         "drugbank-tdc:DB00682>DB00196:t73"
+         "drugbank-tdc:DB00682>DB00196:t73",
+         "crescenddi:DB00196+DB00682:10055798"
         ]
        },
        {
@@ -898,6 +944,14 @@
         "text": {
          "ru": "Степень тяжести здесь не присваивается: в выгрузке DrugBank её нет, а для инструкций показан только раздел, в котором упомянут препарат.",
          "en": "No severity is assigned: the DrugBank export has none, and for labels only the section that names the drug is shown."
+        },
+        "refs": []
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Справочники, на которых основан CRESCENDDI, оценивают тяжесть взаимодействий, но эти оценки — их собственная редакционная классификация и здесь не воспроизводятся.",
+         "en": "The compendia behind CRESCENDDI grade interaction severity, but those grades are their own editorial classifications and are not reproduced here."
         },
         "refs": []
        },
@@ -959,6 +1013,11 @@
      "detail": "1 record(s) in the local DrugBank export (TDC, retrieved 2026-08-24)."
     },
     {
+     "source": "crescenddi",
+     "status": "ok",
+     "detail": "1 pair–event record(s) in the CRESCENDDI reference set (positive controls, compendia of 2018–2019)."
+    },
+    {
      "source": "openfda_label",
      "status": "ok",
      "detail": "Labels checked — warfarin: set ID 00000000-0000-0000-0000-0000000000a1; fluconazole: set ID 00000000-0000-0000-0000-0000000000f1"
@@ -990,7 +1049,7 @@
     "ru": "Это исследовательский прототип, а не медицинское изделие. Он не заменяет врача или фармацевта и не может сказать, безопасно ли сочетание лекарств для конкретного человека.",
     "en": "This is a research prototype, not a medical device. It does not replace a doctor or pharmacist and cannot say whether a combination is safe for a particular person."
    },
-   "generated_at": "2026-10-15T19:51:19+00:00",
+   "generated_at": "2026-10-16T04:57:00+00:00",
    "outcomes": {
     "method": "deterministic: DrugBank type map v1 + label outcome lexicon v1; no language model",
     "interaction_status": "documented_interaction",
@@ -1031,17 +1090,40 @@
         "matched_terms": [
          "bleeding"
         ],
-        "extraction_method": "label_lexicon/v2:term=bleeding",
+        "extraction_method": "label_lexicon/v3:term=bleeding",
         "direction": "as_stated_in_excerpt",
         "affected_drug_id": null,
         "source_seriousness": null,
-        "retrieved_at": "2026-10-15",
+        "retrieved_at": "2026-10-16",
         "qualifiers": [
          "Found in the same label sentence that names the partner drug; the sentence is quoted as written."
         ]
+       },
+       {
+        "evidence_record_id": "crescenddi:DB00196+DB00682:10055798",
+        "source_type": "reference_set",
+        "source_name": "CRESCENDDI reference set (Kontsioti et al., Sci Data 2022)",
+        "source_document_id": "positive_control:DB00196|DB00682|MedDRA 10055798",
+        "source_url": "https://github.com/elpidakon/CRESCENDDI",
+        "section": null,
+        "excerpt": "CRESCENDDI lists “Haemorrhage” (MedDRA 10055798) as an adverse event of the interaction between fluconazole and warfarin, mapped from the Micromedex interaction description.",
+        "matched_terms": [
+         "Haemorrhage"
+        ],
+        "extraction_method": "meddra_effect_map/v1:meddra=10055798",
+        "direction": "not_applicable",
+        "affected_drug_id": null,
+        "source_seriousness": null,
+        "retrieved_at": "2026-10-16",
+        "qualifiers": [
+         "CRESCENDDI positive control: the pair is documented as interacting in all three compendia the authors used (BNF, Nov 2018; IBM Micromedex, Sep 2018; ANSM Thesaurus, Sep 2019).",
+         "The adverse event is the MedDRA term the authors mapped from the compendium's interaction description; the compendium text itself is not reproduced.",
+         "The compendia grade severity, but those grades are proprietary editorial classifications and are not shown here. Severity is therefore not established from the evidence shown.",
+         "Snapshot of 2018–2019 sources; later changes to the compendia are not reflected."
+        ]
        }
       ],
-      "n_source_documents": 1,
+      "n_source_documents": 2,
       "affected_drug_id": null,
       "direction_note": {
        "ru": "Направление — только так, как сказано в процитированном предложении; отчёт его не выводит.",
@@ -1049,17 +1131,17 @@
       },
       "seriousness": "documented_no_standard_severity",
       "seriousness_basis": {
-       "ru": "Степень серьёзности не установлена по доступным данным.",
-       "en": "Severity not established from available evidence."
+       "ru": "Степень серьёзности не установлена по доступным данным. Справочники, на которых основан CRESCENDDI, оценивают тяжесть, но их оценки здесь не воспроизводятся.",
+       "en": "Severity not established from available evidence. The compendia behind CRESCENDDI grade severity, but their grades are not reproduced here."
       },
-      "evidence_strength": "official_label_statement",
+      "evidence_strength": "reference_set_and_other",
       "evidence_strength_text": {
-       "ru": "Утверждение официальной инструкции FDA (цитата).",
-       "en": "Statement in an official FDA label (quoted)."
+       "ru": "Справочный набор CRESCENDDI и ещё один источник (инструкция FDA или DrugBank). Источники не обязательно независимы.",
+       "en": "The CRESCENDDI reference set and another source (an FDA label or DrugBank). The sources are not necessarily independent."
       },
       "extraction_note": {
-       "ru": "Правила извлечения проверены только на пилотном наборе из 40 составленных предложений (тот же автор, не реальные инструкции): найдено 25 из 32 размеченных последствий, 1 из 26 найденных — лишнее. Перефразированные формулировки часто пропускаются. Это не клиническая валидация.",
-       "en": "The extraction rules were checked only on a pilot set of 40 constructed sentences (same author, not real labels): 25 of 32 annotated outcomes found, 1 of 26 extractions unsupported. Paraphrased wording is often missed. This is not a clinical validation."
+       "ru": "Правила извлечения проверены на корпусе DDI Corpus 2013 (независимая разметка текстов о взаимодействиях из DrugBank, отложенная часть): из 61 пары, которой правило приписало последствие, взаимодействие размечено у 51; из 164 пар, лишь названных вместе, последствие приписано 10; последствие найдено для 51 из 233 взаимодействующих пар. Перефразированные формулировки и упоминания групп препаратов часто пропускаются. На инструкциях FDA правила не проверялись; это не клиническая валидация.",
+       "en": "The extraction rules were measured on the DDI Corpus 2013 (independently annotated DrugBank interaction text, held-out part): of 61 pairs the rule gave an outcome, 51 are annotated as interacting; 10 of 164 pairs that were only named together were given one; an outcome was found for 51 of 233 interacting pairs. Paraphrases and drug-class statements are often missed. Not measured on FDA labels; not a clinical validation."
       },
       "limitations": [],
       "research_only": false
@@ -1092,11 +1174,11 @@
         "matched_terms": [
          "Prothrombin time"
         ],
-        "extraction_method": "label_lexicon/v2:term=coagulation_measure",
+        "extraction_method": "label_lexicon/v3:term=coagulation_measure",
         "direction": "as_stated_in_excerpt",
         "affected_drug_id": null,
         "source_seriousness": null,
-        "retrieved_at": "2026-10-15",
+        "retrieved_at": "2026-10-16",
         "qualifiers": [
          "Found in the same label sentence that names the partner drug; the sentence is quoted as written."
         ]
@@ -1112,11 +1194,11 @@
         "matched_terms": [
          "prothrombin time"
         ],
-        "extraction_method": "label_lexicon/v2:term=coagulation_measure",
+        "extraction_method": "label_lexicon/v3:term=coagulation_measure",
         "direction": "as_stated_in_excerpt",
         "affected_drug_id": null,
         "source_seriousness": null,
-        "retrieved_at": "2026-10-15",
+        "retrieved_at": "2026-10-16",
         "qualifiers": [
          "Found in the same label sentence that names the partner drug; the sentence is quoted as written."
         ]
@@ -1139,8 +1221,8 @@
        "en": "Statement in an official FDA label (quoted)."
       },
       "extraction_note": {
-       "ru": "Правила извлечения проверены только на пилотном наборе из 40 составленных предложений (тот же автор, не реальные инструкции): найдено 25 из 32 размеченных последствий, 1 из 26 найденных — лишнее. Перефразированные формулировки часто пропускаются. Это не клиническая валидация.",
-       "en": "The extraction rules were checked only on a pilot set of 40 constructed sentences (same author, not real labels): 25 of 32 annotated outcomes found, 1 of 26 extractions unsupported. Paraphrased wording is often missed. This is not a clinical validation."
+       "ru": "Правила извлечения проверены на корпусе DDI Corpus 2013 (независимая разметка текстов о взаимодействиях из DrugBank, отложенная часть): из 61 пары, которой правило приписало последствие, взаимодействие размечено у 51; из 164 пар, лишь названных вместе, последствие приписано 10; последствие найдено для 51 из 233 взаимодействующих пар. Перефразированные формулировки и упоминания групп препаратов часто пропускаются. На инструкциях FDA правила не проверялись; это не клиническая валидация.",
+       "en": "The extraction rules were measured on the DDI Corpus 2013 (independently annotated DrugBank interaction text, held-out part): of 61 pairs the rule gave an outcome, 51 are annotated as interacting; 10 of 164 pairs that were only named together were given one; an outcome was found for 51 of 233 interacting pairs. Paraphrases and drug-class statements are often missed. Not measured on FDA labels; not a clinical validation."
       },
       "limitations": [
        {
@@ -1641,6 +1723,10 @@
       "en": "DrugBank (local TDC export): 1 record(s) for the pair. No severity and no stated basis."
      },
      {
+      "ru": "Справочный набор CRESCENDDI (BNF, Micromedex, ANSM; 2018–2019): записей «пара — явление» — 1. Охватывает только пары, общие для трёх справочников.",
+      "en": "CRESCENDDI reference set (BNF, Micromedex, ANSM; 2018–2019): 1 pair–event record(s). It covers only pairs common to all three compendia."
+     },
+     {
       "ru": "Инструкции FDA проверены. Ищутся названия препаратов, не группы; раздел «Нежелательные реакции» не используется.",
       "en": "FDA labels checked. Drug names are searched, not classes; Adverse Reactions sections are not used."
      }
@@ -1661,7 +1747,7 @@
     "drug_a": "DB00682",
     "drug_b": "DB00196"
    },
-   "receivedAt": "2026-10-15T19:51:19.934Z"
+   "receivedAt": "2026-10-16T04:57:01.000Z"
   },
   "data": {
    "drug_a": "DB00682",

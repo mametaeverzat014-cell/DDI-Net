@@ -67,6 +67,9 @@ class EvidenceCategory(str, Enum):
     #: A label sentence names the partner drug in wording that reports *no*
     #: relevant effect under studied conditions. Kept, never read as reassurance.
     LABEL_MENTION_NO_EFFECT_REPORTED = "label_mention_no_effect_reported"
+    #: A pair + adverse event from a published reference set of documented
+    #: interactions (CRESCENDDI). Pair-specific; not a label, not DrugBank.
+    REFERENCE_SET_OUTCOME = "reference_set_outcome"
 
 
 class EvidenceRecord(BaseModel):
@@ -242,7 +245,7 @@ class OutcomeSupport(BaseModel):
     """One source statement supporting an outcome, in the source's own words."""
 
     evidence_record_id: str | None = Field(None, description="The EvidenceRecord this support was read from; None for annotation-only support.")
-    source_type: Literal["fda_label", "drugbank_tdc", "annotation"]
+    source_type: Literal["fda_label", "drugbank_tdc", "reference_set", "annotation"]
     source_name: str
     source_document_id: str | None = Field(None, description="SPL set ID for a label; the DrugBank record key for the database.")
     source_url: str | None = None
@@ -273,7 +276,7 @@ class ClinicalOutcome(BaseModel):
     direction_note: Bi
     seriousness: SeriousnessClass
     seriousness_basis: Bi
-    evidence_strength: Literal["official_label_statement", "database_standard_sentence", "label_and_database", "annotation_hypothesis"]
+    evidence_strength: Literal["official_label_statement", "database_standard_sentence", "label_and_database", "reference_set_statement", "reference_set_and_other", "annotation_hypothesis"]
     evidence_strength_text: Bi
     extraction_note: Bi | None = Field(None, description="Measured extraction quality on the pilot set, when one exists for this method. Never a probability that the outcome occurs.")
     limitations: list[Bi] = []
@@ -363,6 +366,7 @@ class MultiPair(BaseModel):
     n_database_records: int
     n_label_records: int = Field(description="Distinct label excerpts (a sentence repeated across sections of one label counts once).")
     n_label_documents: int | None = Field(None, description="Distinct FDA label documents (SPL set IDs) the excerpts come from. Absent from older APIs.")
+    n_reference_records: int = Field(0, description="Reference-set (CRESCENDDI) pair-event records.")
     n_mechanism_hypotheses: int
     calibrated_model_score: float | None
     regime: str

@@ -56,6 +56,9 @@ INPUTS = {
     "split_assignments": MECH / "split_assignments.csv",
     "tdc_drugbank": ROOT / "data" / "raw" / "drugbank.tab.gz",
     "drug_names": ROOT / "web" / "public" / "data" / "drugs.json",
+    # Derived, committed index (scripts/data/ingest_crescenddi.py); see
+    # data/reference_sets/crescenddi/MANIFEST.json for its provenance.
+    "crescenddi_index": ROOT / "data" / "reference_sets" / "crescenddi" / "crescenddi_index_v1.json.gz",
 }
 
 #: Evidence sources admitted to the annotation table. See the module docstring.
@@ -227,10 +230,14 @@ def build_payload() -> dict:
         for (u, p), cs in codes.items()
     )
 
+    # -- CRESCENDDI positive controls (reference set) ------------------------
+    ref_meta, ref_rows = _crescenddi(index)
+
     return {
         "schema_version": SCHEMA_VERSION,
         "universe": "DDI_MECH_1705_V1",
         "sources": {
+            **({"crescenddi": ref_meta} if ref_meta else {}),
             "tdc_drugbank": TDC_SOURCE,
             "drugbank_annotations": DRUGBANK_SOURCE,
             "chembl_moa": CHEMBL_MOA_SOURCE,
@@ -249,7 +256,40 @@ def build_payload() -> dict:
         "annotations": annotation_rows,
         "pathways": pathway_rows,
         "pathway_membership": membership,
+        "reference_outcomes": ref_rows,
     }
+
+
+def _crescenddi(idx: dict[str, int]) -> tuple[dict | None, list[list]]:
+    """Positive controls as [drug_index_a, drug_index_b, meddra_code, term, event_source].
+
+    Negative controls stay out of the runtime artifact: they are for evaluation
+    (scripts/67_v3_reference_validation.py), not evidence.
+    """
+    path = INPUTS["crescenddi_index"]
+    if not path.exists():
+        return None, []
+    with gzip.open(path, "rt", encoding="utf-8") as f:
+        payload = json.load(f)
+    manifest = json.loads((path.parent / "MANIFEST.json").read_text())
+    if manifest["output"]["sha256"] != _sha256(path):
+        raise RuntimeError(f"{path} does not match its MANIFEST.json checksum")
+    rows = []
+    for x in payload["records"]:
+        if x["set"] != "positive" or x["drug_a"] not in idx or x["drug_b"] not in idx:
+            continue
+        a, b = sorted((idx[x["drug_a"]], idx[x["drug_b"]]))
+        rows.append([a, b, x["meddra_code"], x["event"], "+".join(sorted(
+            {p for s in x["event_sources"] for p in s.split("+")}))])
+    rows.sort()
+    src = payload["source"]
+    meta = {
+        "name": src["name"], "citation": src["citation"], "url": src["repository"], "commit": src["commit"],
+        "license": src["license"], "underlying_sources": src["underlying_sources"],
+        "retrieved": manifest["generated"], "schema_version": payload["schema_version"],
+        "index_sha256": manifest["output"]["sha256"],
+    }
+    return meta, rows
 
 
 def add_direction_audit(payload: dict) -> dict:

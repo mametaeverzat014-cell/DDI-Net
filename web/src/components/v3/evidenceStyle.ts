@@ -56,10 +56,12 @@ export const CATEGORY_LABEL: Record<EvidenceCategory, Bi & { color: string }> = 
   label_warning_or_interaction: { ru: "Инструкция · Предупреждения / взаимодействия", en: "Label · Warnings / interactions", color: "var(--ev-label)" },
   database_interaction_record: { ru: "База данных · DrugBank", en: "Database · DrugBank", color: "var(--ev-documented)" },
   label_mention_no_effect_reported: { ru: "Инструкция · Эффекта не наблюдали", en: "Label · No effect reported", color: "var(--ev-none)" },
+  reference_set_outcome: { ru: "Справочный набор · CRESCENDDI", en: "Reference set · CRESCENDDI", color: "var(--ev-documented)" },
 };
 
 export const SOURCE_NAME: Record<string, Bi> = {
   drugbank_tdc: { ru: "DrugBank (выгрузка TDC, локально)", en: "DrugBank (TDC export, local)" },
+  crescenddi: { ru: "CRESCENDDI (справочный набор, 2018–2019)", en: "CRESCENDDI (reference set, 2018–2019)" },
   openfda_label: { ru: "Инструкции FDA (openFDA)", en: "FDA labels (openFDA)" },
   rxnorm: { ru: "RxNorm (названия)", en: "RxNorm (names)" },
 };

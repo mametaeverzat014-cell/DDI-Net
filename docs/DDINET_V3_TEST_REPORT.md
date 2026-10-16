@@ -107,6 +107,22 @@ hydroxyprogesterone caproate + pentaerithrityl tetranitrate RU/EN, and the 4-,
 
 There were 0 console errors.
 
+### Evidence coverage (CRESCENDDI, DDI Corpus) — 20 Python, 7 web tests
+
+| File | Tests | What they establish |
+|---|---:|---|
+| `tests/test_v3_reference_sets.py` | 13 | Ingestion: schema rejection with reasons; exact-only drug mapping with unmapped names reported; unordered de-duplication; self-pair and positive/negative conflict removal; severity ratings not carried over; deterministic output; checksum enforcement; committed index equals its manifest and pin; every MedDRA term mapped. Engine: reference outcomes are pair-specific and cited with no severity; the chain link to them is never "documented"; DrugBank PD records never become bleeding; a reference-only pair is documented; unlisted pairs gain nothing; multi-drug counts are kept separately |
+| `tests/test_sources_manifest.py` | 3 | Every audited source is described with a status and a licence-verification level; integrated sources have a directly read licence and a matching checksum; evaluation-only data is never committed |
+| `tests/test_v3_outcomes.py` (added) | 4 | v3 no-effect wording recognised |
+| `tests/test_docker_context.py` (updated) | — | `data/reference_sets/` is in the image's build context, and nothing else new |
+| `web/src/data/evidenceGroups.test.ts` | 2 | CRESCENDDI is its own source document, after DrugBank, counted apart from labels; older responses keep the old counts line |
+| `web/src/components/v3/outcomes.test.tsx` (added) | 1 | Reference outcome shows the MedDRA term and CRESCENDDI, no compendium grade words |
+| `web/src/pdf/render.test.ts`, `layout.test.ts` (added) | 1 + 3 | PDF: separate CRESCENDDI document, "grades not reproduced", record IDs present; geometry of three reports with reference evidence. A JSON appendix whose last line fell alone on a page (found by the existing page-break sweep) is fixed by keeping the tail together |
+
+Validation scripts (deterministic; the DDI Corpus is fetched once at a pinned commit):
+`scripts/67_v3_reference_validation.py` (results in `docs/CLINICAL_OUTCOME_VALIDATION.md`) and
+`scripts/66_v3_outcome_validation.py` (pilot sets; re-run with the reference set included).
+
 ### Clinical Outcome Engine — 35 Python, 17 web tests
 
 | File | Tests | What they establish |

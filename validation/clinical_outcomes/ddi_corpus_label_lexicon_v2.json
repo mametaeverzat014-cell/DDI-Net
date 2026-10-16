@@ -1,0 +1,170 @@
+{
+ "note": "label_lexicon/v2 on the DDI Corpus, before the v3 no-effect change; Train and Test both scored with v2 unchanged.",
+ "ddi_corpus": {
+  "dataset": "DDI Corpus 2013, DrugBank part",
+  "citation": "Herrero-Zazo M, Segura-Bedmar I, Mart\u00ednez P, Declerck T. The DDI corpus: an annotated corpus with pharmacological substances and drug-drug interactions. J Biomed Inform 46(5):914-920 (2013).",
+  "license": "CC BY-NC 4.0 (corpus README); evaluation only, not redistributed",
+  "pinned_commit": "819b0fa538ed83ab2a8b4f5417bba3c03249b7f3",
+  "zip_sha256": "87fc63e32ebce20d9841c372e0c594ec72d60882ab5621550ca73c3eaf80ab60",
+  "rule": "label_lexicon/v2",
+  "unit": "(sentence, document drug, partner drug name); interacting if any of its annotated mention pairs is",
+  "development": {
+   "corpus_split": "train",
+   "pairs": 1896,
+   "interacting_pairs": 1044,
+   "non_interacting_pairs": 852,
+   "mention_pairs_behind_them": {
+    "interacting": 1065,
+    "non_interacting": 1781
+   },
+   "sentences": 1150,
+   "assignment_precision": {
+    "k": 318,
+    "n": 465,
+    "value": 0.684,
+    "wilson95": [
+     0.64,
+     0.724
+    ],
+    "definition": "pairs the rule gives an outcome that the corpus annotates as interacting"
+   },
+   "unsupported_assignment_rate": {
+    "k": 147,
+    "n": 852,
+    "value": 0.173,
+    "wilson95": [
+     0.149,
+     0.199
+    ],
+    "definition": "non-interacting pairs (co-mentioned only) the rule gives an outcome"
+   },
+   "coverage_of_interacting_pairs": {
+    "k": 318,
+    "n": 1044,
+    "value": 0.305,
+    "wilson95": [
+     0.277,
+     0.333
+    ],
+    "definition": "interacting pairs for which the rule finds a named outcome or exposure change"
+   },
+   "coverage_by_ddi_type": {
+    "effect": {
+     "k": 67,
+     "n": 235,
+     "value": 0.285,
+     "wilson95": [
+      0.231,
+      0.346
+     ]
+    },
+    "mechanism": {
+     "k": 227,
+     "n": 524,
+     "value": 0.433,
+     "wilson95": [
+      0.391,
+      0.476
+     ]
+    },
+    "advise": {
+     "k": 24,
+     "n": 215,
+     "value": 0.112,
+     "wilson95": [
+      0.076,
+      0.161
+     ]
+    },
+    "int": {
+     "k": 0,
+     "n": 70,
+     "value": 0.0,
+     "wilson95": [
+      0.0,
+      0.052
+     ]
+    }
+   }
+  },
+  "evaluation": {
+   "corpus_split": "test",
+   "pairs": 397,
+   "interacting_pairs": 233,
+   "non_interacting_pairs": 164,
+   "mention_pairs_behind_them": {
+    "interacting": 241,
+    "non_interacting": 339
+   },
+   "sentences": 216,
+   "assignment_precision": {
+    "k": 51,
+    "n": 62,
+    "value": 0.823,
+    "wilson95": [
+     0.71,
+     0.898
+    ],
+    "definition": "pairs the rule gives an outcome that the corpus annotates as interacting"
+   },
+   "unsupported_assignment_rate": {
+    "k": 11,
+    "n": 164,
+    "value": 0.067,
+    "wilson95": [
+     0.038,
+     0.116
+    ],
+    "definition": "non-interacting pairs (co-mentioned only) the rule gives an outcome"
+   },
+   "coverage_of_interacting_pairs": {
+    "k": 51,
+    "n": 233,
+    "value": 0.219,
+    "wilson95": [
+     0.171,
+     0.276
+    ],
+    "definition": "interacting pairs for which the rule finds a named outcome or exposure change"
+   },
+   "coverage_by_ddi_type": {
+    "effect": {
+     "k": 12,
+     "n": 55,
+     "value": 0.218,
+     "wilson95": [
+      0.129,
+      0.344
+     ]
+    },
+    "mechanism": {
+     "k": 33,
+     "n": 111,
+     "value": 0.297,
+     "wilson95": [
+      0.22,
+      0.388
+     ]
+    },
+    "advise": {
+     "k": 3,
+     "n": 55,
+     "value": 0.055,
+     "wilson95": [
+      0.019,
+      0.149
+     ]
+    },
+    "int": {
+     "k": 3,
+     "n": 12,
+     "value": 0.25,
+     "wilson95": [
+      0.089,
+      0.532
+     ]
+    }
+   }
+  }
+ }
+}

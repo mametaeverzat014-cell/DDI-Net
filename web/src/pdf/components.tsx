@@ -156,20 +156,30 @@ export function MonoLines({ text, width, size = SIZE.micro, color = C.slate2 }: 
 /** JSON set in mono, indented with padding (leading spaces would be dropped)
  *  and wrapped only between tokens, so the extracted text parses as JSON.
  *  Drawn as a tinted box of atomic page-level lines (see PAGE BREAKS). */
+/** At least this many lines and characters end a JSON box together (see orphan control). */
+const JSON_TAIL = 6;
+const JSON_TAIL_CHARS = 240;
+
 export function JsonBox({ value, width, size = 6 }: { value: unknown; width: number; size?: number }) {
   const step = 2 * 0.6 * size;
   const lines = jsonLines(value, Math.floor((width - 16) / (0.6 * size)));
+  const line = (l: (typeof lines)[number], i: number) => (
+    <View key={i} wrap={false} style={{
+      backgroundColor: C.tint, borderColor: C.hair, borderLeftWidth: 0.5, borderRightWidth: 0.5,
+      borderTopWidth: i === 0 ? 0.5 : 0, borderBottomWidth: i === lines.length - 1 ? 0.5 : 0,
+      paddingHorizontal: 7, paddingTop: i === 0 ? 6 : 0, paddingBottom: i === lines.length - 1 ? 6 : 0,
+    }}>
+      <Text style={{ fontFamily: monoFont(l.text), fontSize: size, color: C.ink, lineHeight: 1.35, paddingLeft: l.indent * step }}>{l.text}</Text>
+    </View>
+  );
+  // Orphan control: the last lines travel together, so a closing "}" is never
+  // left alone on a page of its own.
+  let tail = Math.max(0, lines.length - JSON_TAIL);
+  while (tail > 0 && lines.slice(tail).reduce((n, l) => n + l.text.trim().length, 0) < JSON_TAIL_CHARS) tail -= 1;
   return (
     <>
-      {lines.map((l, i) => (
-        <View key={i} wrap={false} style={{
-          backgroundColor: C.tint, borderColor: C.hair, borderLeftWidth: 0.5, borderRightWidth: 0.5,
-          borderTopWidth: i === 0 ? 0.5 : 0, borderBottomWidth: i === lines.length - 1 ? 0.5 : 0,
-          paddingHorizontal: 7, paddingTop: i === 0 ? 6 : 0, paddingBottom: i === lines.length - 1 ? 6 : 0,
-        }}>
-          <Text style={{ fontFamily: monoFont(l.text), fontSize: size, color: C.ink, lineHeight: 1.35, paddingLeft: l.indent * step }}>{l.text}</Text>
-        </View>
-      ))}
+      {lines.slice(0, tail).map((l, i) => line(l, i))}
+      <View wrap={false}>{lines.slice(tail).map((l, i) => line(l, tail + i))}</View>
     </>
   );
 }

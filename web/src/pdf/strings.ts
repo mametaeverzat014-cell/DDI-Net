@@ -188,6 +188,7 @@ export const S = {
   license: { ru: "Лицензия", en: "Licence" },
   severityBySource: { ru: "Степень тяжести по источнику", en: "Severity as stated by the source" },
   severityNone: { ru: "не указана источником", en: "not stated by the source" },
+  severityNotReproduced: { ru: "справочники её оценивают, но эти оценки здесь не воспроизводятся", en: "graded by the compendia, but those grades are not reproduced here" },
   qualifiers: { ru: "Оговорки", en: "Qualifiers" },
   conflicts: { ru: "Противоречия между записями", en: "Conflicts between records" },
   sourcesChecked: { ru: "Проверенные источники", en: "Sources checked" },
@@ -513,6 +514,10 @@ export const S = {
   labelDocSub: { ru: "называет препарат «{partner}»; различных фрагментов: {k}", en: "names {partner} in {k} distinct excerpt(s)" },
   dbDocTitle: { ru: "DrugBank (выгрузка TDC)", en: "DrugBank (TDC export)" },
   dbDocSub: { ru: "записей о взаимодействии: {k}; записи DrugBank не объединяются", en: "{k} interaction record(s); DrugBank records are never merged" },
+  refDocTitle: { ru: "CRESCENDDI (справочный набор; BNF, Micromedex, ANSM, 2018–2019)", en: "CRESCENDDI (reference set; BNF, Micromedex, ANSM, 2018–2019)" },
+  refDocSub: { ru: "записей «пара — нежелательное явление»: {k}", en: "{k} pair–adverse-event record(s)" },
+  briefRefDoc: { ru: "Справочный набор CRESCENDDI: записей «пара — нежелательное явление» — {d}.", en: "CRESCENDDI reference set: {d} pair–adverse-event record(s)." },
+  briefRefLead: { ru: "Запись справочного набора CRESCENDDI (явление — термин MedDRA)", en: "CRESCENDDI reference-set record (event as a MedDRA term)" },
   splSetId: { ru: "SPL set ID", en: "SPL set ID" },
   foundIn: { ru: "Найдено в разделах: {s}", en: "Found in sections: {s}" },
   repeatNote: {

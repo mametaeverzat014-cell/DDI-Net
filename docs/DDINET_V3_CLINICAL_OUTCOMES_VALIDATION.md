@@ -1,5 +1,10 @@
 # DDI-Net 3.0 — Clinical Outcome Engine: pilot validation
 
+> **Update 2026-10-16.**
+> - The label rule is now `label_lexicon/v3`: the v2 terms plus wider "no effect" wording. On the pilot and hold-out sets below its numbers are identical to v2.
+> - The pair-level counts in section 2 were measured before CRESCENDDI was added. The current `reports/v3_outcome_validation.md`, with reference records included, has 89/89 status and outcome consistency, 82/82 citations and 1,702/1,702 bilingual texts.
+> - The engine and the label rule have since been measured on independently annotated data (DDI Corpus, CRESCENDDI), with the results in `docs/CLINICAL_OUTCOME_VALIDATION.md`. That is the more informative evaluation.
+
 **What this is.** It checks whether the outcome engine does what its rules
 say it does:
 * on constructed label sentences with rule-based annotations;
@@ -234,14 +239,14 @@ Each case uses constructed labels marked "[synthetic]" or real local records.
 
 | Case | Result |
 |---|---|
-| Unrelated adverse effect in the same label (hepatotoxicity sentence without the partner) | not assigned ✔ |
-| Outcome and partner in separate sections | no outcome ✔ |
-| Plausible but undocumented mechanism (inhibitor–substrate annotations, no record) | hypothesis only, research mode, status `research_prediction_only` ✔ |
-| Outdated label next to a current one | only the most recent label is read ✔ |
-| Several excerpts from one document | two excerpts, one source document ✔ |
-| Contradictory sources (DrugBank exposure increase vs a label "did not significantly alter") | both kept, disagreement stated, no combined conclusion ✔ |
-| Ambiguous DrugBank drug order (simvastatin + clarithromycin, both inhibitor and substrate) | no affected drug named ✔ |
-| Label names both drugs without asserting an outcome | no label outcome ✔ |
+| Unrelated adverse effect in the same label (hepatotoxicity sentence without the partner) | not assigned — pass |
+| Outcome and partner in separate sections | no outcome — pass |
+| Plausible but undocumented mechanism (inhibitor–substrate annotations, no record) | hypothesis only, research mode, status `research_prediction_only` — pass |
+| Outdated label next to a current one | only the most recent label is read — pass |
+| Several excerpts from one document | two excerpts, one source document — pass |
+| Contradictory sources (DrugBank exposure increase vs a label "did not significantly alter") | both kept, disagreement stated, no combined conclusion — pass |
+| Ambiguous DrugBank drug order (simvastatin + clarithromycin, both inhibitor and substrate) | no affected drug named — pass |
+| Label names both drugs without asserting an outcome | no label outcome — pass |
 
 The same cases, and more, are unit tests in `tests/test_v3_outcomes.py`.
 

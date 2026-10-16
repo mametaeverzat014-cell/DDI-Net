@@ -193,3 +193,22 @@ measurements in `docs/DDINET_V3_CLINICAL_OUTCOMES_VALIDATION.md`.
   score.** This was checked with scores 0.01 and 0.99 on 89 pairs.
 * **No documented outcome is not evidence of safety.** The text says so
   wherever it applies.
+
+### 7.1 Reference-set evidence (CRESCENDDI) and the label rule on real text
+
+* **CRESCENDDI positive controls** (BNF, Micromedex and ANSM, 2018–2019) are shown as
+  pair-specific documented outcomes. Coverage of named clinical outcomes rises from 676 to 4,551
+  pairs. Limits:
+  * They are a snapshot, limited to pairs common to all three compendia.
+  * Their correctness is not assessed here.
+  * The compendia's severity grades are not reproduced, so severity remains "not established".
+* **The label rule (`label_lexicon/v3`) on the DDI Corpus** (independent annotation, held-out
+  part):
+  * 51/61 assigned outcomes are for pairs annotated as interacting;
+  * 10 of 164 merely co-mentioned pairs get an outcome;
+  * an outcome is found for only 51 of 233 interacting pairs.
+
+  A label outcome is therefore a quoted lead, not a verified fact, and a missing one says nothing.
+* **DrugBank (TDC export) names a clinical outcome for about 1% of the pairs that CRESCENDDI
+  documents.** Most DrugBank records are PK or PD templates.
+* Details: `docs/CLINICAL_OUTCOME_VALIDATION.md`, `docs/DATASET_AUDIT.md`.

@@ -84,7 +84,7 @@ export function pairFacts(r: PairReport): PairFacts {
 export const countsLine = (r: PairReport, lang: Lang) => evidenceCountsText(groupEvidence(r.evidence).counts, lang);
 
 const PROMINENCE: Record<string, number> = {
-  label_contraindication: 0, label_boxed_warning: 1, label_warning_or_interaction: 2, label_mention_no_effect_reported: 3, database_interaction_record: 4,
+  label_contraindication: 0, label_boxed_warning: 1, label_warning_or_interaction: 2, label_mention_no_effect_reported: 3, database_interaction_record: 4, reference_set_outcome: 5,
 };
 
 /** A quotation shortened for the summary at a word boundary; the full text is in section 3. */
@@ -126,6 +126,8 @@ export function pairBrief(r: PairReport, lang: Lang): { headline: string; parts:
           ? t("briefLabelDoc", lang, { owner: name(d.ownerId), partner: name(d.mentionedId), k: effect.length, s: sections.join(", ") || "—" })
           : t("briefLabelDocNoEffect", lang, { owner: name(d.ownerId), partner: name(d.mentionedId), k: d.excerpts.length }),
       });
+    } else if (d.kind === "reference") {
+      docs.push({ refs: `[${d.n}]`, text: t("briefRefDoc", lang, { d: d.records.length }) });
     } else {
       docs.push({ refs: `[${d.n}]`, text: t("briefDbDoc", lang, { d: d.records.length }) });
     }
@@ -146,6 +148,9 @@ export function pairBrief(r: PairReport, lang: Lang): { headline: string; parts:
       if (d.kind === "label") {
         const what = x.category === "label_mention_no_effect_reported" ? t("briefNoEffectTag", lang) : x.sections.join(", ");
         quotes.push({ lead: t("briefQuoteLabel", lang, { owner: name(d.ownerId), s: what }), quote: shortQuote(x.text), refs: x.label, lang: "en" });
+      } else if (d.kind === "reference") {
+        const ru = lang === "ru" && x.textRu;
+        quotes.push({ lead: t("briefRefLead", lang), quote: shortQuote(ru ? x.textRu! : x.text), refs: x.label, lang: ru ? undefined : "en" });
       } else {
         const dir = e.direction === "not_verified" ? t("briefDbNeutral", lang) : t("briefDbStandard", lang);
         const ru = lang === "ru" && x.textRu;

@@ -64,7 +64,7 @@ def eng(real):  # noqa: F811
 
 def test_report_counts_documents_not_records(eng):
     rep = eng.report("warfarin", "fluconazole")
-    labels = [e for e in rep.evidence if e.category != EvidenceCategory.DATABASE_INTERACTION_RECORD]
+    labels = [e for e in rep.evidence if e.category.value.startswith("label_")]
     assert len(labels) == 4                               # 2 per label, was 6
     assert len({e.source_record_id for e in labels}) == 2
     flu = [e for e in labels if e.source_record_id.endswith("f1")]

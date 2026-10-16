@@ -1,8 +1,8 @@
 {
  "method": {
-  "lexicon": "label_lexicon/v2",
+  "lexicon": "label_lexicon/v3",
   "seed": 20261015,
-  "store_sha256": "593c2eddbea941f6dad213fd0f21715b75f7fe9e377dd4abdc5ae4718b1a75a8",
+  "store_sha256": "4dd4dbea0e766568027c30f42fbd3071d3d782152ea99b48ce8ecadc55446d44",
   "note": "Pilot set by the rules' author; constructed sentences; not a clinical validation."
  },
  "pilot": {
@@ -1673,18 +1673,18 @@
    ]
   },
   "citation_accuracy": {
-   "k": 69,
-   "n": 69,
+   "k": 82,
+   "n": 82,
    "value": 1.0,
    "wilson95": [
-    0.947,
+    0.955,
     1.0
    ],
    "definition": "support excerpts equal to the cited record's template or statement, and mapped to the outcome its record type names"
   },
   "unsupported_documented_outcomes": {
    "k": 0,
-   "n_outcomes": 69
+   "n_outcomes": 76
   },
   "direction": {
    "claims": 9,
@@ -1709,8 +1709,8 @@
    "documented_outcome_unclear": 18
   },
   "ru_en_structural": {
-   "k": 1568,
-   "n": 1568,
+   "k": 1702,
+   "n": 1702,
    "value": 1.0,
    "wilson95": [
     0.998,

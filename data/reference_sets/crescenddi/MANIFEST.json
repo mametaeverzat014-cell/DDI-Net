@@ -1,0 +1,119 @@
+{
+ "dataset": "crescenddi",
+ "generated": "2026-10-16",
+ "generator": "scripts/data/ingest_crescenddi.py",
+ "inputs": {
+  "data_records/Data Record 1 - Positive Controls.xlsx": {
+   "sha256": "9e001a6ef078029c4fe7fa4addd4f0e4ad1255ac024d91c5cdbaec9cc07bc22a"
+  },
+  "data_records/Data Record 2 - Negative Controls.xlsx": {
+   "sha256": "0d264662ebba4351e32d4942fb4c66b57f3d5e3b4060eae1ea347f91b006b894"
+  }
+ },
+ "manifest_version": 1,
+ "output": {
+  "bytes": 176878,
+  "file": "crescenddi_index_v1.json.gz",
+  "sha256": "bec30019da78c01c99bbd0d00d97a4fb66e37931b7b4ece49f5f1e3061e0ed13"
+ },
+ "schema_version": "crescenddi_index/v1",
+ "source": {
+  "citation": "Kontsioti E, Maskell S, Dutta B, Pirmohamed M. A reference set of clinically relevant adverse drug-drug interactions. Sci Data 9, 72 (2022). doi:10.1038/s41597-022-01159-y",
+  "commit": "1734d7c12ac16e3df03c4a53cb40226f456c92c9",
+  "figshare": "https://doi.org/10.6084/m9.figshare.c.5481408",
+  "license": "MIT License (authors' GitHub repository, which contains the data records); figshare licence not verified from the build environment",
+  "name": "CRESCENDDI reference set of clinically relevant adverse drug-drug interactions",
+  "not_carried_over": "compendium severity and evidence ratings; single-drug Data Record 3; any compendium text",
+  "repository": "https://github.com/elpidakon/CRESCENDDI",
+  "underlying_sources": "BNF (Nov 2018), IBM Micromedex (Sep 2018), ANSM Thesaurus (Sep 2019); events mapped to MedDRA by the authors (OHDSI Usagi)"
+ },
+ "stats": {
+  "distinct_events_positive": 168,
+  "distinct_pairs_positive": 3952,
+  "dropped": {
+   "negative_duplicate_collapsed": 4,
+   "negative_unmapped_drug": 877,
+   "positive_unmapped_drug": 2067
+  },
+  "drug_names": 454,
+  "drug_names_mapped": 392,
+  "mapping_method_counts": {
+   "curated_alias": 8,
+   "inn": 384
+  },
+  "positive_negative_conflicts_removed": 0,
+  "records": {
+   "negative": 3663,
+   "positive": 8219
+  },
+  "rows_read": {
+   "negative": 4544,
+   "positive": 10286
+  },
+  "rows_rejected_by_schema": 0,
+  "unmapped_drug_names": [
+   "Aluminum Hydroxide",
+   "Aminophylline",
+   "Asenapine",
+   "Ataluren",
+   "Atracurium",
+   "Bleomycin",
+   "Canrenoate",
+   "Carboplatin",
+   "Chlorthalidone",
+   "Cisplatin",
+   "Clopamide",
+   "Colchicine",
+   "Dalteparin",
+   "Delamanid",
+   "Dothiepin",
+   "Enoxaparin",
+   "Fludrocortisone",
+   "Flupenthixol",
+   "Fusidate",
+   "Gentamicin",
+   "Isosorbide",
+   "Itraconazole",
+   "Lithium",
+   "Mefenamate",
+   "Mefloquine",
+   "Methotrimeprazine",
+   "Methylene blue",
+   "Nadolol",
+   "Nefopam",
+   "Piperaquine",
+   "Rifampin",
+   "Sodium Oxybate",
+   "Streptokinase",
+   "Succinylcholine",
+   "Tacrolimus",
+   "Tenecteplase",
+   "Tetrabenazine",
+   "Tiaprofenate",
+   "Trimeprazine",
+   "Urokinase",
+   "Valproate",
+   "abciximab",
+   "alteplase",
+   "anakinra",
+   "azilsartan",
+   "brentuximab vedotin",
+   "candesartan",
+   "ciprofibrate",
+   "danaparoid",
+   "eptifibatide",
+   "eribulin",
+   "fludarabine",
+   "fluticasone",
+   "golimumab",
+   "heparin",
+   "magnesium carbonate",
+   "magnesium trisilicate",
+   "olmesartan",
+   "olsalazine",
+   "pasireotide",
+   "polystyrene sulfonate",
+   "tinzaparin"
+  ]
+ }
+}

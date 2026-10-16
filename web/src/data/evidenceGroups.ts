@@ -8,7 +8,8 @@
 // the site and the PDF group again here, with the same rule as the server
 // (serving/evidence/adapters/openfda.py::same_finding):
 //
-//   * a document is one FDA label (SPL set ID) or the DrugBank export;
+//   * a document is one FDA label (SPL set ID), the DrugBank export, or the
+//     CRESCENDDI reference set;
 //   * within ONE label, sentences that are identical after normalisation, or one
 //     contained in the other (≥ 40 characters), or near-verbatim copies (word
 //     sets ≥ 90 % alike, lengths within 10 %) are one excerpt, found in several
@@ -37,8 +38,8 @@ export interface Excerpt {
 
 export interface SourceDoc {
   n: number;
-  kind: "label" | "database";
-  /** SPL set ID for a label; "drugbank_tdc" for the database. */
+  kind: "label" | "database" | "reference";
+  /** SPL set ID for a label; "drugbank_tdc" for the database; "crescenddi" for the reference set. */
   id: string;
   /** Label owner (the drug whose label it is) and the drug it names. */
   ownerId: string | null;
@@ -59,6 +60,8 @@ export interface EvidenceCounts {
   /** Raw records folded into another excerpt (repeats across sections of one label). */
   mergedRepeats: number;
   databaseRecords: number;
+  /** CRESCENDDI reference-set pair–event records. */
+  referenceRecords: number;
 }
 
 export interface EvidenceGroups {
@@ -73,7 +76,7 @@ export interface EvidenceGroups {
 
 const PROMINENCE: EvidenceCategory[] = [
   "label_contraindication", "label_boxed_warning", "label_warning_or_interaction",
-  "label_mention_no_effect_reported", "database_interaction_record",
+  "label_mention_no_effect_reported", "database_interaction_record", "reference_set_outcome",
 ];
 
 // Exactly the server's normalisation: lower case, anything but [0-9a-z] separates.
@@ -93,13 +96,19 @@ export function sameFinding(a: string, b: string): boolean {
   return jaccard >= 0.9 && short.length / long.length >= 0.9;
 }
 
-const isLabel = (e: EvidenceRecord) => e.category !== "database_interaction_record";
-const docId = (e: EvidenceRecord) => (isLabel(e) ? e.source_record_id ?? e.original_identifiers.spl_set_id ?? e.id : "drugbank_tdc");
+const kindOf = (e: EvidenceRecord): SourceDoc["kind"] =>
+  e.category === "database_interaction_record" ? "database" : e.category === "reference_set_outcome" ? "reference" : "label";
+const isLabel = (e: EvidenceRecord) => kindOf(e) === "label";
+const docId = (e: EvidenceRecord) => {
+  const k = kindOf(e);
+  return k === "label" ? e.source_record_id ?? e.original_identifiers.spl_set_id ?? e.id : k === "database" ? "drugbank_tdc" : "crescenddi";
+};
+const KIND_ORDER: SourceDoc["kind"][] = ["label", "database", "reference"];
 
 export function groupEvidence(evidence: EvidenceRecord[]): EvidenceGroups {
   const byDoc = new Map<string, EvidenceRecord[]>();
-  // Labels first (they carry the source's own words), then the database.
-  for (const e of [...evidence.filter(isLabel), ...evidence.filter((x) => !isLabel(x))]) {
+  // Labels first (they carry the source's own words), then the database, then the reference set.
+  for (const e of KIND_ORDER.flatMap((k) => evidence.filter((x) => kindOf(x) === k))) {
     const id = docId(e);
     byDoc.set(id, [...(byDoc.get(id) ?? []), e]);
   }
@@ -124,7 +133,7 @@ export function groupEvidence(evidence: EvidenceRecord[]): EvidenceGroups {
       g.forEach((e) => excerptByRecord.set(e.id, ex));
       return ex;
     });
-    docs.push({ n, kind: label ? "label" : "database", id, ownerId: records[0].drug1_id, mentionedId: records[0].drug2_id, excerpts, records });
+    docs.push({ n, kind: kindOf(records[0]), id, ownerId: records[0].drug1_id, mentionedId: records[0].drug2_id, excerpts, records });
   }
   const labelDocs = docs.filter((d) => d.kind === "label");
   const labelExcerpts = labelDocs.flatMap((d) => d.excerpts);
@@ -135,6 +144,7 @@ export function groupEvidence(evidence: EvidenceRecord[]): EvidenceGroups {
     labelRecords: labelDocs.reduce((s, d) => s + d.records.length, 0),
     mergedRepeats: labelDocs.reduce((s, d) => s + d.records.length - d.excerpts.length, 0),
     databaseRecords: docs.filter((d) => d.kind === "database").reduce((s, d) => s + d.records.length, 0),
+    referenceRecords: docs.filter((d) => d.kind === "reference").reduce((s, d) => s + d.records.length, 0),
   };
   const docOf = new Map(docs.flatMap((d) => d.excerpts.map((x) => [x, d] as const)));
   return {
@@ -164,10 +174,12 @@ export function evidenceCountsText(c: EvidenceCounts, lang: "ru" | "en"): string
     parts.push(`инструкций FDA: ${c.labelDocuments}`, `различных фрагментов: ${c.labelExcerpts}`);
     if (c.noEffectExcerpts) parts.push(`упоминаний без отмеченного эффекта: ${c.noEffectExcerpts}`);
     parts.push(`записей DrugBank: ${c.databaseRecords}`);
+    if (c.referenceRecords) parts.push(`записей CRESCENDDI: ${c.referenceRecords}`);
   } else {
     parts.push(`FDA label documents: ${c.labelDocuments}`, `distinct excerpts: ${c.labelExcerpts}`);
     if (c.noEffectExcerpts) parts.push(`label mentions with no effect reported: ${c.noEffectExcerpts}`);
     parts.push(`DrugBank records: ${c.databaseRecords}`);
+    if (c.referenceRecords) parts.push(`CRESCENDDI records: ${c.referenceRecords}`);
   }
   return parts.join(" · ");
 }

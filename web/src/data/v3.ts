@@ -14,6 +14,7 @@ export type EvidenceCategory =
   | "label_boxed_warning"
   | "label_warning_or_interaction"
   | "database_interaction_record"
+  | "reference_set_outcome"
   | "label_mention_no_effect_reported";
 
 export type EvidenceStatus =
@@ -195,7 +196,7 @@ export type LinkProvenance = "documented" | "verified_annotation" | "plausible_u
 
 export interface OutcomeSupport {
   evidence_record_id: string | null;
-  source_type: "fda_label" | "drugbank_tdc" | "annotation";
+  source_type: "fda_label" | "drugbank_tdc" | "reference_set" | "annotation";
   source_name: string;
   source_document_id: string | null;
   source_url: string | null;
@@ -227,7 +228,7 @@ export interface ClinicalOutcome {
   direction_note: Bi;
   seriousness: SeriousnessClass;
   seriousness_basis: Bi;
-  evidence_strength: "official_label_statement" | "database_standard_sentence" | "label_and_database" | "annotation_hypothesis";
+  evidence_strength: "official_label_statement" | "database_standard_sentence" | "label_and_database" | "reference_set_statement" | "reference_set_and_other" | "annotation_hypothesis";
   evidence_strength_text: Bi;
   extraction_note: Bi | null;
   limitations: Bi[];
@@ -262,6 +263,8 @@ export interface MultiPair {
   n_label_records: number;
   /** Distinct label documents (SPL set IDs). Absent from older APIs. */
   n_label_documents?: number | null;
+  /** CRESCENDDI reference-set pair–event records. Absent from older APIs. */
+  n_reference_records?: number;
   n_mechanism_hypotheses: number;
   calibrated_model_score: number | null;
   regime: string;

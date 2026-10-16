@@ -351,8 +351,10 @@ function SegRow({ k, children }: { k: string; children: ReactNode }) {
   );
 }
 
-const docColor = (d: SourceDoc) => (d.kind === "database" ? EV.documented : d.excerpts.every((x) => x.category === "label_mention_no_effect_reported") ? EV.none : EV.label);
-const excerptColor = (x: Excerpt) => (x.category === "database_interaction_record" ? EV.documented : x.category === "label_mention_no_effect_reported" ? EV.none : EV.label);
+const docTitle = (d: SourceDoc, tr: Tr, name: (id: string | null) => string) =>
+  d.kind === "label" ? tr("labelDocTitle", { owner: name(d.ownerId) }) : d.kind === "reference" ? tr("refDocTitle") : tr("dbDocTitle");
+const docColor = (d: SourceDoc) => (d.kind !== "label" ? EV.documented : d.excerpts.every((x) => x.category === "label_mention_no_effect_reported") ? EV.none : EV.label);
+const excerptColor = (x: Excerpt) => (x.category === "database_interaction_record" || x.category === "reference_set_outcome" ? EV.documented : x.category === "label_mention_no_effect_reported" ? EV.none : EV.label);
 
 function DocBlock({ d, r, lang, tr }: { d: SourceDoc; r: PairReport; lang: Lang; tr: Tr }) {
   const first = d.records[0];
@@ -365,10 +367,10 @@ function DocBlock({ d, r, lang, tr }: { d: SourceDoc; r: PairReport; lang: Lang;
         <Text style={{ fontFamily: FONT.mono, fontSize: 8.4, color: C.navy, width: 24 }}>[{d.n}]</Text>
         <View style={{ flex: 1 }}>
           <Text style={{ fontWeight: 600, fontSize: 9.4, color: C.navy, lineHeight: 1.3 }}>
-            {d.kind === "label" ? tr("labelDocTitle", { owner: name(d.ownerId) }) : tr("dbDocTitle")}
+            {docTitle(d, tr, name)}
           </Text>
           <Text style={{ fontSize: 7.6, color: C.slate2, lineHeight: 1.35 }}>
-            {d.kind === "label" ? tr("labelDocSub", { partner: name(d.mentionedId), k: d.excerpts.length }) : tr("dbDocSub", { k: d.records.length })}
+            {d.kind === "label" ? tr("labelDocSub", { partner: name(d.mentionedId), k: d.excerpts.length }) : d.kind === "reference" ? tr("refDocSub", { k: d.records.length }) : tr("dbDocSub", { k: d.records.length })}
           </Text>
         </View>
         <Text style={{ fontFamily: FONT.mono, fontSize: 6.4, color: C.muted }}>{tr("retrieved")} {first.retrieved_at}</Text>
@@ -423,13 +425,13 @@ function DocBlock({ d, r, lang, tr }: { d: SourceDoc; r: PairReport; lang: Lang;
   if (first.source_url) parts.push(<SegRow k={tr("url")}><Url url={first.source_url} width={vw} size={6.4} /></SegRow>);
   const retrievalUrls = Array.from(new Set(d.records.map((e) => e.retrieval_url).filter((u): u is string => !!u)));
   for (const u of retrievalUrls) parts.push(<SegRow k={tr("retrievalUrl")}><Url url={u} width={vw} size={6.2} /></SegRow>);
-  if (d.kind === "database") {
+  if (d.kind !== "label") {
     parts.push(<SegRow k={tr("recordId")}><MonoLines text={d.records.map((e) => e.source_record_id ?? e.id).join("\n")} width={vw} size={6.4} /></SegRow>);
   }
   parts.push(<SegRow k={tr("retrieved")}>{Array.from(new Set(d.records.map((e) => e.retrieved_at))).join(", ")}</SegRow>);
   if (first.license) parts.push(<SegRow k={tr("license")}>{clean(first.license)}</SegRow>);
   const sev = Array.from(new Set(d.records.map((e) => e.source_severity).filter((s): s is string => !!s)));
-  parts.push(<SegRow k={tr("severityBySource")}>{sev.length ? sev.map(clean).join("; ") : tr("severityNone")}</SegRow>);
+  parts.push(<SegRow k={tr("severityBySource")}>{sev.length ? sev.map(clean).join("; ") : d.kind === "reference" ? tr("severityNotReproduced") : tr("severityNone")}</SegRow>);
   const quals = Array.from(new Set(d.records.flatMap((e) => e.qualifiers)));
   if (quals.length) {
     parts.push(<Text style={{ fontFamily: FONT.mono, fontSize: 6.2, color: C.muted, marginTop: 5, marginBottom: 1 }}>{tr("qualifiers").toUpperCase()}</Text>);
@@ -472,7 +474,7 @@ function Documented({ r, lang, tr }: { r: PairReport; lang: Lang; tr: Tr }) {
             const sections = Array.from(new Set(d.excerpts.flatMap((x) => x.sections)));
             return [
               <Text key="n" style={{ fontFamily: FONT.mono, fontSize: 7.2, color: C.navy }}>[{d.n}]</Text>,
-              d.kind === "label" ? tr("labelDocTitle", { owner: name(d.ownerId) }) : tr("dbDocTitle"),
+              docTitle(d, tr, name),
               <MonoLines key="i" text={d.kind === "label" ? d.id : d.records.map((e) => e.source_record_id ?? e.id).join("\n")} width={colPoints(dcols, 2)} size={6.2} />,
               d.records[0].source_version ? <SafeText key="v" text={clean(d.records[0].source_version)} width={colPoints(dcols, 3)} /> : "—",
               String(d.excerpts.length),

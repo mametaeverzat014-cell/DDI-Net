@@ -57,10 +57,14 @@ SECTIONS: dict[str, tuple[str, str]] = {
 #: here leaves a sentence in the warning category, which is the safer error.
 NO_EFFECT = re.compile(
     r"\b(no clinically (?:significant|relevant|meaningful|important)"
-    r"|did not (?:significantly )?(?:affect|alter|change|increase|decrease|influence)"
-    r"|does not (?:significantly )?(?:affect|alter|change|increase|decrease|influence)"
-    r"|no (?:significant|relevant|meaningful) (?:effect|change|interaction|difference)"
+    r"|did not (?:significantly )?(?:affect|alter|change|increase|decrease|influence|interfere with)"
+    r"|does not (?:significantly )?(?:affect|alter|change|increase|decrease|influence|interfere with)"
+    r"|no (?:statistically )?(?:significant|relevant|meaningful) (?:effects?|changes?|interactions?|differences?)"
     r"|not (?:clinically )?(?:significantly )?(?:altered|affected|changed)"
+    # v3 (from DDI Corpus development errors): "had no effect on", "did not
+    # result in clinically significant increases"
+    r"|(?:had|has|have|there (?:is|was)) no effect on"
+    r"|did not (?:result in|produce|cause) (?:a |any )?(?:clinically |statistically )?(?:significant|relevant|meaningful)"
     r"|no dose adjustment)\b",
     re.IGNORECASE,
 )

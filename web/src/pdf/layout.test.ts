@@ -128,6 +128,9 @@ describe("PDF geometry: no overlap with header or footer, no collapsed text, rig
     ["quick-synthetic-labels", pair(fx("pair_synthetic_merged_labels.json").report), "en", "quick"],
     ["quick-warfarin-fluconazole", pair(fx("pair_outcomes_warfarin_fluconazole.json").report), "ru", "quick"],
     ["quick-metformin-warfarin", pair(fx("pair_outcomes_metformin_warfarin.json").report), "en", "quick"],
+    ["reference-warfarin-fluconazole", pair(fx("pair_reference_warfarin_fluconazole.json").report), "ru", "full"],
+    ["quick-reference-simvastatin-clarithromycin", pair(fx("pair_reference_simvastatin_clarithromycin.json").report), "en", "quick"],
+    ["reference-multi-6", { kind: "multi", report: fx("multi_reference_6.json") }, "en", "full"],
   ];
   for (const [name, input, lang, variant] of outcomeCases) {
     it(`${name} (${lang}, ${variant})`, async () => {

@@ -131,6 +131,7 @@ const synthInputs: Record<string, [ExportInput, "en" | "ru"]> = {
 const owf = fx("pair_outcomes_warfarin_fluconazole.json");
 const omw = fx("pair_outcomes_metformin_warfarin.json");
 const synMerged = fx("pair_synthetic_merged_labels.json");
+const refWf = fx("pair_reference_warfarin_fluconazole.json");
 const outcomeInputs: Record<string, [ExportInput, "en" | "ru", "full" | "quick"]> = {
   oSynEn: [{ kind: "pair", origin: "analyzer", report: synMerged.report }, "en", "full"],
   oSynRu: [{ kind: "pair", origin: "analyzer", report: synMerged.report }, "ru", "full"],
@@ -138,6 +139,9 @@ const outcomeInputs: Record<string, [ExportInput, "en" | "ru", "full" | "quick"]
   qSynEn: [{ kind: "pair", origin: "analyzer", report: synMerged.report }, "en", "quick"],
   qWfEn: [{ kind: "pair", origin: "analyzer", report: owf.report }, "en", "quick"],
   qMwRu: [{ kind: "pair", origin: "analyzer", report: omw.report }, "ru", "quick"],
+  rWfEn: [{ kind: "pair", origin: "analyzer", report: refWf.report }, "en", "full"],
+  rWfRu: [{ kind: "pair", origin: "analyzer", report: refWf.report }, "ru", "full"],
+  qrWfRu: [{ kind: "pair", origin: "analyzer", report: refWf.report }, "ru", "quick"],
 };
 
 beforeAll(async () => {
@@ -470,6 +474,24 @@ describe("content", () => {
     }
     expect(docs.qMwRu.flat).toContain("не означает, что сочетание безопасно");
     expect(docs.qWfEn.flat).toContain("Severity not established from available evidence.");
+  });
+
+  it("reference set: its own source document, MedDRA term quoted, severity grades not reproduced", () => {
+    for (const k of ["rWfEn", "rWfRu", "qrWfRu"] as const) {
+      const d = docs[k];
+      const r = (d.prep.input as Extract<ExportInput, { kind: "pair" }>).report.data;
+      const en = d.prep.ctx.lang === "en";
+      const ref = r.evidence.filter((e) => e.category === "reference_set_outcome");
+      expect(ref.length).toBeGreaterThan(0);
+      expect(d.flat).toContain("CRESCENDDI");
+      expect(d.flat).toContain("Haemorrhage");
+      if (k !== "qrWfRu") {
+        expect(d.flat).toContain(en ? "CRESCENDDI (reference set; BNF, Micromedex, ANSM, 2018–2019)" : "CRESCENDDI (справочный набор; BNF, Micromedex, ANSM, 2018–2019)");
+        expect(d.flat).toContain(en ? "graded by the compendia, but those grades are not reproduced here" : "справочники её оценивают, но эти оценки здесь не воспроизводятся");
+        for (const e of ref) expect(nospace(d.text)).toContain(nospace(e.source_record_id!));
+      }
+      for (const grade of ["Severe", "Contraindicated", "Not recommended"]) expect(d.flat).not.toContain(grade);
+    }
   });
 
   it("full report: outcome table, per-outcome provenance with every excerpt, chains with link provenance", () => {

@@ -208,6 +208,30 @@ The pieces:
 * a long Russian drug name running out of the PDF annotation table's column.
   This one was pre-existing and now has a geometry regression test.
 
+## Step 12 — Evidence coverage: dataset audit and the CRESCENDDI reference set
+
+* **Audit** (`docs/DATASET_AUDIT.md`, `data/sources_manifest.json`) of the sources already used
+  and of DailyMed, DDInter, TWOSIDES, OnSIDES, CRESCENDDI, the DDI Corpus and others. Every
+  official biomedical host is unreachable from the build container; GitHub (git and raw) is
+  reachable.
+* **Integrated: CRESCENDDI**, licence read directly (MIT, authors' repository).
+  * The pipeline (`src/ddinet/data/git_fetch.py`, `crescenddi.py`,
+    `scripts/data/ingest_crescenddi.py`) does a pinned git fetch, SHA-256 checks, schema
+    validation, exact drug mapping (392/454), de-duplication and conflict removal, and writes a
+    versioned manifest.
+  * The derived index is committed; the raw files are not.
+  * In the engine, its records are a separate evidence category (`reference_set_outcome`). MedDRA
+    terms are grouped by `meddra_effect_map/v1`, and no severity is shown.
+* **Evaluation only: the DDI Corpus** (CC BY-NC 4.0). It measured the label rule on independently
+  annotated text. Errors seen on Train led to `label_lexicon/v3` (wider no-effect wording); Test
+  was then scored once.
+* **Results:** `docs/CLINICAL_OUTCOME_VALIDATION.md`.
+* **Fixes found on the way:**
+  * the status wording "the source gives no severity" became "no severity grade is shown in this
+    report";
+  * a PDF JSON appendix could leave its closing line alone on a page; the tail is now kept
+    together.
+
 ---
 
 ## What was not done, and why
