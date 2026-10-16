@@ -10,8 +10,8 @@ passing that was not run. Commands are given so each line can be reproduced.
 
 | Check | Before (baseline at `aa04493`) | After |
 |---|---|---|
-| Python test suite (`pytest tests/`) | 613 passed, 21 skipped, **2 failed, 11 errors** | **790 passed, 3 skipped, 1 failed** (after the Clinical Outcome Engine) |
-| Web unit tests (`npx vitest run`) | 66 passed | **169 passed** (PDF export included; 24 page-geometry checks) |
+| Python test suite (`pytest tests/`) | 613 passed, 21 skipped, **2 failed, 11 errors** | **810 passed, 3 skipped, 1 failed** (after the evidence-coverage work) |
+| Web unit tests (`npx vitest run`) | 66 passed | **176 passed** (PDF export included; 27 page-geometry checks) |
 | TypeScript (`npx tsc --noEmit`) | clean | clean |
 | ESLint (`--max-warnings 0`) | clean | clean |
 | Production build (`npm run build`) | — | succeeds; regenerating `frozen.json` from the tag gives no diff |
