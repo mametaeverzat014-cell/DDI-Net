@@ -1,9 +1,15 @@
 # Sample PDF reports
 
-**Dates.** The warfarin + fluconazole reports were regenerated on 2026-10-16, after the
-CRESCENDDI reference set was integrated (`docs/DATASET_AUDIT.md`). The other reports are from
-2026-10-15, before that, so they show no CRESCENDDI source even where the current API would list
-one.
+**Dates.**
+- **Warfarin + fluconazole** reports are from **2026-10-18**, after the scientific-reliability
+  audit (`docs/DDINET_V3_SCIENTIFIC_AUDIT.md`). They show `label_lexicon/v4`, the exact "No
+  specific clinical outcome established from available evidence." wording, and chain steps
+  marked as inferred from protein roles.
+- **The other reports** are from 2026-10-15 and predate that wording.
+- **Withdrawn:** the 2026-10-16 warfarin + fluconazole reports contained CRESCENDDI
+  reference-set records, whose redistribution rights are unclear (`docs/DATASET_AUDIT.md`). They
+  were deleted from the working tree.
+- **No CRESCENDDI anywhere:** no sample here contains CRESCENDDI data.
 
 These reports were generated after the Clinical Outcome Engine
 was added (`docs/DDINET_V3_CLINICAL_OUTCOMES_ARCHITECTURE.md`).
@@ -29,8 +35,8 @@ chain figure, and every record.
 
 | File | Page | Language |
 |---|---|---|
-| `DDI-Net_QuickReport_Warfarin_Fluconazole_2026-10-16.pdf` / `_RU` | Analyzer, Quick; **with the CRESCENDDI reference set** (documented bleeding, "Haemorrhage") | EN / RU |
-| `DDI-Net_Report_Warfarin_Fluconazole_2026-10-16.pdf` / `_RU` | Analyzer, Full; CRESCENDDI shown as its own source document, severity grades not reproduced | EN / RU |
+| `DDI-Net_QuickReport_Warfarin_Fluconazole_2026-10-18.pdf` / `_RU` | Analyzer, Quick; exposure change only (labels unreachable); exact no-specific-outcome sentence | EN / RU |
+| `DDI-Net_Report_Warfarin_Fluconazole_2026-10-18.pdf` / `_RU` | Analyzer, Full; same, with the outcome table and chain provenance | EN / RU |
 | `DDI-Net_QuickReport_Warfarin_Acetylsalicylic-acid_2026-10-15.pdf` / `_RU` | Analyzer, Quick; a documented pharmacodynamic effect | EN / RU |
 | `DDI-Net_Report_Warfarin_Acetylsalicylic-acid_2026-10-15.pdf` / `_RU` | Analyzer, Full | EN / RU |
 | `DDI-Net_QuickReport_Metformin_Warfarin_2026-10-15.pdf` | Analyzer, Quick; nothing documented | English |

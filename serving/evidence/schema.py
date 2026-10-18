@@ -320,6 +320,9 @@ class OutcomeReport(BaseModel):
     seriousness_text: Bi
     coverage: list[Bi] = Field(description="Which sources were consulted, what they can and cannot say.")
     no_outcome_text: Bi | None = Field(None, description="Set when no supported outcome could be identified; shown instead of an empty list.")
+    no_specific_outcome_text: Bi | None = Field(
+        None, description="Set whenever no specific clinical outcome is documented (no outcome, or only exposure or "
+                          "effect changes). Exact wording; never a statement of safety. Absent from older APIs.")
     mechanism_without_outcome_text: Bi | None = None
     individual_limit: Bi
 

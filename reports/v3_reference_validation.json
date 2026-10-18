@@ -1,8 +1,9 @@
 {
  "method": {
-  "store_sha256": "4dd4dbea0e766568027c30f42fbd3071d3d782152ea99b48ce8ecadc55446d44",
-  "label_rule": "label_lexicon/v3",
-  "event_map": "meddra_effect_map/v1"
+  "store_sha256": "f6d8ac107c7f28312847f0a1ad09a35737ace43fc20e02b34cb4099a0da665c0",
+  "label_rule": "label_lexicon/v4",
+  "event_map": "meddra_effect_map/v2",
+  "crescenddi": "restricted local data; not in the public artifact; aggregate counts only"
  },
  "ddi_corpus": {
   "dataset": "DDI Corpus 2013, DrugBank part",
@@ -10,7 +11,7 @@
   "license": "CC BY-NC 4.0 (corpus README); evaluation only, not redistributed",
   "pinned_commit": "819b0fa538ed83ab2a8b4f5417bba3c03249b7f3",
   "zip_sha256": "87fc63e32ebce20d9841c372e0c594ec72d60882ab5621550ca73c3eaf80ab60",
-  "rule": "label_lexicon/v3",
+  "rule": "label_lexicon/v4",
   "unit": "(sentence, document drug, partner drug name); interacting if any of its annotated mention pairs is",
   "development": {
    "corpus_split": "train",
@@ -23,52 +24,52 @@
    },
    "sentences": 1150,
    "assignment_precision": {
-    "k": 317,
-    "n": 444,
-    "value": 0.714,
+    "k": 315,
+    "n": 440,
+    "value": 0.716,
     "wilson95": [
-     0.67,
-     0.754
+     0.672,
+     0.756
     ],
     "definition": "pairs the rule gives an outcome that the corpus annotates as interacting"
    },
    "unsupported_assignment_rate": {
-    "k": 127,
+    "k": 125,
     "n": 852,
-    "value": 0.149,
+    "value": 0.147,
     "wilson95": [
-     0.127,
-     0.175
+     0.125,
+     0.172
     ],
     "definition": "non-interacting pairs (co-mentioned only) the rule gives an outcome"
    },
    "coverage_of_interacting_pairs": {
-    "k": 317,
+    "k": 315,
     "n": 1044,
-    "value": 0.304,
+    "value": 0.302,
     "wilson95": [
-     0.277,
-     0.332
+     0.275,
+     0.33
     ],
     "definition": "interacting pairs for which the rule finds a named outcome or exposure change"
    },
    "coverage_by_ddi_type": {
     "effect": {
-     "k": 67,
+     "k": 66,
      "n": 235,
-     "value": 0.285,
+     "value": 0.281,
      "wilson95": [
-      0.231,
-      0.346
+      0.227,
+      0.341
      ]
     },
     "mechanism": {
-     "k": 226,
+     "k": 225,
      "n": 524,
-     "value": 0.431,
+     "value": 0.429,
      "wilson95": [
-      0.39,
-      0.474
+      0.388,
+      0.472
      ]
     },
     "advise": {
@@ -92,12 +93,12 @@
    },
    "sensitivity_partner_interacts_with_anything_in_sentence": {
     "precision": {
-     "k": 378,
-     "n": 444,
-     "value": 0.851,
+     "k": 374,
+     "n": 440,
+     "value": 0.85,
      "wilson95": [
-      0.815,
-      0.881
+      0.814,
+      0.88
      ]
     },
     "unsupported_assignment_rate": {
@@ -122,32 +123,32 @@
    },
    "sentences": 216,
    "assignment_precision": {
-    "k": 51,
+    "k": 50,
     "n": 61,
-    "value": 0.836,
+    "value": 0.82,
     "wilson95": [
-     0.724,
-     0.908
+     0.705,
+     0.896
     ],
     "definition": "pairs the rule gives an outcome that the corpus annotates as interacting"
    },
    "unsupported_assignment_rate": {
-    "k": 10,
+    "k": 11,
     "n": 164,
-    "value": 0.061,
+    "value": 0.067,
     "wilson95": [
-     0.033,
-     0.109
+     0.038,
+     0.116
     ],
     "definition": "non-interacting pairs (co-mentioned only) the rule gives an outcome"
    },
    "coverage_of_interacting_pairs": {
-    "k": 51,
+    "k": 50,
     "n": 233,
-    "value": 0.219,
+    "value": 0.215,
     "wilson95": [
-     0.171,
-     0.276
+     0.167,
+     0.272
     ],
     "definition": "interacting pairs for which the rule finds a named outcome or exposure change"
    },
@@ -162,12 +163,12 @@
      ]
     },
     "mechanism": {
-     "k": 33,
+     "k": 32,
      "n": 111,
-     "value": 0.297,
+     "value": 0.288,
      "wilson95": [
-      0.22,
-      0.388
+      0.212,
+      0.379
      ]
     },
     "advise": {
@@ -191,21 +192,21 @@
    },
    "sensitivity_partner_interacts_with_anything_in_sentence": {
     "precision": {
-     "k": 53,
+     "k": 52,
      "n": 61,
-     "value": 0.869,
+     "value": 0.852,
      "wilson95": [
-      0.762,
-      0.932
+      0.743,
+      0.92
      ]
     },
     "unsupported_assignment_rate": {
-     "k": 8,
+     "k": 9,
      "n": 136,
-     "value": 0.059,
+     "value": 0.066,
      "wilson95": [
-      0.03,
-      0.112
+      0.035,
+      0.121
      ]
     }
    }
@@ -219,7 +220,7 @@
   },
   "split_rule": "sha256('drugA|drugB' sorted)[0] < 128 -> development",
   "engine": "DrugBank only (reference set removed), labels off",
-  "event_grouping": "meddra_effect_map/v1",
+  "event_grouping": "meddra_effect_map/v2",
   "development": {
    "positive_pairs": 1956,
    "drugbank_documents_the_pair": {
@@ -270,7 +271,7 @@
    },
    "event_level_same_category_clinical": {
     "k": 27,
-    "n": 4087,
+    "n": 4075,
     "value": 0.007,
     "wilson95": [
      0.005,
@@ -295,8 +296,7 @@
      0.0,
      0.002
     ],
-    "reading": "the engine (DrugBank only) names a clinical outcome in the same broad category as an event the reference judged unrelated to the pair; category-level, so an upper bound on contradictions",
-    "examples": []
+    "reading": "the engine (DrugBank only) names a clinical outcome in the same broad category as an event the reference judged unrelated to the pair; category-level, so an upper bound on contradictions. Example pairs are not published (restricted data)"
    }
   },
   "evaluation": {
@@ -349,7 +349,7 @@
    },
    "event_level_same_category_clinical": {
     "k": 34,
-    "n": 4077,
+    "n": 4071,
     "value": 0.008,
     "wilson95": [
      0.006,
@@ -374,8 +374,7 @@
      0.0,
      0.002
     ],
-    "reading": "the engine (DrugBank only) names a clinical outcome in the same broad category as an event the reference judged unrelated to the pair; category-level, so an upper bound on contradictions",
-    "examples": []
+    "reading": "the engine (DrugBank only) names a clinical outcome in the same broad category as an event the reference judged unrelated to the pair; category-level, so an upper bound on contradictions. Example pairs are not published (restricted data)"
    }
   }
  },
@@ -389,7 +388,7 @@
   },
   "pair_category_named_clinical_outcomes": {
    "drugbank_only": 676,
-   "with_crescenddi": 7463
+   "with_crescenddi": 7539
   },
   "crescenddi_pairs": 3952,
   "crescenddi_pairs_not_in_drugbank": 506,
@@ -413,7 +412,7 @@
    },
    "cardiovascular_other": {
     "drugbank_only": 26,
-    "with_crescenddi": 175
+    "with_crescenddi": 251
    },
    "cns_sedation": {
     "drugbank_only": 0,

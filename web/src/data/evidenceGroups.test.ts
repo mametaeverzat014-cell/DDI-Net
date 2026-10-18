@@ -10,7 +10,7 @@ const fx = (n: string) => JSON.parse(readFileSync(join(__dirname, "..", "pdf", "
 
 describe("evidence groups with a reference set", () => {
   it("puts CRESCENDDI records in their own document after DrugBank, never in the label counts", () => {
-    const r = fx("pair_reference_simvastatin_clarithromycin.json");
+    const r = fx("pair_synthetic_reference_simvastatin_clarithromycin.json");
     const g = groupEvidence(r.evidence);
     expect(g.docs.map((d) => d.kind)).toEqual(["database", "reference"]);
     const ref = g.docs.find((d) => d.kind === "reference")!;

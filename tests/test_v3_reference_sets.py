@@ -1,9 +1,14 @@
 """CRESCENDDI reference set: ingestion pipeline and its use as outcome evidence.
 
 Ingestion tests use small in-memory rows shaped like the published spreadsheets
-(column names as in Data Records 1 and 2); the integration tests use the real
-committed index, built by scripts/data/ingest_crescenddi.py from the pinned,
-checksummed data records.
+(column names as in Data Records 1 and 2).
+
+CRESCENDDI records are NOT redistributed (docs/DATASET_AUDIT.md): the derived
+index is git-ignored and the public build never includes it. Engine tests
+therefore inject a SYNTHETIC reference set into the real store: a handful of
+CRESCENDDI-shaped rows written for these tests (pair-event content chosen to
+match interactions FDA labels state), not CRESCENDDI data. Tests on the real
+index run only where a developer has rebuilt it locally.
 """
 
 from __future__ import annotations
@@ -19,6 +24,9 @@ from test_v3_evidence import (  # noqa: F401  (session fixtures)
     real_noref,
 )
 
+from serving.evidence import build as builder
+from serving.evidence.store import EvidenceStore
+
 from ddinet.data import crescenddi as cr
 from ddinet.data.git_fetch import FetchError, PinnedFiles, sha256_file, verify
 from serving.evidence.engine import EvidenceEngine
@@ -27,8 +35,22 @@ from serving.evidence.reference_sets import EFFECTS, EVENT_MAP, MEDDRA_MAP_VERSI
 from serving.evidence.schema import EvidenceCategory
 
 ROOT = Path(__file__).resolve().parents[1]
-INDEX = ROOT / "data" / "reference_sets" / "crescenddi" / "crescenddi_index_v1.json.gz"
-MANIFEST = ROOT / "data" / "reference_sets" / "crescenddi" / "MANIFEST.json"
+INDEX = builder.CRESCENDDI_INDEX            # local only, git-ignored
+MANIFEST = builder.CRESCENDDI_MANIFEST      # committed: checksums and counts only
+local_index = pytest.mark.skipif(not INDEX.exists(), reason="CRESCENDDI index not built locally (restricted data)")
+
+#: SYNTHETIC reference-set rows (not CRESCENDDI data): (drug, drug, MedDRA code, term, event source).
+SYNTHETIC_ROWS = [
+    ("DB00682", "DB00196", 10055798, "Haemorrhage", "BNF+Micromedex"),       # warfarin + fluconazole
+    ("DB00682", "DB00945", 10055798, "Haemorrhage", "BNF"),                  # warfarin + aspirin
+    ("DB00641", "DB01211", 10039020, "Rhabdomyolysis", "Micromedex"),        # simvastatin + clarithromycin
+]
+SYNTHETIC_SOURCE = {
+    "name": "SYNTHETIC test reference set (CRESCENDDI-shaped; not CRESCENDDI data)",
+    "citation": "synthetic test fixture", "url": "https://github.com/elpidakon/CRESCENDDI",
+    "commit": "0" * 40, "license": "synthetic test data", "underlying_sources": "none (synthetic)",
+    "retrieved": "2026-10-18", "schema_version": "crescenddi_index/v1", "index_sha256": "synthetic",
+}
 
 IDS = {"warfarin": "DB00682", "Aspirin": "DB00945", "aspirin": "DB00945", "fluconazole": "DB00196",
        "acetylsalicylic acid": "DB00945"}
@@ -99,8 +121,27 @@ def test_checksums_are_enforced(tmp_path):
         verify(bad, tmp_path)
 
 
-# ----------------------------------------------------- committed artefact ----
-def test_committed_index_matches_its_manifest_and_pin():
+# ------------------------------------------------- public build gating ----
+def test_public_build_never_includes_crescenddi(real, monkeypatch):  # noqa: F811
+    assert "crescenddi" not in real.sources and not real.reference
+    monkeypatch.setenv(builder.CRESCENDDI_FLAG, "1")
+    monkeypatch.setattr(builder, "CRESCENDDI_INDEX", ROOT / "data" / "restricted" / "absent.json.gz")
+    assert builder._crescenddi({}) == (None, [])                       # flag alone is not enough
+    monkeypatch.delenv(builder.CRESCENDDI_FLAG)
+    monkeypatch.setattr(builder, "CRESCENDDI_INDEX", INDEX)
+    assert builder._crescenddi({}) == (None, [])                       # file alone is not enough
+
+
+def test_committed_manifest_carries_no_records():
+    m = json.loads(MANIFEST.read_text())
+    assert set(m) == {"manifest_version", "dataset", "schema_version", "generated", "generator", "source",
+                      "inputs", "output", "stats"}
+    assert "records" not in json.dumps(m["stats"]).replace('"records": {', "")
+
+
+# ----------------------------------------------- local (restricted) index ----
+@local_index
+def test_local_index_matches_committed_manifest_and_pin():
     m = json.loads(MANIFEST.read_text())
     assert m["output"]["sha256"] == sha256_file(INDEX)
     assert m["source"]["commit"] == cr.SPEC.commit
@@ -116,6 +157,7 @@ def test_committed_index_matches_its_manifest_and_pin():
     assert not pos_keys & {k[1:] for k in keys if k[0] == "negative"}          # no contradictions
 
 
+@local_index
 def test_every_event_in_the_index_is_mapped_to_a_known_effect():
     with gzip.open(INDEX, "rt") as f:
         terms = {x["event"] for x in json.load(f)["records"]}
@@ -124,16 +166,33 @@ def test_every_event_in_the_index_is_mapped_to_a_known_effect():
     assert set(EVENT_MAP.values()) <= set(EFFECTS)
 
 
-# --------------------------------------------------------- engine usage ----
+# ------------------------------------------- engine usage (SYNTHETIC rows) ----
+@pytest.fixture(scope="module")
+def synth(real_artifact):  # noqa: F811
+    """The real store plus the SYNTHETIC reference rows, and one synthetic reference-only pair."""
+    s = EvidenceStore.load(real_artifact)
+    s.reference.clear()
+    s.sources["crescenddi"] = dict(SYNTHETIC_SOURCE)
+    idx = {e.id: e.index for e in s.lexicon.entries}
+    rows = [(idx[a], idx[b], c, t, src) for a, b, c, t, src in SYNTHETIC_ROWS]
+    n = len(s.lexicon.entries)
+    only = next((i, j) for i in range(n) for j in range(i + 1, n) if (i, j) not in s.records)
+    rows.append((*only, 10019851, "Hepatotoxicity", "BNF"))
+    for a, b, c, t, src in rows:
+        s.reference[(min(a, b), max(a, b))].append((c, t, src))
+    return s
+
+
 @pytest.fixture()
-def eng(real):  # noqa: F811
-    return EvidenceEngine(real, model=None, external=False)
+def eng(synth):
+    return EvidenceEngine(synth, model=None, external=False)
 
 
 def test_reference_outcome_is_pair_specific_and_cited(eng):
     r = eng.report("warfarin", "fluconazole")
     ref = [e for e in r.evidence if e.category == EvidenceCategory.REFERENCE_SET_OUTCOME]
     assert ref and all("CRESCENDDI" in e.source_name and e.source_url.endswith("CRESCENDDI") for e in ref)
+    assert all(e.source_version.startswith("elpidakon/CRESCENDDI@000000000000") for e in ref)   # synthetic pin
     assert all(e.source_severity is None for e in ref)
     bleed = next(x for x in r.outcomes.outcomes if x.effect == "bleeding")
     assert bleed.evidence_status == "documented" and bleed.evidence_strength == "reference_set_statement"
@@ -158,9 +217,9 @@ def test_drugbank_pd_record_still_never_becomes_bleeding(eng):
     assert {s.source_type for s in pd.supports} == {"drugbank_tdc"}
 
 
-def test_reference_only_pair_is_documented_and_absent_pair_is_not(eng, real):  # noqa: F811
-    only = next(k for k in sorted(real.reference) if k not in real.records)
-    a, b = (real.ids[i] for i in only)
+def test_reference_only_pair_is_documented_and_absent_pair_is_not(eng, synth):
+    only = next(k for k in sorted(synth.reference) if k not in synth.records)
+    a, b = (synth.ids[i] for i in only)
     r = eng.report(a, b)
     assert r.evidence_status.value == "documented_no_severity"
     assert r.outcomes.interaction_status == "documented_interaction"
@@ -171,11 +230,11 @@ def test_reference_only_pair_is_documented_and_absent_pair_is_not(eng, real):  #
     assert not [x for x in none.outcomes.outcomes if not x.research_only]
 
 
-def test_reference_set_adds_nothing_for_pairs_it_does_not_list(eng, real, real_noref):  # noqa: F811
+def test_reference_set_adds_nothing_for_pairs_it_does_not_list(eng, synth, real_noref):  # noqa: F811
     without = EvidenceEngine(real_noref, model=None, external=False)
     for a, b in [("metformin", "warfarin"), ("DB00641", "DB01211")]:
-        ia, ib = (real.lexicon.lookup_name(x)[0] or real.lexicon.by_id[x] for x in (a, b))
-        listed = bool(real.reference_outcomes(ia.index, ib.index))
+        ia, ib = (synth.lexicon.lookup_name(x)[0] or synth.lexicon.by_id[x] for x in (a, b))
+        listed = bool(synth.reference_outcomes(ia.index, ib.index))
         o1 = {x.id for x in eng.report(a, b).outcomes.outcomes if not x.research_only}
         o0 = {x.id for x in without.report(a, b).outcomes.outcomes if not x.research_only}
         assert (o1 == o0) is (not listed) or o0 <= o1

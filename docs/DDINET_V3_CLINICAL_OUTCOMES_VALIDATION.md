@@ -1,5 +1,15 @@
 # DDI-Net 3.0 — Clinical Outcome Engine: pilot validation
 
+> **Update 2026-10-18.**
+> - **Label rule:** now `label_lexicon/v4`, frozen after development on real FDA label text. On
+>   the pilot set it scores 43 TP / 0 FP / 12 FN, against 42 / 0 / 13 for v3.
+> - **CRESCENDDI** is no longer served (licence; `docs/DATASET_AUDIT.md`). The current pair-level
+>   counts in `reports/v3_outcome_validation.md` are therefore DrugBank-only:
+>   - citations 69/69;
+>   - bilingual texts 1,636/1,636.
+> - **Main evaluation:** `docs/CLINICAL_OUTCOME_VALIDATION.md` §A, the held-out real-label
+>   benchmark.
+>
 > **Update 2026-10-16.**
 > - The label rule is now `label_lexicon/v3`: the v2 terms plus wider "no effect" wording. On the pilot and hold-out sets below its numbers are identical to v2.
 > - The pair-level counts in section 2 were measured before CRESCENDDI was added. The current `reports/v3_outcome_validation.md`, with reference records included, has 89/89 status and outcome consistency, 82/82 citations and 1,702/1,702 bilingual texts.

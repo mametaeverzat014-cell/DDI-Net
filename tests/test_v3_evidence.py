@@ -45,6 +45,9 @@ ROOT = Path(__file__).resolve().parents[1]
 # ------------------------------------------------------------------ fixtures --
 @pytest.fixture(scope="session")
 def real_artifact(tmp_path_factory) -> Path:
+    """The public build: CRESCENDDI is never included (local-only flag cleared)."""
+    import os
+    os.environ.pop(builder.CRESCENDDI_FLAG, None)
     out = tmp_path_factory.mktemp("evidence")
     builder.write(builder.add_direction_audit(builder.build_payload()), out)
     return out / builder.ARTIFACT_NAME
@@ -57,7 +60,10 @@ def real(real_artifact) -> EvidenceStore:
 
 @pytest.fixture(scope="session")
 def real_noref(real_artifact) -> EvidenceStore:
-    """The real store without the CRESCENDDI reference set: DrugBank and label semantics alone."""
+    """The real store without any reference set: DrugBank and label semantics alone.
+
+    The public build already carries none (CRESCENDDI is local-only); clearing is
+    kept so the fixture means the same thing on a developer machine."""
     s = EvidenceStore.load(real_artifact)
     s.reference.clear()
     s.sources.pop("crescenddi", None)

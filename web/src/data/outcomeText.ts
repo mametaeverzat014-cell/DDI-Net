@@ -13,7 +13,7 @@ export const OT = {
     en: "Only consequences the sources state for this pair, each with the source's words.",
   },
   cTitle: { ru: "Почему это может происходить?", en: "Why could it happen?" },
-  cVerified: { ru: "Подтверждённые звенья", en: "Verified links" },
+  cVerified: { ru: "Цепочки с подтверждёнными звеньями (каждое звено помечено отдельно)", en: "Chains with supported steps (each step is marked separately)" },
   cHypothesis: { ru: "Гипотезы (не подтверждены для этой пары)", en: "Hypotheses (not confirmed for this pair)" },
   cNone: {
     ru: "Доступные данные не устанавливают механизм задокументированных последствий.",

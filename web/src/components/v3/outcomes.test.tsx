@@ -34,7 +34,7 @@ describe("outcome overview", () => {
   });
 
   it("reference-set outcome: MedDRA term and CRESCENDDI shown, compendium severity grades not reproduced", () => {
-    const r = pair("pair_reference_warfarin_fluconazole.json");
+    const r = pair("pair_synthetic_reference_warfarin_fluconazole.json");
     const { container } = view(r);
     const text = container.textContent!;
     const bleed = r.outcomes!.outcomes.find((o) => o.effect === "bleeding")!;
@@ -73,6 +73,33 @@ describe("outcome overview", () => {
     const pressed = getAllByRole("button", { name: /проверенная аннотация/ })[0];
     expect(pressed.getAttribute("aria-pressed")).toBe("true");
     expect(container.textContent).toContain("отмечен как ингибитор");
+  });
+
+  it("no specific clinical outcome: the exact sentence is shown above PK/PD cards, in both languages", () => {
+    // SYNTHETIC: the field as the current API sets it, added to a captured PK-only response
+    const r = pair("pair_outcomes_warfarin_fluconazole.json");
+    const NS = {
+      ru: "По доступным данным конкретное клиническое последствие не установлено. Это не означает, что сочетание безопасно.",
+      en: "No specific clinical outcome established from available evidence. This does not mean the combination is safe.",
+    };
+    r.outcomes!.no_specific_outcome_text = NS;
+    const { container, getByTestId, unmount } = view(r);
+    expect(getByTestId("no-specific-outcome").textContent).toBe(NS.ru);
+    expect(container.querySelectorAll("article").length).toBeGreaterThan(0);
+    unmount();
+    r.outcomes!.no_specific_outcome_text = null;
+    const again = view(r);
+    expect(again.queryByTestId("no-specific-outcome")).toBeNull();
+  });
+
+  it("label-derived outcomes show the extraction caveat outside the collapsed source panel", () => {
+    // SYNTHETIC label text (tests/synthetic_labels.py)
+    const r = pair("pair_synthetic_merged_labels.json");
+    const { getAllByTestId } = view(r);
+    const notes = getAllByTestId("extraction-note");
+    const withNote = r.outcomes!.outcomes.filter((o) => !o.research_only && o.extraction_note);
+    expect(notes).toHaveLength(withNote.length);
+    for (const n of notes) expect(n.closest("details")).toBeNull();
   });
 
   it("older API responses fall back with a notice", () => {

@@ -128,7 +128,7 @@ def test_inference_inputs_are_in_the_context():
 
 
 def test_nothing_else_is_sent():
-    allowed_roots = ("serving/", "src/", "data/mechanism_v1/", "data/reference_sets/")
+    allowed_roots = ("serving/", "src/", "data/mechanism_v1/")
     allowed_files = {"data/raw/drugbank.tab.gz", "web/public/data/drugs.json"}
     stray = [p for p in context_files() if not p.startswith(allowed_roots) and p not in allowed_files]
     assert not stray, f"unexpected files in the build context: {stray[:10]}"
@@ -136,8 +136,17 @@ def test_nothing_else_is_sent():
     for p in ("runtime/model_assets/bd45f84e3c1b2c33.pt", "web/node_modules/x/index.js",
               "serving/__pycache__/api.cpython-311.pyc", "reports/v3_seed_disagreement.json",
               "paper/DDI_NET_ISEF_RESEARCH_PAPER.md", ".git/config", "web/src/App.tsx",
-              "data/raw/sider/meddra_all_se.tsv.gz"):
+              "data/raw/sider/meddra_all_se.tsv.gz",
+              # licence-restricted local research data never reaches an image
+              "data/restricted/crescenddi/crescenddi_index_v1.json.gz",
+              "data/reference_sets/crescenddi/MANIFEST.json"):
         assert excluded(p, pats), f"{p} would be sent to the builder"
+
+
+def test_no_dockerfile_copies_restricted_data():
+    for df in DOCKERFILES:
+        for src in copy_sources(df):
+            assert not src.startswith(("data/restricted", "data/reference_sets")), f"{df.name}: COPY {src}"
 
 
 def test_context_is_small():

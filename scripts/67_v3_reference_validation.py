@@ -22,6 +22,12 @@ B. DRUGBANK-DERIVED OUTCOMES vs. CRESCENDDI — positive controls (pair + advers
 C. COVERAGE — how many pairs of the 1,705-drug universe have a documented,
    named clinical outcome before and after the reference set is added.
 
+CRESCENDDI is RESTRICTED LOCAL DATA (docs/DATASET_AUDIT.md): parts B and C
+run only where the index has been rebuilt locally (data/restricted/, git-ignored),
+and the report carries aggregate counts only, never records or example pairs.
+The public evidence artifact does not contain CRESCENDDI; C reports what adding
+it would change, for research.
+
 Not measured: whether CRESCENDDI itself is clinically correct (that would need
 the compendia), and any label behaviour on real FDA labels (openFDA is not
 reachable from the build container).
@@ -61,7 +67,7 @@ from serving.evidence.store import EvidenceStore
 
 OUT_JSON = ROOT / "reports" / "v3_reference_validation.json"
 OUT_MD = ROOT / "reports" / "v3_reference_validation.md"
-INDEX = ROOT / "data" / "reference_sets" / "crescenddi" / "crescenddi_index_v1.json.gz"
+from serving.evidence.build import CRESCENDDI_INDEX as INDEX  # noqa: E402  (local, git-ignored)
 C = "clinical_outcome"
 
 
@@ -183,7 +189,6 @@ def reference_eval(noref: EvidenceStore) -> dict:
     cache: dict[tuple[str, str], tuple] = {}
     res = {s: Counter() for s in ("development", "evaluation")}
     neg_res = {s: Counter() for s in ("development", "evaluation")}
-    examples = defaultdict(list)
     for (a, b), recs in sorted(by_pair.items()):
         s = split_of(a, b)
         if (a, b) not in cache:
@@ -214,8 +219,6 @@ def reference_eval(noref: EvidenceStore) -> dict:
             neg_res[s]["negative_pair_has_drugbank_record"] += has_db
             hit = eff.level == C and eff.category in cats
             neg_res[s]["drugbank_names_outcome_in_negative_category"] += hit
-            if hit and len(examples[s]) < 8:
-                examples[s].append({"pair": f"{a}+{b}", "negative_event": x["event"], "drugbank_categories": sorted(cats)})
 
     def summary(c: Counter, n: Counter, s: str) -> dict:
         return {
@@ -234,8 +237,8 @@ def reference_eval(noref: EvidenceStore) -> dict:
             "drugbank_outcome_in_negative_control_category": {
                 **prop(n["drugbank_names_outcome_in_negative_category"], n["negative_controls"]),
                 "reading": "the engine (DrugBank only) names a clinical outcome in the same broad category as an event "
-                           "the reference judged unrelated to the pair; category-level, so an upper bound on contradictions",
-                "examples": examples[s]},
+                           "the reference judged unrelated to the pair; category-level, so an upper bound on contradictions. "
+                           "Example pairs are not published (restricted data)"},
         }
     return {"dataset": "CRESCENDDI (positive and negative controls), mapped to the 1,705-drug universe",
             "index_sha256": cr.SPEC.files, "split_rule": "sha256('drugA|drugB' sorted)[0] < 128 -> development",
@@ -328,13 +331,28 @@ def md(res: dict) -> str:
     return "\n".join(L)
 
 
+def with_local_reference(store: EvidenceStore) -> EvidenceStore:
+    """The public store plus the local CRESCENDDI positive controls (research measurement only)."""
+    idx = cr.load_index(INDEX)
+    store.reference.clear()
+    for x in idx["records"]:
+        if x["set"] == "positive" and x["drug_a"] in store.index and x["drug_b"] in store.index:
+            a, b = sorted((store.index[x["drug_a"]], store.index[x["drug_b"]]))
+            store.reference[(a, b)].append((x["meddra_code"], x["event"], "+".join(x["event_sources"])))
+    return store
+
+
 def main() -> None:
-    store = EvidenceStore.load()
     noref = EvidenceStore.load()
     noref.reference.clear()
     noref.sources.pop("crescenddi", None)
-    res = {"method": {"store_sha256": store.sha256, "label_rule": LEXICON_VERSION, "event_map": MEDDRA_MAP_VERSION},
-           "ddi_corpus": corpus_eval(), "crescenddi": reference_eval(noref), "coverage": coverage(store)}
+    res = {"method": {"store_sha256": noref.sha256, "label_rule": LEXICON_VERSION, "event_map": MEDDRA_MAP_VERSION,
+                      "crescenddi": "restricted local data; not in the public artifact; aggregate counts only"},
+           "ddi_corpus": corpus_eval()}
+    if not INDEX.exists():
+        sys.exit("CRESCENDDI index not built locally (scripts/data/ingest_crescenddi.py); parts B and C need it")
+    res["crescenddi"] = reference_eval(noref)
+    res["coverage"] = coverage(with_local_reference(EvidenceStore.load()))
     OUT_JSON.write_text(json.dumps(res, indent=1, ensure_ascii=False) + "\n")
     OUT_MD.write_text(md(res))
     print(md(res))

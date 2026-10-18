@@ -141,8 +141,46 @@ curl -s -X POST $API/api/v3/report -H 'Content-Type: application/json' \
 Both greps must print something. If they do not, the old image is still serving. The site works
 with the old API too: it simply shows no CRESCENDDI document.
 
-Until step 3 (and, after the outcome commit, the checks above) succeeds, do not
-describe the Preview frontend and the test API as synchronised. The site and the PDF stay correct with the old API: they group
+**After the scientific-reliability commit (2026-10-18; `docs/DDINET_V3_SCIENTIFIC_AUDIT.md`).**
+This redeploy is **required**, not optional. The image currently on Render was built from an
+earlier commit and still **serves CRESCENDDI records**. The audit withdrew them because their
+redistribution rights are unclear.
+
+What the new image changes:
+- **CRESCENDDI:** it copies neither `data/reference_sets/` nor `data/restricted/`, so the
+  evidence artifact has no reference-set records.
+- **Label rule:** `label_lexicon/v4`.
+- **No-outcome wording:** every pair report carries `no_specific_outcome_text` whenever no
+  specific clinical outcome is documented.
+- **Chains:** they say when the affected drug was inferred from protein roles.
+
+Redeploy as in steps 1–2 above, then check:
+
+```bash
+API=https://ddinet-api-test.onrender.com
+R='{"drug_a":"DB00682","drug_b":"DB00196"}'
+# 1. CRESCENDDI is gone (must print 0):
+curl -s -X POST $API/api/v3/report -H 'Content-Type: application/json' -d "$R" | grep -c 'reference_set_outcome\|"source":"crescenddi"'
+# 2. the exact no-specific-outcome wording is present (prints the sentence):
+curl -s -X POST $API/api/v3/report -H 'Content-Type: application/json' -d "$R" \
+  | grep -o 'No specific clinical outcome established from available evidence\.' | head -1
+# 3. the chain says how the affected drug was chosen:
+curl -s -X POST $API/api/v3/report -H 'Content-Type: application/json' -d "$R" \
+  | grep -o 'follows from the protein roles' | head -1
+# 4. label outcomes, if openFDA answers, name the v4 rule:
+curl -s -X POST $API/api/v3/report -H 'Content-Type: application/json' -d "$R" \
+  | grep -o 'label_lexicon/v4:term=[a-z_]*' | sort -u
+```
+
+- Check 1 must print `0`, and checks 2 and 3 must print text.
+- If check 1 prints anything else, the old image is still serving **restricted data**. Redeploy,
+  or suspend the service until the new image is live.
+- Check 4 prints only when openFDA answered and a label sentence names an outcome.
+- Do **not** set `DDINET_ENABLE_CRESCENDDI` on Render. The image does not contain the file, so
+  the flag would have no effect, but it must never be set on a public service.
+
+**Do not call the Preview frontend and the test API synchronised** until step 3 and the checks
+for the latest commit above succeed. The site and the PDF stay correct with the old API: they group
 repeated label text themselves and annotate the old metric sentence. But the
 API's own explanation text remains the old version.
 
@@ -258,6 +296,7 @@ evidence service as unavailable).
 | `DDINET_ALLOW_NO_MODEL` | `0` | no | development only |
 | `DDINET_EVIDENCE_ARTIFACT` | `runtime/evidence/evidence_v1.json.gz` | no | artifact path |
 | `PORT` | 8000 | injected | listening port |
+| `DDINET_ENABLE_CRESCENDDI` | unset | **never** | local research builds only: include the restricted CRESCENDDI index if present (`serving/evidence/build.py`) |
 
 ### 7.2 Site environment variable
 

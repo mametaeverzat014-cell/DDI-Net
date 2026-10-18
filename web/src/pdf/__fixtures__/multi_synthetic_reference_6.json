@@ -1,4 +1,5 @@
 {
+ "_comment": "SYNTHETIC reference-set fixture. The response shape is real engine output; the reference-set records are synthetic test data, not CRESCENDDI records (CRESCENDDI is not redistributed; see docs/DATASET_AUDIT.md). Their pair-event content was chosen to coincide with interactions stated in FDA labels (fluconazole: bleeding with warfarin; simvastatin: myopathy/rhabdomyolysis with clarithromycin).",
  "data": {
   "report_version": "3.0",
   "drugs": [

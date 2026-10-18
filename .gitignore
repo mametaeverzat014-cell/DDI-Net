@@ -14,6 +14,11 @@ data/raw/*
 !data/raw/.gitkeep
 !data/raw/drugbank.tab.gz
 
+# Licence-restricted derived data for LOCAL research use only (CRESCENDDI index:
+# compendium-derived records whose redistribution rights are unclear). Never
+# committed, never copied into an image. See docs/DATASET_AUDIT.md.
+data/restricted/
+
 data/processed/
 data/external/
 !data/processed/.gitkeep

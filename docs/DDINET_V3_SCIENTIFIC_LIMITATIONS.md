@@ -196,19 +196,25 @@ measurements in `docs/DDINET_V3_CLINICAL_OUTCOMES_VALIDATION.md`.
 
 ### 7.1 Reference-set evidence (CRESCENDDI) and the label rule on real text
 
-* **CRESCENDDI positive controls** (BNF, Micromedex and ANSM, 2018–2019) are shown as
-  pair-specific documented outcomes. Coverage of named clinical outcomes rises from 676 to 4,551
-  pairs. Limits:
-  * They are a snapshot, limited to pairs common to all three compendia.
-  * Their correctness is not assessed here.
-  * The compendia's severity grades are not reproduced, so severity remains "not established".
-* **The label rule (`label_lexicon/v3`) on the DDI Corpus** (independent annotation, held-out
-  part):
-  * 51/61 assigned outcomes are for pairs annotated as interacting;
-  * 10 of 164 merely co-mentioned pairs get an outcome;
-  * an outcome is found for only 51 of 233 interacting pairs.
-
-  A label outcome is therefore a quoted lead, not a verified fact, and a missing one says nothing.
+* **CRESCENDDI is not shown** (withdrawn 2026-10-18; `docs/DATASET_AUDIT.md`).
+  * Its records derive from the BNF and Micromedex compendia, and their redistribution rights
+    are unclear.
+  * The public service therefore names a clinical outcome for 676 pairs, not the 4,551 it would
+    with CRESCENDDI.
+  * The pipeline is kept for local research.
+* **The label rule (`label_lexicon/v4`) on held-out historical FDA labels** (TAC 2017; 100
+  units; internally annotated, not independent):
+  * 40/45 extracted outcomes match the annotation;
+  * 38/55 label-stated interactions are given an outcome;
+  * 3 of 42 units with an outcome carry an unsupported one.
+* **The same rule on the DDI Corpus Test part:**
+  * 50/61 assigned outcomes are for interacting pairs;
+  * 11 of 164 co-mentions are given one;
+  * 50 of 233 interacting pairs get one.
+* **Reading.** A label outcome is a quoted lead, not a verified fact, and a missing one says
+  nothing. When no specific outcome is established, the reports say exactly that, and that it
+  does not mean the combination is safe.
 * **DrugBank (TDC export) names a clinical outcome for about 1% of the pairs that CRESCENDDI
-  documents.** Most DrugBank records are PK or PD templates.
-* Details: `docs/CLINICAL_OUTCOME_VALIDATION.md`, `docs/DATASET_AUDIT.md`.
+  documents** (local measurement). Most DrugBank records are PK or PD templates.
+* Details: `docs/CLINICAL_OUTCOME_VALIDATION.md`, `docs/DATASET_AUDIT.md`,
+  `docs/DDINET_V3_SCIENTIFIC_AUDIT.md`.

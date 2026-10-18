@@ -27,8 +27,6 @@ COPY data/mechanism_v1/ data/mechanism_v1/
 # Inputs of the DDI-Net 3.0 evidence artifact (serving/evidence/build.py).
 COPY data/raw/drugbank.tab.gz data/raw/drugbank.tab.gz
 COPY web/public/data/drugs.json web/public/data/drugs.json
-# Derived CRESCENDDI index (checked against its MANIFEST.json by the build).
-COPY data/reference_sets/ data/reference_sets/
 
 ARG RELEASE_TAG=v2-final-github-safe-2026-09-03
 ARG CHECKPOINT=bd45f84e3c1b2c33.pt

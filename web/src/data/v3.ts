@@ -250,6 +250,9 @@ export interface OutcomeReport {
   seriousness_text: Bi;
   coverage: Bi[];
   no_outcome_text: Bi | null;
+  /** Exact wording, set whenever no specific clinical outcome is documented (also when only exposure
+   *  or effect changes are). Never a statement of safety. Absent from older APIs. */
+  no_specific_outcome_text?: Bi | null;
   mechanism_without_outcome_text: Bi | null;
   individual_limit: Bi;
 }

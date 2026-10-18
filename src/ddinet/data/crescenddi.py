@@ -222,8 +222,16 @@ def dumps_gz(payload: dict) -> bytes:
     return buf.getvalue()
 
 
-def write(payload: dict, out_dir: Path, inputs: dict[str, str], generated: str) -> dict:
+def write(payload: dict, out_dir: Path, inputs: dict[str, str], generated: str,
+          manifest_dir: Path | None = None) -> dict:
+    """Write the index to out_dir and its MANIFEST.json to manifest_dir (default: out_dir).
+
+    The index holds compendium-derived records and is kept out of git
+    (data/restricted/); the manifest holds only checksums and counts and is committed.
+    """
     out_dir.mkdir(parents=True, exist_ok=True)
+    manifest_dir = manifest_dir or out_dir
+    manifest_dir.mkdir(parents=True, exist_ok=True)
     blob = dumps_gz(payload)
     target = out_dir / "crescenddi_index_v1.json.gz"
     target.write_bytes(blob)
@@ -238,7 +246,7 @@ def write(payload: dict, out_dir: Path, inputs: dict[str, str], generated: str) 
         "output": {"file": target.name, "sha256": sha256_file(target), "bytes": len(blob)},
         "stats": payload["stats"],
     }
-    (out_dir / "MANIFEST.json").write_text(json.dumps(manifest, indent=1, ensure_ascii=False, sort_keys=True) + "\n")
+    (manifest_dir / "MANIFEST.json").write_text(json.dumps(manifest, indent=1, ensure_ascii=False, sort_keys=True) + "\n")
     return manifest
 
 

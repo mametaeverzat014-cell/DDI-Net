@@ -1,8 +1,8 @@
 {
  "method": {
-  "lexicon": "label_lexicon/v3",
+  "lexicon": "label_lexicon/v4",
   "seed": 20261015,
-  "store_sha256": "4dd4dbea0e766568027c30f42fbd3071d3d782152ea99b48ce8ecadc55446d44",
+  "store_sha256": "f6d8ac107c7f28312847f0a1ad09a35737ace43fc20e02b34cb4099a0da665c0",
   "note": "Pilot set by the rules' author; constructed sentences; not a clinical validation."
  },
  "pilot": {
@@ -36,34 +36,34 @@
   "rule_level": {
    "units": "(sentence, concept)",
    "sentences": 75,
-   "tp": 42,
+   "tp": 43,
    "fp": 0,
-   "fn": 13,
+   "fn": 12,
    "precision": {
-    "k": 42,
-    "n": 42,
+    "k": 43,
+    "n": 43,
     "value": 1.0,
     "wilson95": [
-     0.916,
+     0.918,
      1.0
     ]
    },
    "recall": {
-    "k": 42,
+    "k": 43,
     "n": 55,
-    "value": 0.764,
+    "value": 0.782,
     "wilson95": [
-     0.637,
-     0.856
+     0.656,
+     0.871
     ]
    },
    "unsupported_claim_rate": {
     "k": 0,
-    "n": 40,
+    "n": 41,
     "value": 0.0,
     "wilson95": [
      0.0,
-     0.088
+     0.086
     ],
     "definition": "sentences with at least one extracted concept the gold does not contain / sentences with any extraction"
    },
@@ -83,8 +83,8 @@
      1.0
     ],
     "recall95": [
-     0.648,
-     0.872
+     0.672,
+     0.883
     ],
     "resamples": 2000
    },
@@ -145,9 +145,9 @@
     },
     "paraphrase": {
      "sentences": 8,
-     "tp": 0,
+     "tp": 1,
      "fp": 0,
-     "fn": 8
+     "fn": 7
     },
     "paraphrase_pk": {
      "sentences": 2,
@@ -249,9 +249,9 @@
      "fn": 3
     },
     "hepatotoxicity": {
-     "tp": 2,
+     "tp": 3,
      "fp": 0,
-     "fn": 1
+     "fn": 0
     },
     "hyperkalemia": {
      "tp": 2,
@@ -370,15 +370,6 @@
      "sentence": "Kidney damage has been reported with ibuprofen."
     },
     {
-     "id": "p25",
-     "case": "paraphrase",
-     "gold": [
-      "hepatotoxicity"
-     ],
-     "pred": [],
-     "sentence": "Elevated liver enzymes were seen with acetaminophen."
-    },
-    {
      "id": "p26",
      "case": "paraphrase",
      "gold": [
@@ -465,12 +456,12 @@
     "valproate": 1
    },
    "partner_found_by_label_matcher": {
-    "k": 61,
+    "k": 65,
     "n": 65,
-    "value": 0.938,
+    "value": 1.0,
     "wilson95": [
-     0.852,
-     0.976
+     0.944,
+     1.0
     ]
    },
    "rule_and_engine_agree": {
@@ -484,34 +475,34 @@
    },
    "units": "(sentence, concept)",
    "sentences": 65,
-   "tp": 36,
+   "tp": 37,
    "fp": 0,
-   "fn": 11,
+   "fn": 10,
    "precision": {
-    "k": 36,
-    "n": 36,
+    "k": 37,
+    "n": 37,
     "value": 1.0,
     "wilson95": [
-     0.904,
+     0.906,
      1.0
     ]
    },
    "recall": {
-    "k": 36,
+    "k": 37,
     "n": 47,
-    "value": 0.766,
+    "value": 0.787,
     "wilson95": [
-     0.628,
-     0.864
+     0.651,
+     0.88
     ]
    },
    "unsupported_claim_rate": {
     "k": 0,
-    "n": 34,
+    "n": 35,
     "value": 0.0,
     "wilson95": [
      0.0,
-     0.102
+     0.099
     ],
     "definition": "sentences with at least one extracted concept the gold does not contain / sentences with any extraction"
    },
@@ -531,8 +522,8 @@
      1.0
     ],
     "recall95": [
-     0.646,
-     0.878
+     0.667,
+     0.891
     ],
     "resamples": 2000
    },
@@ -587,9 +578,9 @@
     },
     "paraphrase": {
      "sentences": 8,
-     "tp": 0,
+     "tp": 1,
      "fp": 0,
-     "fn": 8
+     "fn": 7
     },
     "paraphrase_pk": {
      "sentences": 1,
@@ -691,9 +682,9 @@
      "fn": 2
     },
     "hepatotoxicity": {
-     "tp": 1,
+     "tp": 2,
      "fp": 0,
-     "fn": 1
+     "fn": 0
     },
     "hyperkalemia": {
      "tp": 2,
@@ -805,15 +796,6 @@
      ],
      "pred": [],
      "sentence": "Kidney damage has been reported with ibuprofen."
-    },
-    {
-     "id": "p25",
-     "case": "paraphrase",
-     "gold": [
-      "hepatotoxicity"
-     ],
-     "pred": [],
-     "sentence": "Elevated liver enzymes were seen with acetaminophen."
     },
     {
      "id": "p26",
@@ -1673,18 +1655,18 @@
    ]
   },
   "citation_accuracy": {
-   "k": 82,
-   "n": 82,
+   "k": 69,
+   "n": 69,
    "value": 1.0,
    "wilson95": [
-    0.955,
+    0.947,
     1.0
    ],
    "definition": "support excerpts equal to the cited record's template or statement, and mapped to the outcome its record type names"
   },
   "unsupported_documented_outcomes": {
    "k": 0,
-   "n_outcomes": 76
+   "n_outcomes": 69
   },
   "direction": {
    "claims": 9,
@@ -1709,8 +1691,8 @@
    "documented_outcome_unclear": 18
   },
   "ru_en_structural": {
-   "k": 1702,
-   "n": 1702,
+   "k": 1636,
+   "n": 1636,
    "value": 1.0,
    "wilson95": [
     0.998,

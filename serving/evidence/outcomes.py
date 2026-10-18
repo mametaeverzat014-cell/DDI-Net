@@ -44,7 +44,7 @@ from .schema import (
 )
 
 TYPE_MAP_VERSION = "drugbank_type_map/v1"
-LEXICON_VERSION = "label_lexicon/v3"
+LEXICON_VERSION = "label_lexicon/v4"
 ANNOTATION_METHOD = "annotation_chain/v1"
 
 # ------------------------------------------------------------------ categories --
@@ -235,7 +235,9 @@ LEXICON: list[Term] = [
     # v2: case-insensitive except "INR" (v1 missed a sentence-initial "Prothrombin time").
     _t("coagulation_measure", r"\b(?i:prothrombin time|international normali[sz]ed ratio|anticoagulant (?:effect|activity|response))\b|\bINR\b",
        "bleeding_coagulation", "coagulation_measure_change", PD, "Change in a blood-clotting measure (prothrombin time / INR)", "Изменение показателя свёртываемости (протромбиновое время / МНО)", flags=0),
-    _t("qt_arrhythmia", r"\b(QTc? (?:interval )?prolongation|prolong\w* (?:of )?(?:the )?QTc?\b|torsades? de pointes|ventricular (?:tachy)?arrhythmias?|ventricular fibrillation|cardiac arrhythmias?)",
+    # v4: "effect(s) on the QT interval" (real label: "The effect of X on the QT
+    # interval was augmented by ... paroxetine").
+    _t("qt_arrhythmia", r"\b(QTc? (?:interval )?prolongation|prolong\w* (?:of )?(?:the )?QTc?\b|(?:effects?|increases?)(?: of [\w-]+)? on (?:the )?QTc? interval|torsades? de pointes|ventricular (?:tachy)?arrhythmias?|ventricular fibrillation|cardiac arrhythmias?)",
        "cardiac_rhythm", "qt_prolongation", C, "QT prolongation or ventricular arrhythmia", "Удлинение интервала QT или желудочковая аритмия"),
     _t("bradycardia_block", r"\b(bradycardia|heart block|AV block|atrioventricular block|sinus arrest)\b",
        "cardiac_rhythm", "bradycardia_conduction", C, "Slow heart rate or heart block", "Урежение пульса или блокада проводимости сердца"),
@@ -257,6 +259,10 @@ LEXICON: list[Term] = [
        "kidney", "kidney_injury", C, "Kidney injury or toxicity", "Поражение почек"),
     _t("hepatotoxicity", r"\b(hepatotoxicity|hepatic failure|liver failure|liver injury|hepatic injury|hepatitis)\b",
        "liver", "liver_injury", C, "Liver injury or toxicity", "Поражение печени"),
+    # v4: a laboratory marker, kept apart from "liver injury" so the label does
+    # not overstate it ("Grade 3 increases in transaminases ... with concurrent X").
+    _t("hepatotoxicity", r"\b((?:increases?|elevations?|rises?) (?:in|of) (?:serum )?(?:hepatic |liver )?(?:transaminases?|aminotransferases?|liver enzymes|ALT|AST)|(?:elevated|increased) (?:serum )?(?:transaminases?|aminotransferases?|liver enzymes))\b",
+       "liver", "liver_enzyme_increase", C, "Raised liver enzymes (transaminases)", "Повышение печёночных ферментов (трансаминаз)"),
     _t("myelosuppression", r"\b(myelosuppression|bone marrow suppression|neutropenia|agranulocytosis|pancytopenia)\b",
        "bone_marrow_immune", "myelosuppression", C, "Suppressed blood cell production", "Угнетение кроветворения"),
     _t("reduced_effect", r"\b(?:(?:reduced|decreased|diminished|loss of|lower) (?:\w+ ){0,2}(?:efficacy|effectiveness|therapeutic effect)|therapeutic failure|treatment failure)\b",
@@ -283,7 +289,15 @@ NEGATION_AFTER = re.compile(
     r"^[^.;:]{0,40}?\b(?:was|were|is|are|has|have|had|remained)\s+(?:been\s+)?"
     r"(?:not\b|unchanged\b|unaffected\b|unknown\b|uncertain\b|similar\b)",
     re.IGNORECASE)
-POPULATION = re.compile(r"\b(patients? (?:with|who have)|history of|in the (?:presence|setting) of|predisposed to|at risk (?:of|for))\b[^.;]{0,30}$", re.IGNORECASE)
+POPULATION = re.compile(
+    r"\b(patients? (?:with|who have)|history of|in the (?:presence|setting) of|predisposed to|at risk (?:of|for)"
+    # v4 (real label: "avoided in patients: * with known disturbances of electrolyte balance, e.g., hypokalemia")
+    r"|with (?:known|congenital|pre-?existing|underlying)|disturbances? of|risk factors?|conditions? (?:such as|including|known to))"
+    r"\b[^.;*]{0,40}$", re.IGNORECASE)
+#: v4: wording that ties two drugs together (co-administration), used to tell
+#: an interaction statement from a trial-arm comparison.
+CO_USE = re.compile(r"\b(concomitant\w*|co-?administ\w*|coadminist\w*|combin\w*|concurrent\w*|together|in addition to|add-on|added to|plus|with (?:other|another|strong|moderate|potent))\b", re.IGNORECASE)
+TRIAL_STATS = re.compile(r"\b\d+\s*/\s*\d+\b|\d+(?:\.\d+)?\s*%")
 SERIOUS_WORDS = re.compile(r"\b(fatal(?:ities)?|life[- ]threatening|deaths?|serious)\b", re.IGNORECASE)
 
 LABEL_SECTION_SERIOUSNESS = {"CONTRAINDICATIONS": "documented_contraindication", "BOXED WARNING": "explicit_serious_warning"}
@@ -344,9 +358,13 @@ STATUS_TEXT: dict[str, tuple[Bi, Bi]] = {
            en="Nothing was found, but a source that could hold evidence did not respond. The pair cannot be fully assessed.")),
 }
 
-NO_OUTCOME = Bi(
-    ru="По доступным данным не удалось определить ни одного подтверждённого последствия. Это не означает, что сочетание безопасно.",
-    en="No supported outcome could be identified from the available evidence. This does not mean the combination is safe.")
+#: The exact wording required whenever no specific clinical outcome is
+#: established (no outcome at all, or only changes in exposure or in effect).
+#: Never a statement of safety.
+NO_SPECIFIC_OUTCOME = Bi(
+    ru="По доступным данным конкретное клиническое последствие не установлено. Это не означает, что сочетание безопасно.",
+    en="No specific clinical outcome established from available evidence. This does not mean the combination is safe.")
+NO_OUTCOME = NO_SPECIFIC_OUTCOME
 NO_MECHANISM = Bi(ru="Доступные данные не устанавливают механизм этого последствия.",
                   en="The available evidence does not establish a mechanism for this outcome.")
 MECH_WITHOUT_OUTCOME = Bi(
@@ -384,10 +402,27 @@ def partner_clauses(sentence: str, partner: str | None) -> str:
     not give hepatitis to the pair. When the partner is in no clause (matched
     under another name), the whole sentence is kept.
     """
-    if not partner or ";" not in sentence:
+    if not partner or not CLAUSE_BREAK.search(sentence):
         return sentence
-    keep = [c for c in re.split(r";\s*", sentence) if partner.lower() in c.lower()]
+    keep = [c for c in CLAUSE_BREAK.split(sentence) if partner.lower() in c.lower()]
     return "; ".join(keep) if keep else sentence
+
+
+#: v2 split at semicolons; v4 also at list bullets (" * ", "•"), which label
+#: sections flatten into one "sentence" of unrelated items.
+CLAUSE_BREAK = re.compile(r";\s*|\s+\*\s+|\s*•\s*")
+
+
+def comparator_arm(sentence: str, partner: str | None) -> bool:
+    """v4: the partner is a trial arm compared with the label drug, not co-administered.
+
+    "hypertension was reported in 145/359 patients (40%) receiving INLYTA and
+    103/355 patients (29%) receiving sorafenib" names both drugs and an outcome,
+    but states no interaction.
+    """
+    if not partner or CO_USE.search(sentence) or not TRIAL_STATS.search(sentence):
+        return False
+    return bool(re.search(rf"\b(?:receiving|received|treated with|randomi[sz]ed to|on|versus|vs\.?|compared (?:with|to))\s+(?:[\w-]+\s+){{0,3}}{re.escape(partner)}", sentence, re.IGNORECASE))
 
 
 def label_terms(sentence: str, partner: str | None = None) -> list[tuple[Term, str]]:
@@ -397,6 +432,8 @@ def label_terms(sentence: str, partner: str | None = None) -> list[tuple[Term, s
     and only the clauses naming the partner are read.
     """
     sentence = partner_clauses(sentence, partner)
+    if comparator_arm(sentence, partner):
+        return []
     out: list[tuple[Term, str]] = []
     for term in LEXICON:
         for m in term.pattern.finditer(sentence):
@@ -702,6 +739,7 @@ def build_outcomes(store, a: str, b: str, evidence: list[EvidenceRecord], mech: 
            en="Not applicable: no documented outcome. This does not mean the combination is safe."),
         coverage=_coverage(evidence, checks, mech),
         no_outcome_text=NO_OUTCOME if not shown else None,
+        no_specific_outcome_text=NO_SPECIFIC_OUTCOME if not any(o.effect_level == C for o in shown) else None,
         mechanism_without_outcome_text=MECH_WITHOUT_OUTCOME if (not shown and chains) else None,
         individual_limit=INDIVIDUAL_LIMIT,
     )
@@ -717,20 +755,22 @@ def _method_family(supports: list[OutcomeSupport]) -> str:
     return TYPE_MAP_VERSION
 
 
-#: Extraction quality measured on the project's pilot set
-#: (docs/DDINET_V3_CLINICAL_OUTCOMES_VALIDATION.md). Filled from that report;
-#: describes the rules, never the probability that an outcome occurs.
+#: Extraction quality of the label rules, shown beside every label-derived
+#: outcome (website, Quick and Full PDF, JSON). Describes the rules, never the
+#: probability that an outcome occurs.
 EXTRACTION_NOTES: dict[str, Bi] = {
+    # Numbers: reports/v3_real_label_benchmark_evaluation.md (held-out, rules
+    # frozen before annotation) and reports/v3_reference_validation.md (DDI Corpus).
     LEXICON_VERSION: Bi(
-        ru="Правила извлечения проверены на корпусе DDI Corpus 2013 (независимая разметка текстов о взаимодействиях из DrugBank, "
-           "отложенная часть): из 61 пары, которой правило приписало последствие, взаимодействие размечено у 51; из 164 пар, "
-           "лишь названных вместе, последствие приписано 10; последствие найдено для 51 из 233 взаимодействующих пар. "
-           "Перефразированные формулировки и упоминания групп препаратов часто пропускаются. На инструкциях FDA правила не "
-           "проверялись; это не клиническая валидация.",
-        en="The extraction rules were measured on the DDI Corpus 2013 (independently annotated DrugBank interaction text, "
-           "held-out part): of 61 pairs the rule gave an outcome, 51 are annotated as interacting; 10 of 164 pairs that were only "
-           "named together were given one; an outcome was found for 51 of 233 interacting pairs. Paraphrases and drug-class "
-           "statements are often missed. Not measured on FDA labels; not a clinical validation."),
+        ru="Последствие найдено автоматическими правилами в тексте инструкции (label_lexicon/v4), а не прочитано человеком. "
+           "На отложенном наборе исторических инструкций FDA с внутренней (не независимой) разметкой проекта совпали с "
+           "разметкой 40 из 45 найденных последствий; последствие получили 38 из 55 описанных в инструкциях взаимодействий. "
+           "На тестовой части DDI Corpus 2013 — 50 из 61. Проверьте процитированное предложение. Это не клиническая "
+           "валидация и не вероятность того, что последствие наступит.",
+        en="Found by automatic text rules in the label (label_lexicon/v4), not read by a person. On held-out historical FDA "
+           "labels annotated internally by the project (not independently), 40 of 45 extracted outcomes matched the "
+           "annotation, and 38 of 55 label-stated interactions were given an outcome; on the DDI Corpus 2013 test part, "
+           "50 of 61. Check the quoted sentence. Not a clinical validation and not a probability that the outcome occurs."),
 }
 
 
@@ -789,6 +829,11 @@ def _chains(store, findings, outcomes: list[ClinicalOutcome]) -> list[MechanismC
         # two drugs" does not establish which.
         exp_doc = [o for o in exp_all if o.affected_drug_id == affected]
         exp_unresolved = [o for o in exp_all if o.affected_drug_id is None]
+        # Which drug changes is DOCUMENTED only when a source names it (verified
+        # record order or a label sentence). When it was read off these same
+        # protein roles ("mechanistically_supported"), the change is documented
+        # but its attribution is annotation-derived, and the link says so.
+        exp_by_roles = bool(exp_doc) and all(o.evidence_status == "mechanistically_supported" for o in exp_doc)
         effect_id = f"effect:{affected}:{'up' if up else 'down'}"
         nodes = [
             ChainNode(id=f"drug:{actor}", kind="drug", label=an, ref=actor),
@@ -809,11 +854,13 @@ def _chains(store, findings, outcomes: list[ClinicalOutcome]) -> list[MechanismC
                       text=Bi(ru=f"«{af.ru}» отмечен как субстрат {f.protein.gene}.", en=f"{af.en} is annotated as a substrate of {f.protein.gene}."),
                       refs=list(f.annotation_ids)),
             ChainLink(source=nodes[1].id, target=effect_id, relation="exposure_change",
-                      provenance="documented" if exp_doc else "plausible_unconfirmed",
-                      text=Bi(ru=("Изменение концентрации этого препарата для пары задокументировано." if exp_doc
+                      provenance="verified_annotation" if exp_by_roles else "documented" if exp_doc else "plausible_unconfirmed",
+                      text=Bi(ru=("Задокументировано изменение концентрации одного из двух препаратов; что это этот препарат, следует из ролей белков (аннотации), а не из источника." if exp_by_roles
+                                  else "Изменение концентрации этого препарата для пары задокументировано." if exp_doc
                                   else "Задокументировано изменение концентрации одного из двух препаратов; что это именно этот препарат, не установлено." if exp_unresolved
                                   else "Изменение концентрации правдоподобно, но для этой пары не подтверждено."),
-                              en=("A change in this drug's exposure is documented for the pair." if exp_doc
+                              en=("A change in exposure of one of the two drugs is documented; that it is this drug follows from the protein roles (annotations), not from the source." if exp_by_roles
+                                  else "A change in this drug's exposure is documented for the pair." if exp_doc
                                   else "A change in exposure of one of the two drugs is documented; that it is this drug is not established." if exp_unresolved
                                   else "A change in exposure is plausible but not confirmed for this pair.")),
                       refs=[o.id for o in exp_doc + exp_unresolved]),
@@ -844,16 +891,21 @@ def _chains(store, findings, outcomes: list[ClinicalOutcome]) -> list[MechanismC
                 refs=[o.id]))
             outcome_ids.append(o.id)
         research_only = not any(by_id[i].evidence_status in ("documented", "mechanistically_supported") for i in outcome_ids if i in by_id)
-        documented_effect = bool(exp_doc)
+        documented_effect = bool(exp_doc) and not exp_by_roles
+        unconfirmed_route = [lk for lk in links if lk.relation == "may_lead_to" and lk.provenance != "documented"]
         summary = Bi(
             ru=(f"«{an.ru}» подавляет" if up else f"«{an.ru}» усиливает выработку") + f" {f.protein.gene}, а «{af.ru}» этим белком перерабатывается (аннотации). "
                + ("Изменение концентрации этого препарата для пары задокументировано." if documented_effect else
+                  "Задокументировано изменение концентрации одного из препаратов; что это этот препарат, следует из ролей белков." if exp_by_roles else
                   "Задокументировано изменение концентрации одного из препаратов, но не какого именно." if exp_unresolved else
-                  "Изменение концентрации — гипотеза."),
+                  "Изменение концентрации — гипотеза.")
+               + (" То, что задокументированное последствие возникает именно этим путём, не подтверждено." if unconfirmed_route else ""),
             en=f"{an.en} {'inhibits' if up else 'induces'} {f.protein.gene}, which processes {af.en} (annotations). "
                + ("This drug's exposure change is documented for the pair." if documented_effect else
+                  "An exposure change of one of the drugs is documented; that it is this drug follows from the protein roles." if exp_by_roles else
                   "An exposure change of one of the drugs is documented, but not which." if exp_unresolved else
-                  "The exposure change is a hypothesis."))
+                  "The exposure change is a hypothesis.")
+               + (" That the documented outcome arises through this route is not confirmed." if unconfirmed_route else ""))
         chains.append(MechanismChain(id=f"chain:{f.id}", nodes=nodes, links=links, outcome_ids=outcome_ids,
                                      research_only=research_only, summary=summary))
     return chains

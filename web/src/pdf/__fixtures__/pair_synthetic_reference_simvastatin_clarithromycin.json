@@ -1,4 +1,5 @@
 {
+ "_comment": "SYNTHETIC reference-set fixture. The response shape is real engine output; the reference-set records are synthetic test data, not CRESCENDDI records (CRESCENDDI is not redistributed; see docs/DATASET_AUDIT.md). Their pair-event content was chosen to coincide with interactions stated in FDA labels (fluconazole: bleeding with warfarin; simvastatin: myopathy/rhabdomyolysis with clarithromycin).",
  "report": {
   "data": {
    "report_version": "3.0",
@@ -69,11 +70,11 @@
      ]
     },
     {
-     "id": "crescenddi:DB00641+DB01211:10028641",
+     "id": "synthetic-crescenddi:DB00641+DB01211:10028641",
      "category": "reference_set_outcome",
      "source_name": "CRESCENDDI reference set (Kontsioti et al., Sci Data 2022)",
-     "source_version": "elpidakon/CRESCENDDI@1734d7c12ac1 (data records, index crescenddi_index/v1)",
-     "source_record_id": "positive_control:DB00641|DB01211|MedDRA 10028641",
+     "source_version": "SYNTHETIC fixture (shape of a reference-set record; not CRESCENDDI data)",
+     "source_record_id": "synthetic:positive_control:DB00641|DB01211|MedDRA 10028641",
      "source_url": "https://github.com/elpidakon/CRESCENDDI",
      "retrieval_url": null,
      "original_identifiers": {
@@ -104,11 +105,11 @@
      ]
     },
     {
-     "id": "crescenddi:DB00641+DB01211:10039020",
+     "id": "synthetic-crescenddi:DB00641+DB01211:10039020",
      "category": "reference_set_outcome",
      "source_name": "CRESCENDDI reference set (Kontsioti et al., Sci Data 2022)",
-     "source_version": "elpidakon/CRESCENDDI@1734d7c12ac1 (data records, index crescenddi_index/v1)",
-     "source_record_id": "positive_control:DB00641|DB01211|MedDRA 10039020",
+     "source_version": "SYNTHETIC fixture (shape of a reference-set record; not CRESCENDDI data)",
+     "source_record_id": "synthetic:positive_control:DB00641|DB01211|MedDRA 10039020",
      "source_url": "https://github.com/elpidakon/CRESCENDDI",
      "retrieval_url": null,
      "original_identifiers": {
@@ -855,8 +856,8 @@
          "en": "The CRESCENDDI reference set (built from the BNF, Micromedex and ANSM compendia, 2018–2019) names 2 adverse event(s) for this pair: “Myopathy”, “Rhabdomyolysis” (MedDRA terms)."
         },
         "refs": [
-         "crescenddi:DB00641+DB01211:10028641",
-         "crescenddi:DB00641+DB01211:10039020"
+         "synthetic-crescenddi:DB00641+DB01211:10028641",
+         "synthetic-crescenddi:DB00641+DB01211:10039020"
         ]
        },
        {
@@ -1005,8 +1006,8 @@
         },
         "refs": [
          "drugbank-tdc:DB00641>DB01211:t73",
-         "crescenddi:DB00641+DB01211:10028641",
-         "crescenddi:DB00641+DB01211:10039020"
+         "synthetic-crescenddi:DB00641+DB01211:10028641",
+         "synthetic-crescenddi:DB00641+DB01211:10039020"
         ]
        },
        {
@@ -1160,10 +1161,10 @@
       "evidence_status": "documented",
       "supports": [
        {
-        "evidence_record_id": "crescenddi:DB00641+DB01211:10028641",
+        "evidence_record_id": "synthetic-crescenddi:DB00641+DB01211:10028641",
         "source_type": "reference_set",
         "source_name": "CRESCENDDI reference set (Kontsioti et al., Sci Data 2022)",
-        "source_document_id": "positive_control:DB00641|DB01211|MedDRA 10028641",
+        "source_document_id": "synthetic:positive_control:DB00641|DB01211|MedDRA 10028641",
         "source_url": "https://github.com/elpidakon/CRESCENDDI",
         "section": null,
         "excerpt": "CRESCENDDI lists “Myopathy” (MedDRA 10028641) as an adverse event of the interaction between simvastatin and clarithromycin, mapped from the Micromedex interaction description.",
@@ -1183,10 +1184,10 @@
         ]
        },
        {
-        "evidence_record_id": "crescenddi:DB00641+DB01211:10039020",
+        "evidence_record_id": "synthetic-crescenddi:DB00641+DB01211:10039020",
         "source_type": "reference_set",
         "source_name": "CRESCENDDI reference set (Kontsioti et al., Sci Data 2022)",
-        "source_document_id": "positive_control:DB00641|DB01211|MedDRA 10039020",
+        "source_document_id": "synthetic:positive_control:DB00641|DB01211|MedDRA 10039020",
         "source_url": "https://github.com/elpidakon/CRESCENDDI",
         "section": null,
         "excerpt": "CRESCENDDI lists “Rhabdomyolysis” (MedDRA 10039020) as an adverse event of the interaction between simvastatin and clarithromycin, mapped from the Micromedex interaction description.",

@@ -107,7 +107,34 @@ hydroxyprogesterone caproate + pentaerithrityl tetranitrate RU/EN, and the 4-,
 
 There were 0 console errors.
 
+### Scientific reliability pass (2026-10-18)
+
+| File | What the tests establish |
+|---|---|
+| `tests/test_v3_label_rules_v4.py` (new, 22) | **Rules:** abbreviation-aware sentence split; the excerpt always contains the partner; v4 QT and liver-enzyme wording; condition bullets and comparator arms give no outcome, but co-use wording still does; exact no-specific-outcome wording (EN/RU); `meddra_effect_map/v2` does not broaden terms. **Benchmark integrity:** units and annotations line up, and every excerpt names its partner; dev and eval labels are disjoint; the evaluation annotations match the checksum recorded before scoring; the rule fingerprint equals the frozen one. |
+| `tests/test_v3_outcomes.py` (updated, +1) | An annotation-derived attribution is never a "documented" exposure step. A PK-only pair carries the no-specific-outcome text. With a SYNTHETIC label naming bleeding, the exposure→bleeding route stays unconfirmed and the chain summary says so (EN/RU). |
+| `tests/test_v3_reference_sets.py` (rewritten) | The public build never includes CRESCENDDI; neither the flag alone nor the file alone enables it. The committed manifest carries no records. Engine behaviour is tested on a **SYNTHETIC** reference set. Tests on the real index run only where it was rebuilt locally. |
+| `tests/test_sources_manifest.py`, `tests/test_docker_context.py` (updated) | Nothing under `data/restricted/` and no CRESCENDDI index is tracked. No Dockerfile copies `data/restricted` or `data/reference_sets`, and `.dockerignore` excludes both. |
+| `web/src/components/v3/outcomes.test.tsx` (+2) | The no-specific-outcome sentence is shown above PK/PD cards and absent when the API does not set it. The label-extraction caveat is visible outside the collapsed source panel. |
+| `web/src/pdf/render.test.ts` (+1, 2 new PDFs) | The exact sentence appears in a Quick (EN) and a Full (RU) report. |
+| Web fixtures | `pair_reference_*` and `multi_reference_6` replaced by `*_synthetic_reference_*`. No CRESCENDDI-specific IDs or commit remain. |
+
+**Browser end-to-end** (Chromium; production build against a local API that does not serve
+CRESCENDDI; RU and EN):
+- **Pairs:** warfarin + fluconazole (PK only), warfarin + aspirin (PD only), simvastatin +
+  clarithromycin (PK, ambiguous roles), metformin + warfarin (nothing documented, labels
+  unavailable).
+- **Checks, for each pair and language:** the site, Quick PDF, Full PDF and JSON all carry the
+  exact no-specific-outcome sentence, and the JSON equals the API. No CRESCENDDI anywhere. No
+  positive safety claim. No mobile overflow at 390 px. 0 console errors.
+- **Six-drug multi:** 15 pairs, no reference-set records, PDF exported.
+- **Contradictory evidence** needs label text, which is unreachable offline. It is covered by
+  `test_contradicting_sources_are_both_kept` on SYNTHETIC labels.
+
 ### Evidence coverage (CRESCENDDI, DDI Corpus) — 20 Python, 7 web tests
+
+> Superseded on 2026-10-18 for CRESCENDDI: the tests below now run on a SYNTHETIC reference set,
+> or only where the restricted index was rebuilt locally.
 
 | File | Tests | What they establish |
 |---|---:|---|

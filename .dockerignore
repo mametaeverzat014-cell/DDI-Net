@@ -20,7 +20,9 @@
 # Inputs of the DDI-Net 3.0 evidence artifact (serving/evidence/build.py).
 !data/raw/drugbank.tab.gz
 !web/public/data/drugs.json
-!data/reference_sets/
+
+# Never sent: data/restricted/ (licence-restricted local research data,
+# e.g. the CRESCENDDI index) and data/reference_sets/ (manifests only).
 
 # Never send caches or local build output, even inside allowed directories.
 **/__pycache__

@@ -234,6 +234,33 @@ The pieces:
 
 ---
 
+## Step 13 — Scientific reliability audit (2026-10-18)
+
+Full record: `docs/DDINET_V3_SCIENTIFIC_AUDIT.md`.
+
+* **CRESCENDDI withdrawn from every public build (P0).**
+  * MIT covers the authors' code, not the compendium-derived records.
+  * The index moved to the git-ignored `data/restricted/` and is used only with
+    `DDINET_ENABLE_CRESCENDDI=1`.
+  * Docker, fixtures, sample PDFs and reports were cleaned. Tests use a SYNTHETIC reference set.
+* **Real-label benchmark.**
+  * 150 (label, partner) units from historical FDA labels (TAC 2017 via OnSIDES), split by
+    TAC's own train and test.
+  * Development led to `label_lexicon/v4`, which was frozen with a rule fingerprint.
+  * The evaluation set was annotated blind and checksummed, then scored once: outcome
+    precision 40/45, recall 40/43, citations 68/68.
+* **Fixes:**
+  * sentence splitter (abbreviations);
+  * the excerpt window always contains the partner;
+  * condition bullets and comparator arms no longer become outcomes;
+  * `meddra_effect_map/v2`;
+  * the exact no-specific-outcome sentence in the JSON, site, Quick and Full PDF;
+  * a visible label-extraction caveat;
+  * chain links no longer call an annotation-derived attribution "documented";
+  * offline label search uses curated US names.
+
+---
+
 ## What was not done, and why
 
 | Item | Status | Reason |

@@ -43,6 +43,11 @@ export function OutcomeOverview({ report, refs, research }: { report: PairReport
       <Block title={OT.bTitle} lead={OT.bLead} id="outcomes-b">
         {shown.length ? (
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {o.no_specific_outcome_text && (
+              <p data-testid="no-specific-outcome" style={{ fontSize: 14, color: "var(--text)", borderLeft: "3px solid var(--ev-missing)", paddingLeft: 10 }}>
+                {pick(o.no_specific_outcome_text, lang)}
+              </p>
+            )}
             {shown.map((x) => <OutcomeCard key={x.id} x={x} report={report} refs={refs} />)}
           </div>
         ) : (
@@ -113,6 +118,11 @@ function OutcomeCard({ x, report, refs }: { x: ClinicalOutcome; report: PairRepo
           <button key={l.label} className="v3-ref" onClick={() => l.anchor && scrollToAnchor(l.anchor)} aria-label={`→ ${l.label}`}>{l.label}</button>
         ))}
       </div>
+      {x.extraction_note && (
+        <p data-testid="extraction-note" style={{ fontSize: 12, color: "var(--text-2)", margin: "8px 0 0", borderLeft: "2px solid var(--amber)", paddingLeft: 8 }}>
+          {pick(x.extraction_note, lang)}
+        </p>
+      )}
       <SupportList x={x} />
       {x.limitations.length > 0 && (
         <ul style={{ margin: "8px 0 0", paddingLeft: 18, fontSize: 12.5, color: "var(--text-3)" }}>
@@ -141,7 +151,6 @@ function SupportList({ x }: { x: ClinicalOutcome }) {
           </li>
         ))}
       </ul>
-      {x.extraction_note && <p style={{ fontSize: 12, color: "var(--text-3)", margin: "8px 0 0" }}>{pick(x.extraction_note, lang)}</p>}
     </details>
   );
 }

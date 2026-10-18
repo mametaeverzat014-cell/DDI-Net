@@ -1,0 +1,365 @@
+{
+ "split": "evaluation",
+ "rule": "label_lexicon/v4",
+ "units_total": 100,
+ "relations": {
+  "interaction": 55,
+  "advice_only": 7,
+  "not_applicable": 19,
+  "no_interaction": 19
+ },
+ "scored_units": 81,
+ "outcome_micro": {
+  "tp": 40,
+  "fp": 5,
+  "fn": 3,
+  "precision": {
+   "k": 40,
+   "n": 45,
+   "value": 0.889,
+   "wilson95": [
+    0.765,
+    0.952
+   ]
+  },
+  "recall": {
+   "k": 40,
+   "n": 43,
+   "value": 0.93,
+   "wilson95": [
+    0.814,
+    0.976
+   ]
+  },
+  "f1": 0.909
+ },
+ "outcome_macro_f1": 0.856,
+ "per_concept": [
+  {
+   "concept": "bleeding",
+   "tp": 4,
+   "fp": 2,
+   "fn": 0,
+   "precision": 0.667,
+   "recall": 1.0,
+   "f1": 0.8
+  },
+  {
+   "concept": "bradycardia_block",
+   "tp": 3,
+   "fp": 0,
+   "fn": 0,
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0
+  },
+  {
+   "concept": "coagulation_measure",
+   "tp": 1,
+   "fp": 0,
+   "fn": 0,
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0
+  },
+  {
+   "concept": "exposure_decrease",
+   "tp": 2,
+   "fp": 1,
+   "fn": 0,
+   "precision": 0.667,
+   "recall": 1.0,
+   "f1": 0.8
+  },
+  {
+   "concept": "exposure_increase",
+   "tp": 4,
+   "fp": 0,
+   "fn": 3,
+   "precision": 1.0,
+   "recall": 0.571,
+   "f1": 0.727
+  },
+  {
+   "concept": "hepatotoxicity",
+   "tp": 5,
+   "fp": 0,
+   "fn": 0,
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0
+  },
+  {
+   "concept": "hypertension",
+   "tp": 0,
+   "fp": 1,
+   "fn": 0,
+   "precision": 0.0,
+   "recall": 0.0,
+   "f1": 0.0
+  },
+  {
+   "concept": "myelosuppression",
+   "tp": 2,
+   "fp": 0,
+   "fn": 0,
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0
+  },
+  {
+   "concept": "myopathy",
+   "tp": 2,
+   "fp": 0,
+   "fn": 0,
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0
+  },
+  {
+   "concept": "qt_arrhythmia",
+   "tp": 8,
+   "fp": 1,
+   "fn": 0,
+   "precision": 0.889,
+   "recall": 1.0,
+   "f1": 0.941
+  },
+  {
+   "concept": "reduced_effect",
+   "tp": 2,
+   "fp": 0,
+   "fn": 0,
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0
+  },
+  {
+   "concept": "serotonin_syndrome",
+   "tp": 7,
+   "fp": 0,
+   "fn": 0,
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0
+  }
+ ],
+ "pair_precision_interaction": {
+  "k": 38,
+  "n": 42,
+  "value": 0.905,
+  "wilson95": [
+   0.779,
+   0.962
+  ]
+ },
+ "unsupported_claim_rate": {
+  "k": 3,
+  "n": 42,
+  "value": 0.071,
+  "wilson95": [
+   0.025,
+   0.19
+  ]
+ },
+ "abstention_on_no_or_advice_only": {
+  "k": 22,
+  "n": 26,
+  "value": 0.846,
+  "wilson95": [
+   0.665,
+   0.939
+  ]
+ },
+ "interaction_recall": {
+  "k": 38,
+  "n": 55,
+  "value": 0.691,
+  "wilson95": [
+   0.56,
+   0.797
+  ]
+ },
+ "seriousness_accuracy_on_predicted": {
+  "k": 39,
+  "n": 42,
+  "value": 0.929,
+  "wilson95": [
+   0.81,
+   0.975
+  ]
+ },
+ "citation_accuracy": {
+  "k": 68,
+  "n": 68,
+  "value": 1.0,
+  "wilson95": [
+   0.947,
+   1.0
+  ]
+ },
+ "errors": [
+  {
+   "unit": "eva-029",
+   "label": "Effient",
+   "partner": "clopidogrel",
+   "relation": "no_interaction",
+   "gold": [],
+   "acceptable": [],
+   "pred": [
+    "bleeding"
+   ],
+   "pred_seriousness": "none",
+   "gold_seriousness": "none",
+   "matched": {
+    "bleeding": [
+     "bleeding",
+     "bleeding",
+     "bleeding"
+    ]
+   }
+  },
+  {
+   "unit": "eva-042",
+   "label": "Juxtapid",
+   "partner": "atorvastatin",
+   "relation": "interaction",
+   "gold": [
+    "exposure_increase"
+   ],
+   "acceptable": [],
+   "pred": [],
+   "pred_seriousness": null,
+   "gold_seriousness": "none",
+   "matched": {}
+  },
+  {
+   "unit": "eva-045",
+   "label": "Juxtapid",
+   "partner": "lovastatin",
+   "relation": "interaction",
+   "gold": [
+    "exposure_increase",
+    "myopathy"
+   ],
+   "acceptable": [],
+   "pred": [
+    "myopathy"
+   ],
+   "pred_seriousness": "none",
+   "gold_seriousness": "none",
+   "matched": {
+    "myopathy": [
+     "Myopathy"
+    ]
+   }
+  },
+  {
+   "unit": "eva-047",
+   "label": "Juxtapid",
+   "partner": "simvastatin",
+   "relation": "interaction",
+   "gold": [
+    "exposure_increase",
+    "myopathy"
+   ],
+   "acceptable": [],
+   "pred": [
+    "myopathy"
+   ],
+   "pred_seriousness": "none",
+   "gold_seriousness": "none",
+   "matched": {
+    "myopathy": [
+     "Myopathy"
+    ]
+   }
+  },
+  {
+   "unit": "eva-049",
+   "label": "KADCYLA",
+   "partner": "lapatinib",
+   "relation": "no_interaction",
+   "gold": [],
+   "acceptable": [],
+   "pred": [
+    "bleeding"
+   ],
+   "pred_seriousness": "none",
+   "gold_seriousness": "none",
+   "matched": {
+    "bleeding": [
+     "hemorrhage",
+     "hemorrhage"
+    ]
+   }
+  },
+  {
+   "unit": "eva-055",
+   "label": "Mekinist",
+   "partner": "dabrafenib",
+   "relation": "interaction",
+   "gold": [
+    "bleeding"
+   ],
+   "acceptable": [],
+   "pred": [
+    "bleeding"
+   ],
+   "pred_seriousness": "none",
+   "gold_seriousness": "serious_wording",
+   "matched": {
+    "bleeding": [
+     "Hemorrhage"
+    ]
+   }
+  },
+  {
+   "unit": "eva-066",
+   "label": "OLYSIO",
+   "partner": "sofosbuvir",
+   "relation": "interaction",
+   "gold": [],
+   "acceptable": [
+    "bradycardia_block"
+   ],
+   "pred": [
+    "bradycardia_block"
+   ],
+   "pred_seriousness": "serious_wording",
+   "gold_seriousness": "none",
+   "matched": {
+    "bradycardia_block": [
+     "Bradycardia",
+     "Bradycardia"
+    ]
+   }
+  },
+  {
+   "unit": "eva-070",
+   "label": "PERJETA",
+   "partner": "doxorubicin",
+   "relation": "no_interaction",
+   "gold": [],
+   "acceptable": [],
+   "pred": [
+    "exposure_decrease",
+    "hypertension",
+    "qt_arrhythmia"
+   ],
+   "pred_seriousness": "serious_wording",
+   "gold_seriousness": "none",
+   "matched": {
+    "qt_arrhythmia": [
+     "cardiac arrhythmia"
+    ],
+    "hypertension": [
+     "hypertension"
+    ],
+    "exposure_decrease": [
+     "exposure \u2026 decreases"
+    ]
+   }
+  }
+ ]
+}

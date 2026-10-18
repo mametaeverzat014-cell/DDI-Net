@@ -7,7 +7,7 @@ import datetime as _dt
 from .adapters.http import SourceUnavailable
 from .adapters.openfda import LabelLookup, OpenFdaLabelAdapter
 from .adapters.rxnorm import RxNormAdapter
-from .lexicon import DrugEntry
+from .lexicon import ALIASES, DrugEntry
 from .schema import EvidenceCategory, EvidenceRecord, SourceCheck
 
 SOURCE_NAME = "FDA drug label (Structured Product Labeling via openFDA)"
@@ -32,6 +32,11 @@ class LabelEvidence:
         because FDA labels use US names ("acetaminophen" for INN "paracetamol").
         """
         names = [drug.inn] if drug.inn else []
+        # The project's curated US/INN naming differences (lexicon.ALIASES), so a
+        # label is searched for "acetaminophen" even when RxNorm is unreachable.
+        for us, inn in ALIASES.items():
+            if drug.inn and inn.lower() == drug.inn.lower() and us not in names:
+                names.append(us)
         if self.rxnorm and drug.inn:
             try:
                 rx = self.rxnorm.resolve(drug.inn)

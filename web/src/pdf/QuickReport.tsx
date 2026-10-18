@@ -69,7 +69,10 @@ export function QuickReportPage({ prep, r }: { prep: PreparedExport; r: PairRepo
           <H>{pick(OT.bTitle, lang)}</H>
           {shown.length === 0
             ? <View wrap={false}><Text style={st.p}>{o.no_outcome_text ? bi(o.no_outcome_text, lang) : ""}</Text></View>
-            : shown.map((x) => <QuickOutcome key={x.id} x={x} prep={prep} r={r} refsOf={(id) => groups.excerptOf(id)?.label ?? ""} />)}
+            : [o.no_specific_outcome_text
+              ? <View key="no-specific" wrap={false}><Text style={st.p}>{bi(o.no_specific_outcome_text, lang)}</Text></View>
+              : null,
+              ...shown.map((x) => <QuickOutcome key={x.id} x={x} prep={prep} r={r} refsOf={(id) => groups.excerptOf(id)?.label ?? ""} />)]}
 
           <H>{pick(OT.cTitle, lang)}</H>
           {(() => {
@@ -152,6 +155,7 @@ function QuickOutcome({ x, prep, r, refsOf }: { x: ClinicalOutcome; prep: Prepar
           </View>
         </View>
       ) : null}
+      {x.extraction_note ? <Text style={[st.tiny, { marginTop: 2 }]}>{bi(x.extraction_note, lang)}</Text> : null}
     </View>
   );
 }

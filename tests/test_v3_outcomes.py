@@ -119,6 +119,26 @@ def test_pk_record_with_unambiguous_roles_is_mechanistically_supported(offline):
     assert sup.extraction_method == "drugbank_type_map/v1:type=73"
     assert not any(x.category == "bleeding_coagulation" for x in o.outcomes)   # no bleeding invented
     assert o.chains and all(c.links[0].provenance == "verified_annotation" for c in o.chains)
+    # Which drug changes was read off the protein roles: the exposure step is not "documented"
+    exp_links = [lk for c in o.chains for lk in c.links if lk.relation == "exposure_change"]
+    assert exp_links and all(lk.provenance != "documented" for lk in exp_links)
+    assert all("protein roles" in lk.text.en for lk in exp_links if lk.provenance == "verified_annotation")
+    # PK only, no named outcome: the exact no-specific-outcome wording is set
+    assert o.no_specific_outcome_text.en.startswith("No specific clinical outcome established from available evidence.")
+
+
+def test_chain_never_presents_an_unconfirmed_route_as_established(real_noref):  # noqa: F811
+    """W + F with a SYNTHETIC label naming bleeding: the exposure → bleeding step stays unconfirmed."""
+    lab = _label("syn-wf-bleed", "FLUCONAZOLE", "20250101",
+                 drug_interactions="Concomitant use of fluconazole and warfarin has been associated with bleeding.")
+    o = _engine(real_noref, {'generic_name:"fluconazole"': lab}).report("warfarin", "fluconazole").outcomes
+    assert any(x.effect == "bleeding" and x.evidence_status == "documented" for x in o.outcomes)
+    assert o.no_specific_outcome_text is None
+    route = [lk for c in o.chains for lk in c.links if lk.relation == "may_lead_to"]
+    assert route and all(lk.provenance == "plausible_unconfirmed" for lk in route)
+    for c in o.chains:
+        if any(lk.relation == "may_lead_to" and lk.provenance != "documented" for lk in c.links):
+            assert "not confirmed" in c.summary.en and "не подтверждено" in c.summary.ru
 
 
 def test_ambiguous_roles_give_no_direction(offline):

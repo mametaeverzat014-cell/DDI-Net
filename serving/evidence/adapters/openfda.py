@@ -70,7 +70,39 @@ NO_EFFECT = re.compile(
 )
 
 SENTENCE_SPLIT = re.compile(r"(?<=[.!?])\s+(?=[A-Z0-9(\[])")
+#: A full stop after these is not a sentence end ("St. John's Wort", "e.g. Drug").
+#: Found on real label text: "strong CYP3A4 inducers (for example, carbamazepine,
+#: ... and St. John's Wort) may reduce ..." was cut at "St." and lost its outcome.
+ABBREVIATION_END = re.compile(r"(?:^|[\s(\[])(?:St|e\.g|i\.e|vs|approx|Dr|Fig|cf|al|Inc|Ltd|ca|incl|No)\.$",
+                              re.IGNORECASE)
 MAX_EXCERPT = 600
+#: When a sentence is longer than MAX_EXCERPT, the excerpt keeps its start and a
+#: window around the partner's name, so the quoted text always shows the name
+#: it was matched on (and every outcome term extracted from it).
+HEAD_CHARS, BEFORE_HIT, AFTER_HIT = 180, 200, 220
+
+
+def split_sentences(text: str) -> list[str]:
+    """Sentences of a section, not split after common abbreviations."""
+    out: list[str] = []
+    for piece in SENTENCE_SPLIT.split(text):
+        if out and ABBREVIATION_END.search(out[-1]):
+            out[-1] = f"{out[-1]} {piece}"
+        else:
+            out.append(piece)
+    return out
+
+
+def excerpt_of(sentence: str, hit: re.Match) -> tuple[str, bool]:
+    """The quotable excerpt of a sentence: whole, or its start plus the partner's window."""
+    if len(sentence) <= MAX_EXCERPT:
+        return sentence, False
+    if hit.end() <= MAX_EXCERPT - 40:
+        return sentence[:MAX_EXCERPT].rstrip() + "…", True
+    lo, hi = max(HEAD_CHARS, hit.start() - BEFORE_HIT), min(len(sentence), hit.end() + AFTER_HIT)
+    lo = sentence.find(" ", lo) + 1 if sentence.find(" ", lo) != -1 and sentence.find(" ", lo) < hit.start() else lo
+    tail = "" if hi >= len(sentence) else "…"
+    return f"{sentence[:HEAD_CHARS].rstrip()} … {sentence[lo:hi].strip()}{tail}", True
 MAX_PER_SECTION = 3
 
 
@@ -235,8 +267,8 @@ class OpenFdaLabelAdapter:
             display, category = SECTIONS[field_name]
             found = 0
             seen: set[str] = set()
-            for sentence in SENTENCE_SPLIT.split(re.sub(r"\s+", " ", text)):
-                hit = next((t for t, p in pats if p.search(sentence)), None)
+            for sentence in split_sentences(re.sub(r"\s+", " ", text)):
+                hit, m = next(((t, p.search(sentence)) for t, p in pats if p.search(sentence)), (None, None))
                 if not hit or sentence in seen:
                     continue
                 seen.add(sentence)
@@ -245,8 +277,7 @@ class OpenFdaLabelAdapter:
                     if display != twin.section and display not in twin.also_in:
                         twin.also_in.append(display)
                     continue
-                truncated = len(sentence) > MAX_EXCERPT
-                excerpt = sentence[:MAX_EXCERPT].rstrip() + ("…" if truncated else "")
+                excerpt, truncated = excerpt_of(sentence, m)
                 out.append(Excerpt(
                     section_field=field_name, section=display, category=category,
                     text=excerpt, truncated=truncated,

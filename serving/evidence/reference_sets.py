@@ -13,7 +13,12 @@ severity and evidence ratings (proprietary editorial classifications; they are
 not in the derived index at all) and any compendium text (CRESCENDDI has none).
 
 The MedDRA term is grouped into the engine's outcome effects by a fixed,
-versioned table (MEDDRA_MAP_VERSION). Every one of the 179 terms in the data is
+versioned table (MEDDRA_MAP_VERSION). v2 (2026-10-18) stops grouping a term
+under a broader or different outcome than it names: syncope is no longer
+"low blood pressure", raised creatinine / liver enzymes are no longer "kidney /
+liver injury", an abnormal ECG is no longer an arrhythmia, and haemodynamic
+measures are pharmacodynamic changes, not outcomes (review table:
+docs/DATASET_AUDIT.md). Every one of the 179 terms in the data is
 listed; an unknown term falls back to "other documented adverse event" rather
 than being guessed. The table only groups terms; it never adds an outcome the
 record does not name.
@@ -25,7 +30,7 @@ from dataclasses import dataclass
 
 from .schema import EvidenceCategory, EvidenceRecord
 
-MEDDRA_MAP_VERSION = "meddra_effect_map/v1"
+MEDDRA_MAP_VERSION = "meddra_effect_map/v2"
 C, PD, RE, UA = "clinical_outcome", "pharmacodynamic_effect", "reduced_effectiveness", "unspecified_adverse"
 
 
@@ -45,6 +50,9 @@ EFFECTS: dict[str, Effect] = {
     "coagulation_measure_change": Effect("bleeding_coagulation", PD, "Change in a blood-clotting measure (prothrombin time / INR)", "Изменение показателя свёртываемости (протромбиновое время / МНО)"),
     "qt_prolongation": Effect("cardiac_rhythm", C, "QT prolongation or ventricular arrhythmia", "Удлинение интервала QT или желудочковая аритмия"),
     "arrhythmia_other": Effect("cardiac_rhythm", C, "Other heart rhythm disturbance (arrhythmia, tachycardia, palpitations)", "Другие нарушения ритма сердца (аритмия, тахикардия, сердцебиение)"),
+    "ecg_change": Effect("cardiac_rhythm", PD, "ECG change (abnormal ECG, shortened AV conduction time)", "Изменение ЭКГ (отклонения на ЭКГ, укорочение АВ-проведения)"),
+    "syncope": Effect("cardiovascular_other", C, "Fainting (syncope)", "Обморок (синкопе)"),
+    "haemodynamic_measure": Effect("blood_pressure", PD, "Change in a haemodynamic measure (cardiac output, systemic vascular resistance)", "Изменение гемодинамического показателя (сердечный выброс, периферическое сопротивление сосудов)"),
     "bradycardia_conduction": Effect("cardiac_rhythm", C, "Slow heart rate or heart block", "Урежение пульса или блокада проводимости сердца"),
     "cardiac_arrest": Effect("cardiovascular_other", C, "Cardiac arrest or circulatory collapse", "Остановка сердца или сосудистый коллапс"),
     "heart_failure": Effect("cardiovascular_other", C, "Heart failure or reduced heart function", "Сердечная недостаточность или снижение функции сердца"),
@@ -58,7 +66,7 @@ EFFECTS: dict[str, Effect] = {
     "sedation_cns_depression": Effect("cns_sedation", C, "Sedation or CNS depression", "Седация или угнетение ЦНС"),
     "seizure": Effect("nervous_system_other", C, "Seizures", "Судороги"),
     "movement_disorder": Effect("nervous_system_other", C, "Movement or coordination disorder (myoclonus, tremor, rigidity, ataxia)", "Двигательные нарушения и нарушения координации (миоклонус, тремор, ригидность, атаксия)"),
-    "mental_status": Effect("nervous_system_other", C, "Change in mental state (confusion, delirium, agitation, psychosis)", "Изменение психического состояния (спутанность, делирий, возбуждение, психоз)"),
+    "mental_status": Effect("nervous_system_other", C, "Change in mental state or behaviour (e.g. confusion, delirium, agitation, anxiety, insomnia)", "Изменение психического состояния или поведения (например, спутанность, делирий, возбуждение, тревога, бессонница)"),
     "neurotoxicity": Effect("nervous_system_other", C, "Neurotoxicity or encephalopathy", "Нейротоксичность или энцефалопатия"),
     "intracranial_hypertension": Effect("nervous_system_other", C, "Raised intracranial pressure", "Повышение внутричерепного давления"),
     "neuropathy": Effect("nervous_system_other", C, "Peripheral neuropathy or paraesthesia", "Периферическая нейропатия или парестезии"),
@@ -68,7 +76,9 @@ EFFECTS: dict[str, Effect] = {
     "withdrawal": Effect("nervous_system_other", C, "Drug withdrawal syndrome", "Синдром отмены"),
     "visual": Effect("general_other", C, "Eye or vision problem", "Нарушения со стороны глаз или зрения"),
     "kidney_injury": Effect("kidney", C, "Kidney injury or toxicity", "Поражение почек"),
+    "creatinine_increase": Effect("kidney", C, "Raised blood creatinine", "Повышение креатинина в крови"),
     "liver_injury": Effect("liver", C, "Liver injury or toxicity", "Поражение печени"),
+    "liver_enzyme_increase": Effect("liver", C, "Raised liver enzymes (transaminases)", "Повышение печёночных ферментов (трансаминаз)"),
     "cholelithiasis": Effect("liver", C, "Gallstones", "Желчнокаменная болезнь"),
     "myelosuppression": Effect("bone_marrow_immune", C, "Suppressed blood cell production (low white cells, platelets or anaemia)", "Угнетение кроветворения (снижение лейкоцитов, тромбоцитов или анемия)"),
     "myopathy_rhabdomyolysis": Effect("muscle", C, "Myopathy or rhabdomyolysis", "Миопатия или рабдомиолиз"),
@@ -90,7 +100,7 @@ EFFECTS: dict[str, Effect] = {
     "pulmonary_toxicity": Effect("respiratory_airway", C, "Lung toxicity", "Токсическое поражение лёгких"),
     "breathing_rate": Effect("respiratory_airway", C, "Rapid breathing", "Учащённое дыхание"),
     "hypersensitivity_reaction": Effect("hypersensitivity_skin", C, "Hypersensitivity reaction or angioedema", "Реакция гиперчувствительности или ангионевротический отёк"),
-    "hyperthermia": Effect("general_other", C, "High body temperature (hyperthermia)", "Повышение температуры тела (гипертермия)"),
+    "hyperthermia": Effect("general_other", C, "High body temperature (fever or hyperthermia)", "Повышение температуры тела (лихорадка или гипертермия)"),
     "endocrine_change": Effect("general_other", C, "Hormonal change (cortisol, Cushing's syndrome, thyroid, catecholamines, endometrium)", "Гормональные изменения (кортизол, синдром Кушинга, щитовидная железа, катехоламины, эндометрий)"),
     "other_symptom": Effect("general_other", C, "Other documented symptom", "Другой задокументированный симптом"),
     "pathogen_resistance": Effect("reduced_effectiveness", RE, "Pathogen resistance (loss of antimicrobial effect)", "Устойчивость возбудителя (потеря противомикробного действия)"),
@@ -103,18 +113,20 @@ _GROUPS: dict[str, tuple[str, ...]] = {
                                    "Coagulation time prolonged", "Coagulation time shortened",
                                    "Prothrombin time ratio increased", "Prothrombin time shortened"),
     "qt_prolongation": ("Electrocardiogram QT prolonged", "Torsade de pointes", "Ventricular arrhythmia", "Ventricular tachycardia"),
-    "arrhythmia_other": ("Arrhythmia", "Tachycardia", "Palpitations", "Electrocardiogram abnormal",
-                         "Atrioventricular conduction time shortened"),
+    "arrhythmia_other": ("Arrhythmia", "Tachycardia", "Palpitations"),
+    "ecg_change": ("Electrocardiogram abnormal", "Atrioventricular conduction time shortened"),
+    "syncope": ("Syncope",),
+    "haemodynamic_measure": ("Cardiac output decreased", "Vascular resistance systemic decreased"),
     "bradycardia_conduction": ("Bradycardia", "Sinus bradycardia", "Heart rate decreased", "Atrioventricular block",
                                "Atrioventricular block complete", "Sinus arrest"),
     "cardiac_arrest": ("Cardiac arrest", "Circulatory collapse"),
-    "heart_failure": ("Cardiac failure", "Cardiac failure congestive", "Myocardial depression", "Cardiac output decreased"),
+    "heart_failure": ("Cardiac failure", "Cardiac failure congestive", "Myocardial depression"),
     "cardiotoxicity": ("Cardiotoxicity",),
     "ischaemia_vasoconstriction": ("Peripheral ischaemia", "Vasoconstriction", "Ergot poisoning"),
     "embolism": ("Embolism",),
     "oedema": ("Oedema", "Oedema peripheral"),
     "hypotension": ("Hypotension", "Blood pressure decreased", "Orthostatic hypotension", "Orthostatic intolerance",
-                    "Syncope", "Mean arterial pressure decreased", "Vascular resistance systemic decreased"),
+                    "Mean arterial pressure decreased"),
     "hypertension": ("Hypertension", "Blood pressure increased", "Hypertensive crisis", "Withdrawal hypertension",
                      "Procedural hypertension"),
     "respiratory_depression": ("Respiratory depression", "Apnoea"),
@@ -136,9 +148,10 @@ _GROUPS: dict[str, tuple[str, ...]] = {
     "dizziness_headache": ("Dizziness", "Vertigo", "Headache"),
     "withdrawal": ("Drug withdrawal syndrome",),
     "visual": ("Visual impairment", "Blindness", "Diplopia", "Photophobia", "Eye pain", "Uveitis"),
-    "kidney_injury": ("Acute kidney injury", "Renal impairment", "Nephropathy toxic", "Blood creatinine increased"),
-    "liver_injury": ("Hepatotoxicity", "Drug-induced liver injury", "Hepatic failure", "Hepatic enzyme increased",
-                     "Alanine aminotransferase increased", "Cholestasis"),
+    "kidney_injury": ("Acute kidney injury", "Renal impairment", "Nephropathy toxic"),
+    "creatinine_increase": ("Blood creatinine increased",),
+    "liver_injury": ("Hepatotoxicity", "Drug-induced liver injury", "Hepatic failure", "Cholestasis"),
+    "liver_enzyme_increase": ("Hepatic enzyme increased", "Alanine aminotransferase increased"),
     "cholelithiasis": ("Cholelithiasis",),
     "myelosuppression": ("Bone marrow failure", "Bone marrow toxicity", "Haematotoxicity", "Leukopenia", "Neutropenia",
                          "Thrombocytopenia", "Pancytopenia", "Anaemia", "Anaemia megaloblastic"),

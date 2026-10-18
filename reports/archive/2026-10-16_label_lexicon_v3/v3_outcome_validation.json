@@ -1,0 +1,3049 @@
+{
+ "method": {
+  "lexicon": "label_lexicon/v3",
+  "seed": 20261015,
+  "store_sha256": "4dd4dbea0e766568027c30f42fbd3071d3d782152ea99b48ce8ecadc55446d44",
+  "note": "Pilot set by the rules' author; constructed sentences; not a clinical validation."
+ },
+ "pilot": {
+  "set": "validation/clinical_outcomes/pilot_label_sentences.jsonl",
+  "sha256": "8f3cdf8f947e1bd0d2a1d4f6061747e03849b0c84b17c4164d990d7719ee547e",
+  "n_sentences": 75,
+  "case_counts": {
+   "positive": 28,
+   "positive_serious": 1,
+   "positive_pk": 4,
+   "positive_class_list": 3,
+   "positive_monitoring": 1,
+   "positive_paraphrase": 1,
+   "positive_pk_and_outcome": 1,
+   "paraphrase": 8,
+   "paraphrase_pk": 2,
+   "negated": 5,
+   "no_effect": 2,
+   "negated_after_term": 3,
+   "population": 4,
+   "single_drug_effect": 1,
+   "unrelated": 1,
+   "class_list": 1,
+   "mechanism_only": 2,
+   "no_outcome": 3,
+   "ambiguous_pk": 1,
+   "negated_unchanged": 1,
+   "unknown": 1,
+   "mixed": 1
+  },
+  "rule_level": {
+   "units": "(sentence, concept)",
+   "sentences": 75,
+   "tp": 42,
+   "fp": 0,
+   "fn": 13,
+   "precision": {
+    "k": 42,
+    "n": 42,
+    "value": 1.0,
+    "wilson95": [
+     0.916,
+     1.0
+    ]
+   },
+   "recall": {
+    "k": 42,
+    "n": 55,
+    "value": 0.764,
+    "wilson95": [
+     0.637,
+     0.856
+    ]
+   },
+   "unsupported_claim_rate": {
+    "k": 0,
+    "n": 40,
+    "value": 0.0,
+    "wilson95": [
+     0.0,
+     0.088
+    ],
+    "definition": "sentences with at least one extracted concept the gold does not contain / sentences with any extraction"
+   },
+   "abstention_on_no_outcome_sentences": {
+    "k": 23,
+    "n": 23,
+    "value": 1.0,
+    "wilson95": [
+     0.857,
+     1.0
+    ],
+    "definition": "gold-empty sentences (negated, population, single-drug, mechanism-only, mixed) with nothing extracted"
+   },
+   "bootstrap": {
+    "precision95": [
+     1.0,
+     1.0
+    ],
+    "recall95": [
+     0.648,
+     0.872
+    ],
+    "resamples": 2000
+   },
+   "by_case": {
+    "ambiguous_pk": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 1
+    },
+    "class_list": {
+     "sentences": 1,
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "mechanism_only": {
+     "sentences": 2,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "mixed": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 1
+    },
+    "negated": {
+     "sentences": 5,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "negated_after_term": {
+     "sentences": 3,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "negated_unchanged": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "no_effect": {
+     "sentences": 2,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "no_outcome": {
+     "sentences": 3,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "paraphrase": {
+     "sentences": 8,
+     "tp": 0,
+     "fp": 0,
+     "fn": 8
+    },
+    "paraphrase_pk": {
+     "sentences": 2,
+     "tp": 0,
+     "fp": 0,
+     "fn": 2
+    },
+    "population": {
+     "sentences": 4,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive": {
+     "sentences": 28,
+     "tp": 28,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive_class_list": {
+     "sentences": 3,
+     "tp": 4,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive_monitoring": {
+     "sentences": 1,
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive_paraphrase": {
+     "sentences": 1,
+     "tp": 1,
+     "fp": 0,
+     "fn": 1
+    },
+    "positive_pk": {
+     "sentences": 4,
+     "tp": 4,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive_pk_and_outcome": {
+     "sentences": 1,
+     "tp": 2,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive_serious": {
+     "sentences": 1,
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "single_drug_effect": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "unknown": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "unrelated": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    }
+   },
+   "by_concept": {
+    "bleeding": {
+     "tp": 4,
+     "fp": 0,
+     "fn": 0
+    },
+    "bradycardia_block": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 0
+    },
+    "coagulation_measure": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 1
+    },
+    "exposure_decrease": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 1
+    },
+    "exposure_increase": {
+     "tp": 4,
+     "fp": 0,
+     "fn": 3
+    },
+    "hepatotoxicity": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 1
+    },
+    "hyperkalemia": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 0
+    },
+    "hypertension": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "hypoglycemia": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "hypokalemia": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 1
+    },
+    "hypomagnesemia": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "hyponatremia": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "hypotension": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 1
+    },
+    "myelosuppression": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 0
+    },
+    "myopathy": {
+     "tp": 3,
+     "fp": 0,
+     "fn": 0
+    },
+    "nephrotoxicity": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 1
+    },
+    "qt_arrhythmia": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 2
+    },
+    "reduced_effect": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 0
+    },
+    "respiratory_depression": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 1
+    },
+    "sedation": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 1
+    },
+    "serotonin_syndrome": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 0
+    }
+   },
+   "errors": [
+    {
+     "id": "p19",
+     "case": "positive_paraphrase",
+     "gold": [
+      "hypokalemia",
+      "qt_arrhythmia"
+     ],
+     "pred": [
+      "hypokalemia"
+     ],
+     "sentence": "Hypokalemia induced by furosemide may increase the risk of arrhythmia."
+    },
+    {
+     "id": "p22",
+     "case": "paraphrase",
+     "gold": [
+      "coagulation_measure"
+     ],
+     "pred": [],
+     "sentence": "Excessive anticoagulation was observed with fluconazole."
+    },
+    {
+     "id": "p23",
+     "case": "paraphrase",
+     "gold": [
+      "sedation"
+     ],
+     "pred": [],
+     "sentence": "Patients taking diazepam with this drug experienced marked drowsiness."
+    },
+    {
+     "id": "p24",
+     "case": "paraphrase",
+     "gold": [
+      "nephrotoxicity"
+     ],
+     "pred": [],
+     "sentence": "Kidney damage has been reported with ibuprofen."
+    },
+    {
+     "id": "p25",
+     "case": "paraphrase",
+     "gold": [
+      "hepatotoxicity"
+     ],
+     "pred": [],
+     "sentence": "Elevated liver enzymes were seen with acetaminophen."
+    },
+    {
+     "id": "p26",
+     "case": "paraphrase",
+     "gold": [
+      "qt_arrhythmia"
+     ],
+     "pred": [],
+     "sentence": "Irregular heartbeat has been reported with sotalol."
+    },
+    {
+     "id": "p27",
+     "case": "paraphrase",
+     "gold": [
+      "respiratory_depression"
+     ],
+     "pred": [],
+     "sentence": "Breathing problems may occur with opioid co-use such as fentanyl."
+    },
+    {
+     "id": "p28",
+     "case": "paraphrase_pk",
+     "gold": [
+      "exposure_increase"
+     ],
+     "pred": [],
+     "sentence": "Blood levels of digoxin rise when given with this drug."
+    },
+    {
+     "id": "p29",
+     "case": "paraphrase",
+     "gold": [
+      "hypotension"
+     ],
+     "pred": [],
+     "sentence": "Low blood pressure was observed with nitroglycerin."
+    },
+    {
+     "id": "p30",
+     "case": "paraphrase",
+     "gold": [
+      "hypokalemia"
+     ],
+     "pred": [],
+     "sentence": "Low potassium levels may develop with hydrochlorothiazide."
+    },
+    {
+     "id": "a51",
+     "case": "ambiguous_pk",
+     "gold": [
+      "exposure_increase"
+     ],
+     "pred": [],
+     "sentence": "Plasma concentrations increased with probenecid and decreased with rifampin."
+    },
+    {
+     "id": "p54",
+     "case": "paraphrase_pk",
+     "gold": [
+      "exposure_increase"
+     ],
+     "pred": [],
+     "sentence": "Co-administration with lithium may increase serum lithium concentrations."
+    },
+    {
+     "id": "a75",
+     "case": "mixed",
+     "gold": [
+      "exposure_decrease"
+     ],
+     "pred": [],
+     "sentence": "Rifampin may decrease concentrations; however, no reduced efficacy was observed."
+    }
+   ]
+  },
+  "end_to_end": {
+   "n_runnable": 65,
+   "skipped_partner_not_resolvable_offline": {
+    "rifampin": 3,
+    "insulin": 1,
+    "tenofovir": 1,
+    "tacrolimus": 1,
+    "lithium": 1,
+    "alcohol": 1,
+    "colchicine": 1,
+    "valproate": 1
+   },
+   "partner_found_by_label_matcher": {
+    "k": 61,
+    "n": 65,
+    "value": 0.938,
+    "wilson95": [
+     0.852,
+     0.976
+    ]
+   },
+   "rule_and_engine_agree": {
+    "k": 65,
+    "n": 65,
+    "value": 1.0,
+    "wilson95": [
+     0.944,
+     1.0
+    ]
+   },
+   "units": "(sentence, concept)",
+   "sentences": 65,
+   "tp": 36,
+   "fp": 0,
+   "fn": 11,
+   "precision": {
+    "k": 36,
+    "n": 36,
+    "value": 1.0,
+    "wilson95": [
+     0.904,
+     1.0
+    ]
+   },
+   "recall": {
+    "k": 36,
+    "n": 47,
+    "value": 0.766,
+    "wilson95": [
+     0.628,
+     0.864
+    ]
+   },
+   "unsupported_claim_rate": {
+    "k": 0,
+    "n": 34,
+    "value": 0.0,
+    "wilson95": [
+     0.0,
+     0.102
+    ],
+    "definition": "sentences with at least one extracted concept the gold does not contain / sentences with any extraction"
+   },
+   "abstention_on_no_outcome_sentences": {
+    "k": 21,
+    "n": 21,
+    "value": 1.0,
+    "wilson95": [
+     0.845,
+     1.0
+    ],
+    "definition": "gold-empty sentences (negated, population, single-drug, mechanism-only, mixed) with nothing extracted"
+   },
+   "bootstrap": {
+    "precision95": [
+     1.0,
+     1.0
+    ],
+    "recall95": [
+     0.646,
+     0.878
+    ],
+    "resamples": 2000
+   },
+   "by_case": {
+    "ambiguous_pk": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 1
+    },
+    "class_list": {
+     "sentences": 1,
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "mechanism_only": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "negated": {
+     "sentences": 5,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "negated_after_term": {
+     "sentences": 3,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "negated_unchanged": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "no_effect": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "no_outcome": {
+     "sentences": 3,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "paraphrase": {
+     "sentences": 8,
+     "tp": 0,
+     "fp": 0,
+     "fn": 8
+    },
+    "paraphrase_pk": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 1
+    },
+    "population": {
+     "sentences": 4,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive": {
+     "sentences": 23,
+     "tp": 23,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive_class_list": {
+     "sentences": 3,
+     "tp": 4,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive_monitoring": {
+     "sentences": 1,
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive_paraphrase": {
+     "sentences": 1,
+     "tp": 1,
+     "fp": 0,
+     "fn": 1
+    },
+    "positive_pk": {
+     "sentences": 3,
+     "tp": 3,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive_pk_and_outcome": {
+     "sentences": 1,
+     "tp": 2,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive_serious": {
+     "sentences": 1,
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "single_drug_effect": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "unknown": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "unrelated": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    }
+   },
+   "by_concept": {
+    "bleeding": {
+     "tp": 4,
+     "fp": 0,
+     "fn": 0
+    },
+    "bradycardia_block": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 0
+    },
+    "coagulation_measure": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 1
+    },
+    "exposure_decrease": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "exposure_increase": {
+     "tp": 4,
+     "fp": 0,
+     "fn": 2
+    },
+    "hepatotoxicity": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 1
+    },
+    "hyperkalemia": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 0
+    },
+    "hypertension": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "hypokalemia": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 1
+    },
+    "hypomagnesemia": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "hyponatremia": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "hypotension": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 1
+    },
+    "myelosuppression": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 0
+    },
+    "myopathy": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 0
+    },
+    "nephrotoxicity": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 1
+    },
+    "qt_arrhythmia": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 2
+    },
+    "reduced_effect": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 0
+    },
+    "respiratory_depression": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 1
+    },
+    "sedation": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 1
+    },
+    "serotonin_syndrome": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 0
+    }
+   },
+   "errors": [
+    {
+     "id": "p19",
+     "case": "positive_paraphrase",
+     "gold": [
+      "hypokalemia",
+      "qt_arrhythmia"
+     ],
+     "pred": [
+      "hypokalemia"
+     ],
+     "sentence": "Hypokalemia induced by furosemide may increase the risk of arrhythmia."
+    },
+    {
+     "id": "p22",
+     "case": "paraphrase",
+     "gold": [
+      "coagulation_measure"
+     ],
+     "pred": [],
+     "sentence": "Excessive anticoagulation was observed with fluconazole."
+    },
+    {
+     "id": "p23",
+     "case": "paraphrase",
+     "gold": [
+      "sedation"
+     ],
+     "pred": [],
+     "sentence": "Patients taking diazepam with this drug experienced marked drowsiness."
+    },
+    {
+     "id": "p24",
+     "case": "paraphrase",
+     "gold": [
+      "nephrotoxicity"
+     ],
+     "pred": [],
+     "sentence": "Kidney damage has been reported with ibuprofen."
+    },
+    {
+     "id": "p25",
+     "case": "paraphrase",
+     "gold": [
+      "hepatotoxicity"
+     ],
+     "pred": [],
+     "sentence": "Elevated liver enzymes were seen with acetaminophen."
+    },
+    {
+     "id": "p26",
+     "case": "paraphrase",
+     "gold": [
+      "qt_arrhythmia"
+     ],
+     "pred": [],
+     "sentence": "Irregular heartbeat has been reported with sotalol."
+    },
+    {
+     "id": "p27",
+     "case": "paraphrase",
+     "gold": [
+      "respiratory_depression"
+     ],
+     "pred": [],
+     "sentence": "Breathing problems may occur with opioid co-use such as fentanyl."
+    },
+    {
+     "id": "p28",
+     "case": "paraphrase_pk",
+     "gold": [
+      "exposure_increase"
+     ],
+     "pred": [],
+     "sentence": "Blood levels of digoxin rise when given with this drug."
+    },
+    {
+     "id": "p29",
+     "case": "paraphrase",
+     "gold": [
+      "hypotension"
+     ],
+     "pred": [],
+     "sentence": "Low blood pressure was observed with nitroglycerin."
+    },
+    {
+     "id": "p30",
+     "case": "paraphrase",
+     "gold": [
+      "hypokalemia"
+     ],
+     "pred": [],
+     "sentence": "Low potassium levels may develop with hydrochlorothiazide."
+    },
+    {
+     "id": "a51",
+     "case": "ambiguous_pk",
+     "gold": [
+      "exposure_increase"
+     ],
+     "pred": [],
+     "sentence": "Plasma concentrations increased with probenecid and decreased with rifampin."
+    }
+   ]
+  }
+ },
+ "holdout": {
+  "set": "validation/clinical_outcomes/holdout_label_sentences.jsonl",
+  "sha256": "70d89bd1e5fd65efc4cc2849dbe8c3ff2ee90943a64a557f9db74cda624058e5",
+  "n_sentences": 40,
+  "case_counts": {
+   "positive": 10,
+   "positive_serious": 2,
+   "positive_pk_semicolon": 1,
+   "paraphrase_pk": 2,
+   "positive_pk_and_paraphrase": 2,
+   "no_effect": 2,
+   "no_outcome_comparison": 1,
+   "population": 1,
+   "single_drug_effect": 1,
+   "positive_pk": 3,
+   "pk_not_exposure_wording": 1,
+   "positive_semicolon": 1,
+   "paraphrase_class": 1,
+   "mechanism_only": 1,
+   "positive_monitoring": 2,
+   "negated": 3,
+   "positive_class": 2,
+   "negated_after_term": 2,
+   "positive_class_list": 1,
+   "paraphrase_pk_semicolon": 1
+  },
+  "rule_level": {
+   "units": "(sentence, concept)",
+   "sentences": 40,
+   "tp": 25,
+   "fp": 1,
+   "fn": 7,
+   "precision": {
+    "k": 25,
+    "n": 26,
+    "value": 0.962,
+    "wilson95": [
+     0.811,
+     0.993
+    ]
+   },
+   "recall": {
+    "k": 25,
+    "n": 32,
+    "value": 0.781,
+    "wilson95": [
+     0.612,
+     0.89
+    ]
+   },
+   "unsupported_claim_rate": {
+    "k": 1,
+    "n": 24,
+    "value": 0.042,
+    "wilson95": [
+     0.007,
+     0.202
+    ],
+    "definition": "sentences with at least one extracted concept the gold does not contain / sentences with any extraction"
+   },
+   "abstention_on_no_outcome_sentences": {
+    "k": 11,
+    "n": 12,
+    "value": 0.917,
+    "wilson95": [
+     0.646,
+     0.985
+    ],
+    "definition": "gold-empty sentences (negated, population, single-drug, mechanism-only, mixed) with nothing extracted"
+   },
+   "bootstrap": {
+    "precision95": [
+     0.875,
+     1.0
+    ],
+    "recall95": [
+     0.636,
+     0.909
+    ],
+    "resamples": 2000
+   },
+   "by_case": {
+    "mechanism_only": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "negated": {
+     "sentences": 3,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "negated_after_term": {
+     "sentences": 2,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "no_effect": {
+     "sentences": 2,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "no_outcome_comparison": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "paraphrase_class": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 1
+    },
+    "paraphrase_pk": {
+     "sentences": 2,
+     "tp": 0,
+     "fp": 0,
+     "fn": 2
+    },
+    "paraphrase_pk_semicolon": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 1
+    },
+    "pk_not_exposure_wording": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "population": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive": {
+     "sentences": 10,
+     "tp": 11,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive_class": {
+     "sentences": 2,
+     "tp": 2,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive_class_list": {
+     "sentences": 1,
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive_monitoring": {
+     "sentences": 2,
+     "tp": 2,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive_pk": {
+     "sentences": 3,
+     "tp": 3,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive_pk_and_paraphrase": {
+     "sentences": 2,
+     "tp": 2,
+     "fp": 0,
+     "fn": 2
+    },
+    "positive_pk_semicolon": {
+     "sentences": 1,
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive_semicolon": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 1
+    },
+    "positive_serious": {
+     "sentences": 2,
+     "tp": 3,
+     "fp": 0,
+     "fn": 0
+    },
+    "single_drug_effect": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 1,
+     "fn": 0
+    }
+   },
+   "by_concept": {
+    "bleeding": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 0
+    },
+    "bradycardia_block": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "coagulation_measure": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "exposure_decrease": {
+     "tp": 3,
+     "fp": 0,
+     "fn": 0
+    },
+    "exposure_increase": {
+     "tp": 4,
+     "fp": 0,
+     "fn": 3
+    },
+    "hyperkalemia": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "hypoglycemia": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 0
+    },
+    "hyponatremia": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "hypotension": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 0
+    },
+    "myelosuppression": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 1
+    },
+    "myopathy": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "nephrotoxicity": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "qt_arrhythmia": {
+     "tp": 1,
+     "fp": 1,
+     "fn": 0
+    },
+    "reduced_effect": {
+     "tp": 0,
+     "fp": 0,
+     "fn": 3
+    },
+    "respiratory_depression": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "sedation": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "serotonin_syndrome": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    }
+   },
+   "errors": [
+    {
+     "id": "h06",
+     "case": "paraphrase_pk",
+     "gold": [
+      "exposure_increase"
+     ],
+     "pred": [],
+     "sentence": "Digoxin concentrations increased by approximately 70% when amiodarone was added."
+    },
+    {
+     "id": "h09",
+     "case": "positive_pk_and_paraphrase",
+     "gold": [
+      "exposure_decrease",
+      "reduced_effect"
+     ],
+     "pred": [
+      "exposure_decrease"
+     ],
+     "sentence": "Cyclosporine blood concentrations may be decreased by carbamazepine, which can result in graft rejection."
+    },
+    {
+     "id": "h13",
+     "case": "single_drug_effect",
+     "gold": [],
+     "pred": [
+      "qt_arrhythmia"
+     ],
+     "sentence": "Citalopram causes dose-dependent QT interval prolongation."
+    },
+    {
+     "id": "h15",
+     "case": "positive_pk_and_paraphrase",
+     "gold": [
+      "exposure_decrease",
+      "reduced_effect"
+     ],
+     "pred": [
+      "exposure_decrease"
+     ],
+     "sentence": "Rifabutin decreases plasma concentrations of this drug, which may lead to loss of virologic response."
+    },
+    {
+     "id": "h17",
+     "case": "positive_semicolon",
+     "gold": [
+      "myelosuppression"
+     ],
+     "pred": [],
+     "sentence": "Allopurinol inhibits the metabolism of azathioprine; severe myelosuppression has been reported."
+    },
+    {
+     "id": "h21",
+     "case": "paraphrase_class",
+     "gold": [
+      "reduced_effect"
+     ],
+     "pred": [],
+     "sentence": "NSAIDs, including ibuprofen, may diminish the antihypertensive effect of ACE inhibitors."
+    },
+    {
+     "id": "h30",
+     "case": "paraphrase_pk",
+     "gold": [
+      "exposure_increase"
+     ],
+     "pred": [],
+     "sentence": "Clarithromycin may increase digoxin levels, and digoxin toxicity has been reported."
+    },
+    {
+     "id": "h40",
+     "case": "paraphrase_pk_semicolon",
+     "gold": [
+      "exposure_increase"
+     ],
+     "pred": [],
+     "sentence": "Lithium toxicity has occurred; serum lithium levels increased when enalapril was added."
+    }
+   ]
+  },
+  "end_to_end": {
+   "n_runnable": 38,
+   "skipped_partner_not_resolvable_offline": {
+    "cholestyramine": 1,
+    "lithium": 1
+   },
+   "partner_found_by_label_matcher": {
+    "k": 38,
+    "n": 38,
+    "value": 1.0,
+    "wilson95": [
+     0.908,
+     1.0
+    ]
+   },
+   "rule_and_engine_agree": {
+    "k": 38,
+    "n": 38,
+    "value": 1.0,
+    "wilson95": [
+     0.908,
+     1.0
+    ]
+   },
+   "units": "(sentence, concept)",
+   "sentences": 38,
+   "tp": 25,
+   "fp": 1,
+   "fn": 7,
+   "precision": {
+    "k": 25,
+    "n": 26,
+    "value": 0.962,
+    "wilson95": [
+     0.811,
+     0.993
+    ]
+   },
+   "recall": {
+    "k": 25,
+    "n": 32,
+    "value": 0.781,
+    "wilson95": [
+     0.612,
+     0.89
+    ]
+   },
+   "unsupported_claim_rate": {
+    "k": 1,
+    "n": 24,
+    "value": 0.042,
+    "wilson95": [
+     0.007,
+     0.202
+    ],
+    "definition": "sentences with at least one extracted concept the gold does not contain / sentences with any extraction"
+   },
+   "abstention_on_no_outcome_sentences": {
+    "k": 9,
+    "n": 10,
+    "value": 0.9,
+    "wilson95": [
+     0.596,
+     0.982
+    ],
+    "definition": "gold-empty sentences (negated, population, single-drug, mechanism-only, mixed) with nothing extracted"
+   },
+   "bootstrap": {
+    "precision95": [
+     0.88,
+     1.0
+    ],
+    "recall95": [
+     0.65,
+     0.917
+    ],
+    "resamples": 2000
+   },
+   "by_case": {
+    "mechanism_only": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "negated": {
+     "sentences": 2,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "negated_after_term": {
+     "sentences": 2,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "no_effect": {
+     "sentences": 2,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "no_outcome_comparison": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "paraphrase_class": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 1
+    },
+    "paraphrase_pk": {
+     "sentences": 2,
+     "tp": 0,
+     "fp": 0,
+     "fn": 2
+    },
+    "paraphrase_pk_semicolon": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 1
+    },
+    "population": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive": {
+     "sentences": 10,
+     "tp": 11,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive_class": {
+     "sentences": 2,
+     "tp": 2,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive_class_list": {
+     "sentences": 1,
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive_monitoring": {
+     "sentences": 2,
+     "tp": 2,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive_pk": {
+     "sentences": 3,
+     "tp": 3,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive_pk_and_paraphrase": {
+     "sentences": 2,
+     "tp": 2,
+     "fp": 0,
+     "fn": 2
+    },
+    "positive_pk_semicolon": {
+     "sentences": 1,
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "positive_semicolon": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 0,
+     "fn": 1
+    },
+    "positive_serious": {
+     "sentences": 2,
+     "tp": 3,
+     "fp": 0,
+     "fn": 0
+    },
+    "single_drug_effect": {
+     "sentences": 1,
+     "tp": 0,
+     "fp": 1,
+     "fn": 0
+    }
+   },
+   "by_concept": {
+    "bleeding": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 0
+    },
+    "bradycardia_block": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "coagulation_measure": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "exposure_decrease": {
+     "tp": 3,
+     "fp": 0,
+     "fn": 0
+    },
+    "exposure_increase": {
+     "tp": 4,
+     "fp": 0,
+     "fn": 3
+    },
+    "hyperkalemia": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "hypoglycemia": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 0
+    },
+    "hyponatremia": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "hypotension": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 0
+    },
+    "myelosuppression": {
+     "tp": 2,
+     "fp": 0,
+     "fn": 1
+    },
+    "myopathy": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "nephrotoxicity": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "qt_arrhythmia": {
+     "tp": 1,
+     "fp": 1,
+     "fn": 0
+    },
+    "reduced_effect": {
+     "tp": 0,
+     "fp": 0,
+     "fn": 3
+    },
+    "respiratory_depression": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "sedation": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    },
+    "serotonin_syndrome": {
+     "tp": 1,
+     "fp": 0,
+     "fn": 0
+    }
+   },
+   "errors": [
+    {
+     "id": "h06",
+     "case": "paraphrase_pk",
+     "gold": [
+      "exposure_increase"
+     ],
+     "pred": [],
+     "sentence": "Digoxin concentrations increased by approximately 70% when amiodarone was added."
+    },
+    {
+     "id": "h09",
+     "case": "positive_pk_and_paraphrase",
+     "gold": [
+      "exposure_decrease",
+      "reduced_effect"
+     ],
+     "pred": [
+      "exposure_decrease"
+     ],
+     "sentence": "Cyclosporine blood concentrations may be decreased by carbamazepine, which can result in graft rejection."
+    },
+    {
+     "id": "h13",
+     "case": "single_drug_effect",
+     "gold": [],
+     "pred": [
+      "qt_arrhythmia"
+     ],
+     "sentence": "Citalopram causes dose-dependent QT interval prolongation."
+    },
+    {
+     "id": "h15",
+     "case": "positive_pk_and_paraphrase",
+     "gold": [
+      "exposure_decrease",
+      "reduced_effect"
+     ],
+     "pred": [
+      "exposure_decrease"
+     ],
+     "sentence": "Rifabutin decreases plasma concentrations of this drug, which may lead to loss of virologic response."
+    },
+    {
+     "id": "h17",
+     "case": "positive_semicolon",
+     "gold": [
+      "myelosuppression"
+     ],
+     "pred": [],
+     "sentence": "Allopurinol inhibits the metabolism of azathioprine; severe myelosuppression has been reported."
+    },
+    {
+     "id": "h21",
+     "case": "paraphrase_class",
+     "gold": [
+      "reduced_effect"
+     ],
+     "pred": [],
+     "sentence": "NSAIDs, including ibuprofen, may diminish the antihypertensive effect of ACE inhibitors."
+    },
+    {
+     "id": "h30",
+     "case": "paraphrase_pk",
+     "gold": [
+      "exposure_increase"
+     ],
+     "pred": [],
+     "sentence": "Clarithromycin may increase digoxin levels, and digoxin toxicity has been reported."
+    },
+    {
+     "id": "h40",
+     "case": "paraphrase_pk_semicolon",
+     "gold": [
+      "exposure_increase"
+     ],
+     "pred": [],
+     "sentence": "Lithium toxicity has occurred; serum lithium levels increased when enalapril was added."
+    }
+   ]
+  }
+ },
+ "pair_level": {
+  "sample": {
+   "seed": 20261015,
+   "per_type": 3,
+   "types": [
+    66,
+    33,
+    42,
+    56,
+    31,
+    50,
+    86,
+    6,
+    20,
+    16,
+    40,
+    64,
+    57,
+    80,
+    48,
+    73,
+    47,
+    75,
+    4,
+    72,
+    70,
+    37,
+    49
+   ],
+   "picked_per_type": {
+    "66": 3,
+    "33": 3,
+    "42": 3,
+    "56": 3,
+    "31": 3,
+    "50": 3,
+    "86": 3,
+    "6": 3,
+    "20": 3,
+    "16": 3,
+    "40": 3,
+    "64": 3,
+    "57": 3,
+    "80": 3,
+    "48": 3,
+    "73": 3,
+    "47": 3,
+    "75": 3,
+    "4": 3,
+    "72": 3,
+    "70": 3,
+    "37": 3,
+    "49": 3
+   },
+   "documented_pairs": 69,
+   "undocumented_pairs": 20
+  },
+  "status_and_outcome_consistency": {
+   "k": 89,
+   "n": 89,
+   "value": 1.0,
+   "wilson95": [
+    0.959,
+    1.0
+   ]
+  },
+  "citation_accuracy": {
+   "k": 82,
+   "n": 82,
+   "value": 1.0,
+   "wilson95": [
+    0.955,
+    1.0
+   ],
+   "definition": "support excerpts equal to the cited record's template or statement, and mapped to the outcome its record type names"
+  },
+  "unsupported_documented_outcomes": {
+   "k": 0,
+   "n_outcomes": 76
+  },
+  "direction": {
+   "claims": 9,
+   "errors": 0,
+   "definition": "an affected drug named without a verified record order or an unambiguous inhibitor/inducer–substrate annotation"
+  },
+  "abstention_undocumented": {
+   "k": 20,
+   "n": 20,
+   "value": 1.0,
+   "wilson95": [
+    0.839,
+    1.0
+   ],
+   "statuses": {
+    "insufficient_evidence": 20
+   },
+   "with_research_hypotheses": 0
+  },
+  "status_distribution_documented": {
+   "documented_interaction": 51,
+   "documented_outcome_unclear": 18
+  },
+  "ru_en_structural": {
+   "k": 1702,
+   "n": 1702,
+   "value": 1.0,
+   "wilson95": [
+    0.998,
+    1.0
+   ],
+   "checks": "both sides non-empty; Cyrillic in RU, none in EN; same numerals"
+  },
+  "model_independence": {
+   "pairs": 89,
+   "outcomes_changed_between_scores_0.01_and_0.99": 0
+  },
+  "unavailable_label_source": {
+   "k": 89,
+   "n": 89,
+   "value": 1.0,
+   "wilson95": [
+    0.959,
+    1.0
+   ],
+   "pairs_where_labels_are_not_searched": 2,
+   "definition": "outage stated in coverage, DrugBank outcomes unchanged, undocumented pairs reported as source_unavailable"
+  },
+  "failures": []
+ },
+ "attribution": {
+  "reference": "drug order of DrugBank types 4 and 75 (exposure decrease), verified in direction.py (consistency 0.996 and 0.970)",
+  "rule": "unique affected drug of inducer–substrate annotation findings, computed without the record order",
+  "pairs_sampled": 1000,
+  "pairs_with_single_reference": 1000,
+  "rule_names_a_drug": {
+   "k": 606,
+   "n": 1000,
+   "value": 0.606,
+   "wilson95": [
+    0.575,
+    0.636
+   ]
+  },
+  "accuracy_when_named": {
+   "k": 595,
+   "n": 606,
+   "value": 0.982,
+   "wilson95": [
+    0.968,
+    0.99
+   ]
+  },
+  "abstained_ambiguous": 76,
+  "abstained_no_annotation": 318,
+  "wrong_examples": [
+   {
+    "pair": "DB00240+DB08864",
+    "reference_affected": "DB08864",
+    "rule": "DB00240"
+   },
+   {
+    "pair": "DB06708+DB08864",
+    "reference_affected": "DB08864",
+    "rule": "DB06708"
+   },
+   {
+    "pair": "DB00608+DB00643",
+    "reference_affected": "DB00643",
+    "rule": "DB00608"
+   },
+   {
+    "pair": "DB06414+DB08873",
+    "reference_affected": "DB06414",
+    "rule": "DB08873"
+   },
+   {
+    "pair": "DB00224+DB00863",
+    "reference_affected": "DB00224",
+    "rule": "DB00863"
+   }
+  ],
+  "caveat": "Same database for rule and reference; DrugBank may have written these records from the same annotations. Agreement is consistency, not independent confirmation."
+ },
+ "adversarial": [
+  {
+   "case": "unrelated adverse effect in the same label",
+   "pass": true,
+   "detail": "hepatotoxicity sentence without the partner is not assigned to the pair"
+  },
+  {
+   "case": "outcome and partner in separate sections",
+   "pass": true,
+   "detail": "bleeding (Warnings) + warfarin (Drug Interactions) give no bleeding outcome"
+  },
+  {
+   "case": "plausible but undocumented mechanism",
+   "pass": true,
+   "detail": "DB01394+DB01071: 1 hypothesis(es), all research-only; status research_prediction_only"
+  },
+  {
+   "case": "outdated label next to a current one",
+   "pass": true,
+   "detail": "only the most recent label is read (documents: ['00000000-0000-0000-0000-00000000ad04'])"
+  },
+  {
+   "case": "several excerpts from one document",
+   "pass": true,
+   "detail": "two sentences of one label: two excerpts, one source document"
+  },
+  {
+   "case": "contradictory sources",
+   "pass": true,
+   "detail": "DrugBank exposure increase kept; label no-effect sentence shown as disagreement, neither wins"
+  },
+  {
+   "case": "ambiguous DrugBank drug order",
+   "pass": true,
+   "detail": "both drugs inhibitor and substrate: no affected drug named"
+  },
+  {
+   "case": "label names both drugs without asserting an outcome",
+   "pass": true,
+   "detail": "co-mention without an outcome term yields no label outcome"
+  }
+ ],
+ "dev_round1_v1": {
+  "method": {
+   "lexicon": "label_lexicon/v1",
+   "seed": 20261015,
+   "store_sha256": "593c2eddbea941f6dad213fd0f21715b75f7fe9e377dd4abdc5ae4718b1a75a8",
+   "note": "Pilot set by the rules' author; constructed sentences; not a clinical validation."
+  },
+  "pilot": {
+   "set": "validation/clinical_outcomes/pilot_label_sentences.jsonl",
+   "n_sentences": 75,
+   "case_counts": {
+    "positive": 28,
+    "positive_serious": 1,
+    "positive_pk": 4,
+    "positive_class_list": 3,
+    "positive_monitoring": 1,
+    "positive_paraphrase": 1,
+    "positive_pk_and_outcome": 1,
+    "paraphrase": 8,
+    "paraphrase_pk": 2,
+    "negated": 5,
+    "no_effect": 2,
+    "negated_after_term": 3,
+    "population": 4,
+    "single_drug_effect": 1,
+    "unrelated": 1,
+    "class_list": 1,
+    "mechanism_only": 2,
+    "no_outcome": 3,
+    "ambiguous_pk": 1,
+    "negated_unchanged": 1,
+    "unknown": 1,
+    "mixed": 1
+   },
+   "rule_level": {
+    "units": "(sentence, concept)",
+    "sentences": 75,
+    "tp": 42,
+    "fp": 6,
+    "fn": 13,
+    "precision": {
+     "k": 42,
+     "n": 48,
+     "value": 0.875,
+     "wilson95": [
+      0.753,
+      0.941
+     ]
+    },
+    "recall": {
+     "k": 42,
+     "n": 55,
+     "value": 0.764,
+     "wilson95": [
+      0.637,
+      0.856
+     ]
+    },
+    "unsupported_claim_rate": {
+     "k": 6,
+     "n": 46,
+     "value": 0.13,
+     "wilson95": [
+      0.061,
+      0.257
+     ],
+     "definition": "sentences with at least one extracted concept the gold does not contain / sentences with any extraction"
+    },
+    "abstention_on_no_outcome_sentences": {
+     "k": 17,
+     "n": 23,
+     "value": 0.739,
+     "wilson95": [
+      0.535,
+      0.875
+     ],
+     "definition": "gold-empty sentences (negated, population, single-drug, mechanism-only, mixed) with nothing extracted"
+    },
+    "bootstrap": {
+     "precision95": [
+      0.774,
+      0.96
+     ],
+     "recall95": [
+      0.648,
+      0.872
+     ],
+     "resamples": 2000
+    },
+    "by_case": {
+     "ambiguous_pk": {
+      "sentences": 1,
+      "tp": 0,
+      "fp": 0,
+      "fn": 1
+     },
+     "class_list": {
+      "sentences": 1,
+      "tp": 1,
+      "fp": 0,
+      "fn": 0
+     },
+     "mechanism_only": {
+      "sentences": 2,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
+     "mixed": {
+      "sentences": 1,
+      "tp": 0,
+      "fp": 0,
+      "fn": 1
+     },
+     "negated": {
+      "sentences": 5,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
+     "negated_after_term": {
+      "sentences": 3,
+      "tp": 0,
+      "fp": 3,
+      "fn": 0
+     },
+     "negated_unchanged": {
+      "sentences": 1,
+      "tp": 0,
+      "fp": 1,
+      "fn": 0
+     },
+     "no_effect": {
+      "sentences": 2,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
+     "no_outcome": {
+      "sentences": 3,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
+     "paraphrase": {
+      "sentences": 8,
+      "tp": 0,
+      "fp": 0,
+      "fn": 8
+     },
+     "paraphrase_pk": {
+      "sentences": 2,
+      "tp": 0,
+      "fp": 0,
+      "fn": 2
+     },
+     "population": {
+      "sentences": 4,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
+     "positive": {
+      "sentences": 28,
+      "tp": 28,
+      "fp": 0,
+      "fn": 0
+     },
+     "positive_class_list": {
+      "sentences": 3,
+      "tp": 4,
+      "fp": 0,
+      "fn": 0
+     },
+     "positive_monitoring": {
+      "sentences": 1,
+      "tp": 1,
+      "fp": 0,
+      "fn": 0
+     },
+     "positive_paraphrase": {
+      "sentences": 1,
+      "tp": 1,
+      "fp": 0,
+      "fn": 1
+     },
+     "positive_pk": {
+      "sentences": 4,
+      "tp": 4,
+      "fp": 0,
+      "fn": 0
+     },
+     "positive_pk_and_outcome": {
+      "sentences": 1,
+      "tp": 2,
+      "fp": 0,
+      "fn": 0
+     },
+     "positive_serious": {
+      "sentences": 1,
+      "tp": 1,
+      "fp": 0,
+      "fn": 0
+     },
+     "single_drug_effect": {
+      "sentences": 1,
+      "tp": 0,
+      "fp": 1,
+      "fn": 0
+     },
+     "unknown": {
+      "sentences": 1,
+      "tp": 0,
+      "fp": 1,
+      "fn": 0
+     },
+     "unrelated": {
+      "sentences": 1,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     }
+    },
+    "by_concept": {
+     "bleeding": {
+      "tp": 4,
+      "fp": 2,
+      "fn": 0
+     },
+     "bradycardia_block": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 0
+     },
+     "coagulation_measure": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 1
+     },
+     "exposure_decrease": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 1
+     },
+     "exposure_increase": {
+      "tp": 4,
+      "fp": 0,
+      "fn": 3
+     },
+     "hepatotoxicity": {
+      "tp": 2,
+      "fp": 1,
+      "fn": 1
+     },
+     "hyperkalemia": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 0
+     },
+     "hypertension": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0
+     },
+     "hypoglycemia": {
+      "tp": 1,
+      "fp": 1,
+      "fn": 0
+     },
+     "hypokalemia": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 1
+     },
+     "hypomagnesemia": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0
+     },
+     "hyponatremia": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0
+     },
+     "hypotension": {
+      "tp": 2,
+      "fp": 1,
+      "fn": 1
+     },
+     "myelosuppression": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 0
+     },
+     "myopathy": {
+      "tp": 3,
+      "fp": 0,
+      "fn": 0
+     },
+     "nephrotoxicity": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 1
+     },
+     "qt_arrhythmia": {
+      "tp": 2,
+      "fp": 1,
+      "fn": 2
+     },
+     "reduced_effect": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 0
+     },
+     "respiratory_depression": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 1
+     },
+     "sedation": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 1
+     },
+     "serotonin_syndrome": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 0
+     }
+    },
+    "errors": [
+     {
+      "id": "p19",
+      "case": "positive_paraphrase",
+      "gold": [
+       "hypokalemia",
+       "qt_arrhythmia"
+      ],
+      "pred": [
+       "hypokalemia"
+      ],
+      "sentence": "Hypokalemia induced by furosemide may increase the risk of arrhythmia."
+     },
+     {
+      "id": "p22",
+      "case": "paraphrase",
+      "gold": [
+       "coagulation_measure"
+      ],
+      "pred": [],
+      "sentence": "Excessive anticoagulation was observed with fluconazole."
+     },
+     {
+      "id": "p23",
+      "case": "paraphrase",
+      "gold": [
+       "sedation"
+      ],
+      "pred": [],
+      "sentence": "Patients taking diazepam with this drug experienced marked drowsiness."
+     },
+     {
+      "id": "p24",
+      "case": "paraphrase",
+      "gold": [
+       "nephrotoxicity"
+      ],
+      "pred": [],
+      "sentence": "Kidney damage has been reported with ibuprofen."
+     },
+     {
+      "id": "p25",
+      "case": "paraphrase",
+      "gold": [
+       "hepatotoxicity"
+      ],
+      "pred": [],
+      "sentence": "Elevated liver enzymes were seen with acetaminophen."
+     },
+     {
+      "id": "p26",
+      "case": "paraphrase",
+      "gold": [
+       "qt_arrhythmia"
+      ],
+      "pred": [],
+      "sentence": "Irregular heartbeat has been reported with sotalol."
+     },
+     {
+      "id": "p27",
+      "case": "paraphrase",
+      "gold": [
+       "respiratory_depression"
+      ],
+      "pred": [],
+      "sentence": "Breathing problems may occur with opioid co-use such as fentanyl."
+     },
+     {
+      "id": "p28",
+      "case": "paraphrase_pk",
+      "gold": [
+       "exposure_increase"
+      ],
+      "pred": [],
+      "sentence": "Blood levels of digoxin rise when given with this drug."
+     },
+     {
+      "id": "p29",
+      "case": "paraphrase",
+      "gold": [
+       "hypotension"
+      ],
+      "pred": [],
+      "sentence": "Low blood pressure was observed with nitroglycerin."
+     },
+     {
+      "id": "p30",
+      "case": "paraphrase",
+      "gold": [
+       "hypokalemia"
+      ],
+      "pred": [],
+      "sentence": "Low potassium levels may develop with hydrochlorothiazide."
+     },
+     {
+      "id": "n35",
+      "case": "negated_after_term",
+      "gold": [],
+      "pred": [
+       "bleeding"
+      ],
+      "sentence": "Bleeding risk was not increased with clopidogrel."
+     },
+     {
+      "id": "n36",
+      "case": "negated_after_term",
+      "gold": [],
+      "pred": [
+       "hypotension"
+      ],
+      "sentence": "Hypotension was not observed with amlodipine."
+     },
+     {
+      "id": "u42",
+      "case": "single_drug_effect",
+      "gold": [],
+      "pred": [
+       "hepatotoxicity"
+      ],
+      "sentence": "Warfarin is an anticoagulant; this drug alone has caused hepatitis."
+     },
+     {
+      "id": "a51",
+      "case": "ambiguous_pk",
+      "gold": [
+       "exposure_increase"
+      ],
+      "pred": [],
+      "sentence": "Plasma concentrations increased with probenecid and decreased with rifampin."
+     },
+     {
+      "id": "p54",
+      "case": "paraphrase_pk",
+      "gold": [
+       "exposure_increase"
+      ],
+      "pred": [],
+      "sentence": "Co-administration with lithium may increase serum lithium concentrations."
+     },
+     {
+      "id": "n71",
+      "case": "negated_unchanged",
+      "gold": [],
+      "pred": [
+       "bleeding"
+      ],
+      "sentence": "Bleeding time was unchanged when given with aspirin."
+     },
+     {
+      "id": "n73",
+      "case": "negated_after_term",
+      "gold": [],
+      "pred": [
+       "hypoglycemia"
+      ],
+      "sentence": "Hypoglycemia was not more frequent with metformin."
+     },
+     {
+      "id": "n74",
+      "case": "unknown",
+      "gold": [],
+      "pred": [
+       "qt_arrhythmia"
+      ],
+      "sentence": "The risk of QT prolongation with ondansetron is unknown."
+     },
+     {
+      "id": "a75",
+      "case": "mixed",
+      "gold": [
+       "exposure_decrease"
+      ],
+      "pred": [],
+      "sentence": "Rifampin may decrease concentrations; however, no reduced efficacy was observed."
+     }
+    ]
+   },
+   "end_to_end": {
+    "n_runnable": 65,
+    "skipped_partner_not_resolvable_offline": {
+     "rifampin": 3,
+     "insulin": 1,
+     "tenofovir": 1,
+     "tacrolimus": 1,
+     "lithium": 1,
+     "alcohol": 1,
+     "colchicine": 1,
+     "valproate": 1
+    },
+    "partner_found_by_label_matcher": {
+     "k": 61,
+     "n": 65,
+     "value": 0.938,
+     "wilson95": [
+      0.852,
+      0.976
+     ]
+    },
+    "rule_and_engine_agree": {
+     "k": 64,
+     "n": 65,
+     "value": 0.985,
+     "wilson95": [
+      0.918,
+      0.997
+     ]
+    },
+    "units": "(sentence, concept)",
+    "sentences": 65,
+    "tp": 36,
+    "fp": 5,
+    "fn": 11,
+    "precision": {
+     "k": 36,
+     "n": 41,
+     "value": 0.878,
+     "wilson95": [
+      0.745,
+      0.947
+     ]
+    },
+    "recall": {
+     "k": 36,
+     "n": 47,
+     "value": 0.766,
+     "wilson95": [
+      0.628,
+      0.864
+     ]
+    },
+    "unsupported_claim_rate": {
+     "k": 5,
+     "n": 39,
+     "value": 0.128,
+     "wilson95": [
+      0.056,
+      0.267
+     ],
+     "definition": "sentences with at least one extracted concept the gold does not contain / sentences with any extraction"
+    },
+    "abstention_on_no_outcome_sentences": {
+     "k": 16,
+     "n": 21,
+     "value": 0.762,
+     "wilson95": [
+      0.549,
+      0.894
+     ],
+     "definition": "gold-empty sentences (negated, population, single-drug, mechanism-only, mixed) with nothing extracted"
+    },
+    "bootstrap": {
+     "precision95": [
+      0.767,
+      0.975
+     ],
+     "recall95": [
+      0.646,
+      0.878
+     ],
+     "resamples": 2000
+    },
+    "by_case": {
+     "ambiguous_pk": {
+      "sentences": 1,
+      "tp": 0,
+      "fp": 0,
+      "fn": 1
+     },
+     "class_list": {
+      "sentences": 1,
+      "tp": 1,
+      "fp": 0,
+      "fn": 0
+     },
+     "mechanism_only": {
+      "sentences": 1,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
+     "negated": {
+      "sentences": 5,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
+     "negated_after_term": {
+      "sentences": 3,
+      "tp": 0,
+      "fp": 3,
+      "fn": 0
+     },
+     "negated_unchanged": {
+      "sentences": 1,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
+     "no_effect": {
+      "sentences": 1,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
+     "no_outcome": {
+      "sentences": 3,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
+     "paraphrase": {
+      "sentences": 8,
+      "tp": 0,
+      "fp": 0,
+      "fn": 8
+     },
+     "paraphrase_pk": {
+      "sentences": 1,
+      "tp": 0,
+      "fp": 0,
+      "fn": 1
+     },
+     "population": {
+      "sentences": 4,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     },
+     "positive": {
+      "sentences": 23,
+      "tp": 23,
+      "fp": 0,
+      "fn": 0
+     },
+     "positive_class_list": {
+      "sentences": 3,
+      "tp": 4,
+      "fp": 0,
+      "fn": 0
+     },
+     "positive_monitoring": {
+      "sentences": 1,
+      "tp": 1,
+      "fp": 0,
+      "fn": 0
+     },
+     "positive_paraphrase": {
+      "sentences": 1,
+      "tp": 1,
+      "fp": 0,
+      "fn": 1
+     },
+     "positive_pk": {
+      "sentences": 3,
+      "tp": 3,
+      "fp": 0,
+      "fn": 0
+     },
+     "positive_pk_and_outcome": {
+      "sentences": 1,
+      "tp": 2,
+      "fp": 0,
+      "fn": 0
+     },
+     "positive_serious": {
+      "sentences": 1,
+      "tp": 1,
+      "fp": 0,
+      "fn": 0
+     },
+     "single_drug_effect": {
+      "sentences": 1,
+      "tp": 0,
+      "fp": 1,
+      "fn": 0
+     },
+     "unknown": {
+      "sentences": 1,
+      "tp": 0,
+      "fp": 1,
+      "fn": 0
+     },
+     "unrelated": {
+      "sentences": 1,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0
+     }
+    },
+    "by_concept": {
+     "bleeding": {
+      "tp": 4,
+      "fp": 1,
+      "fn": 0
+     },
+     "bradycardia_block": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 0
+     },
+     "coagulation_measure": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 1
+     },
+     "exposure_decrease": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0
+     },
+     "exposure_increase": {
+      "tp": 4,
+      "fp": 0,
+      "fn": 2
+     },
+     "hepatotoxicity": {
+      "tp": 1,
+      "fp": 1,
+      "fn": 1
+     },
+     "hyperkalemia": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 0
+     },
+     "hypertension": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0
+     },
+     "hypoglycemia": {
+      "tp": 0,
+      "fp": 1,
+      "fn": 0
+     },
+     "hypokalemia": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 1
+     },
+     "hypomagnesemia": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0
+     },
+     "hyponatremia": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 0
+     },
+     "hypotension": {
+      "tp": 2,
+      "fp": 1,
+      "fn": 1
+     },
+     "myelosuppression": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 0
+     },
+     "myopathy": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 0
+     },
+     "nephrotoxicity": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 1
+     },
+     "qt_arrhythmia": {
+      "tp": 2,
+      "fp": 1,
+      "fn": 2
+     },
+     "reduced_effect": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 0
+     },
+     "respiratory_depression": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 1
+     },
+     "sedation": {
+      "tp": 1,
+      "fp": 0,
+      "fn": 1
+     },
+     "serotonin_syndrome": {
+      "tp": 2,
+      "fp": 0,
+      "fn": 0
+     }
+    },
+    "errors": [
+     {
+      "id": "p19",
+      "case": "positive_paraphrase",
+      "gold": [
+       "hypokalemia",
+       "qt_arrhythmia"
+      ],
+      "pred": [
+       "hypokalemia"
+      ],
+      "sentence": "Hypokalemia induced by furosemide may increase the risk of arrhythmia."
+     },
+     {
+      "id": "p22",
+      "case": "paraphrase",
+      "gold": [
+       "coagulation_measure"
+      ],
+      "pred": [],
+      "sentence": "Excessive anticoagulation was observed with fluconazole."
+     },
+     {
+      "id": "p23",
+      "case": "paraphrase",
+      "gold": [
+       "sedation"
+      ],
+      "pred": [],
+      "sentence": "Patients taking diazepam with this drug experienced marked drowsiness."
+     },
+     {
+      "id": "p24",
+      "case": "paraphrase",
+      "gold": [
+       "nephrotoxicity"
+      ],
+      "pred": [],
+      "sentence": "Kidney damage has been reported with ibuprofen."
+     },
+     {
+      "id": "p25",
+      "case": "paraphrase",
+      "gold": [
+       "hepatotoxicity"
+      ],
+      "pred": [],
+      "sentence": "Elevated liver enzymes were seen with acetaminophen."
+     },
+     {
+      "id": "p26",
+      "case": "paraphrase",
+      "gold": [
+       "qt_arrhythmia"
+      ],
+      "pred": [],
+      "sentence": "Irregular heartbeat has been reported with sotalol."
+     },
+     {
+      "id": "p27",
+      "case": "paraphrase",
+      "gold": [
+       "respiratory_depression"
+      ],
+      "pred": [],
+      "sentence": "Breathing problems may occur with opioid co-use such as fentanyl."
+     },
+     {
+      "id": "p28",
+      "case": "paraphrase_pk",
+      "gold": [
+       "exposure_increase"
+      ],
+      "pred": [],
+      "sentence": "Blood levels of digoxin rise when given with this drug."
+     },
+     {
+      "id": "p29",
+      "case": "paraphrase",
+      "gold": [
+       "hypotension"
+      ],
+      "pred": [],
+      "sentence": "Low blood pressure was observed with nitroglycerin."
+     },
+     {
+      "id": "p30",
+      "case": "paraphrase",
+      "gold": [
+       "hypokalemia"
+      ],
+      "pred": [],
+      "sentence": "Low potassium levels may develop with hydrochlorothiazide."
+     },
+     {
+      "id": "n35",
+      "case": "negated_after_term",
+      "gold": [],
+      "pred": [
+       "bleeding"
+      ],
+      "sentence": "Bleeding risk was not increased with clopidogrel."
+     },
+     {
+      "id": "n36",
+      "case": "negated_after_term",
+      "gold": [],
+      "pred": [
+       "hypotension"
+      ],
+      "sentence": "Hypotension was not observed with amlodipine."
+     },
+     {
+      "id": "u42",
+      "case": "single_drug_effect",
+      "gold": [],
+      "pred": [
+       "hepatotoxicity"
+      ],
+      "sentence": "Warfarin is an anticoagulant; this drug alone has caused hepatitis."
+     },
+     {
+      "id": "a51",
+      "case": "ambiguous_pk",
+      "gold": [
+       "exposure_increase"
+      ],
+      "pred": [],
+      "sentence": "Plasma concentrations increased with probenecid and decreased with rifampin."
+     },
+     {
+      "id": "n73",
+      "case": "negated_after_term",
+      "gold": [],
+      "pred": [
+       "hypoglycemia"
+      ],
+      "sentence": "Hypoglycemia was not more frequent with metformin."
+     },
+     {
+      "id": "n74",
+      "case": "unknown",
+      "gold": [],
+      "pred": [
+       "qt_arrhythmia"
+      ],
+      "sentence": "The risk of QT prolongation with ondansetron is unknown."
+     }
+    ]
+   }
+  },
+  "pair_level": {
+   "sample": {
+    "seed": 20261015,
+    "per_type": 3,
+    "types": [
+     66,
+     33,
+     42,
+     56,
+     31,
+     50,
+     86,
+     6,
+     20,
+     16,
+     40,
+     64,
+     57,
+     80,
+     48,
+     73,
+     47,
+     75,
+     4,
+     72,
+     70,
+     37,
+     49
+    ],
+    "picked_per_type": {
+     "66": 3,
+     "33": 3,
+     "42": 3,
+     "56": 3,
+     "31": 3,
+     "50": 3,
+     "86": 3,
+     "6": 3,
+     "20": 3,
+     "16": 3,
+     "40": 3,
+     "64": 3,
+     "57": 3,
+     "80": 3,
+     "48": 3,
+     "73": 3,
+     "47": 3,
+     "75": 3,
+     "4": 3,
+     "72": 3,
+     "70": 3,
+     "37": 3,
+     "49": 3
+    },
+    "documented_pairs": 69,
+    "undocumented_pairs": 20
+   },
+   "status_and_outcome_consistency": {
+    "k": 89,
+    "n": 89,
+    "value": 1.0,
+    "wilson95": [
+     0.959,
+     1.0
+    ]
+   },
+   "citation_accuracy": {
+    "k": 69,
+    "n": 69,
+    "value": 1.0,
+    "wilson95": [
+     0.947,
+     1.0
+    ],
+    "definition": "support excerpts equal to the cited record's template or statement, and mapped to the outcome its record type names"
+   },
+   "unsupported_documented_outcomes": {
+    "k": 0,
+    "n_outcomes": 69
+   },
+   "direction": {
+    "claims": 9,
+    "errors": 0,
+    "definition": "an affected drug named without a verified record order or an unambiguous inhibitor/inducer–substrate annotation"
+   },
+   "abstention_undocumented": {
+    "k": 20,
+    "n": 20,
+    "value": 1.0,
+    "wilson95": [
+     0.839,
+     1.0
+    ],
+    "statuses": {
+     "insufficient_evidence": 20
+    },
+    "with_research_hypotheses": 0
+   },
+   "status_distribution_documented": {
+    "documented_interaction": 51,
+    "documented_outcome_unclear": 18
+   },
+   "ru_en_structural": {
+    "k": 1568,
+    "n": 1568,
+    "value": 1.0,
+    "wilson95": [
+     0.998,
+     1.0
+    ],
+    "checks": "both sides non-empty; Cyrillic in RU, none in EN; same numerals"
+   },
+   "model_independence": {
+    "pairs": 89,
+    "outcomes_changed_between_scores_0.01_and_0.99": 0
+   },
+   "unavailable_label_source": {
+    "k": 87,
+    "n": 89,
+    "value": 0.978,
+    "wilson95": [
+     0.922,
+     0.994
+    ],
+    "definition": "outage stated in coverage, DrugBank outcomes unchanged, undocumented pairs reported as source_unavailable"
+   },
+   "failures": [
+    {
+     "pair": "DB09449+DB01199",
+     "said_unavailable": false,
+     "status": "insufficient_evidence",
+     "ok": false
+    },
+    {
+     "pair": "DB00753+DB11348",
+     "said_unavailable": false,
+     "status": "insufficient_evidence",
+     "ok": false
+    }
+   ]
+  },
+  "attribution": {
+   "reference": "drug order of DrugBank types 4 and 75 (exposure decrease), verified in direction.py (consistency 0.996 and 0.970)",
+   "rule": "unique affected drug of inducer–substrate annotation findings, computed without the record order",
+   "pairs_sampled": 1000,
+   "pairs_with_single_reference": 1000,
+   "rule_names_a_drug": {
+    "k": 606,
+    "n": 1000,
+    "value": 0.606,
+    "wilson95": [
+     0.575,
+     0.636
+    ]
+   },
+   "accuracy_when_named": {
+    "k": 595,
+    "n": 606,
+    "value": 0.982,
+    "wilson95": [
+     0.968,
+     0.99
+    ]
+   },
+   "abstained_ambiguous": 76,
+   "abstained_no_annotation": 318,
+   "wrong_examples": [
+    {
+     "pair": "DB00240+DB08864",
+     "reference_affected": "DB08864",
+     "rule": "DB00240"
+    },
+    {
+     "pair": "DB06708+DB08864",
+     "reference_affected": "DB08864",
+     "rule": "DB06708"
+    },
+    {
+     "pair": "DB00608+DB00643",
+     "reference_affected": "DB00643",
+     "rule": "DB00608"
+    },
+    {
+     "pair": "DB06414+DB08873",
+     "reference_affected": "DB06414",
+     "rule": "DB08873"
+    },
+    {
+     "pair": "DB00224+DB00863",
+     "reference_affected": "DB00224",
+     "rule": "DB00863"
+    }
+   ],
+   "caveat": "Same database for rule and reference; DrugBank may have written these records from the same annotations. Agreement is consistency, not independent confirmation."
+  },
+  "adversarial": [
+   {
+    "case": "unrelated adverse effect in the same label",
+    "pass": true,
+    "detail": "hepatotoxicity sentence without the partner is not assigned to the pair"
+   },
+   {
+    "case": "outcome and partner in separate sections",
+    "pass": true,
+    "detail": "bleeding (Warnings) + warfarin (Drug Interactions) give no bleeding outcome"
+   },
+   {
+    "case": "plausible but undocumented mechanism",
+    "pass": true,
+    "detail": "DB01394+DB01071: 1 hypothesis(es), all research-only; status research_prediction_only"
+   },
+   {
+    "case": "outdated label next to a current one",
+    "pass": false,
+    "detail": "only the most recent label is read (documents: [])"
+   },
+   {
+    "case": "several excerpts from one document",
+    "pass": true,
+    "detail": "two sentences of one label: two excerpts, one source document"
+   },
+   {
+    "case": "contradictory sources",
+    "pass": true,
+    "detail": "DrugBank exposure increase kept; label no-effect sentence shown as disagreement, neither wins"
+   },
+   {
+    "case": "ambiguous DrugBank drug order",
+    "pass": true,
+    "detail": "both drugs inhibitor and substrate: no affected drug named"
+   },
+   {
+    "case": "label names both drugs without asserting an outcome",
+    "pass": true,
+    "detail": "co-mention without an outcome term yields no label outcome"
+   }
+  ]
+ }
+}

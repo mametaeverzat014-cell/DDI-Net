@@ -131,8 +131,17 @@ const synthInputs: Record<string, [ExportInput, "en" | "ru"]> = {
 const owf = fx("pair_outcomes_warfarin_fluconazole.json");
 const omw = fx("pair_outcomes_metformin_warfarin.json");
 const synMerged = fx("pair_synthetic_merged_labels.json");
-const refWf = fx("pair_reference_warfarin_fluconazole.json");
+const refWf = fx("pair_synthetic_reference_warfarin_fluconazole.json");
+// SYNTHETIC: the current API's no-specific-outcome field added to a captured PK-only response.
+const NO_SPECIFIC = {
+  ru: "По доступным данным конкретное клиническое последствие не установлено. Это не означает, что сочетание безопасно.",
+  en: "No specific clinical outcome established from available evidence. This does not mean the combination is safe.",
+};
+const owfNs = clone(owf);
+owfNs.report.data.outcomes.no_specific_outcome_text = NO_SPECIFIC;
 const outcomeInputs: Record<string, [ExportInput, "en" | "ru", "full" | "quick"]> = {
+  nsQEn: [{ kind: "pair", origin: "analyzer", report: owfNs.report }, "en", "quick"],
+  nsFRu: [{ kind: "pair", origin: "analyzer", report: owfNs.report }, "ru", "full"],
   oSynEn: [{ kind: "pair", origin: "analyzer", report: synMerged.report }, "en", "full"],
   oSynRu: [{ kind: "pair", origin: "analyzer", report: synMerged.report }, "ru", "full"],
   qSynRu: [{ kind: "pair", origin: "analyzer", report: synMerged.report }, "ru", "quick"],
@@ -474,6 +483,12 @@ describe("content", () => {
     }
     expect(docs.qMwRu.flat).toContain("не означает, что сочетание безопасно");
     expect(docs.qWfEn.flat).toContain("Severity not established from available evidence.");
+  });
+
+  it("no specific clinical outcome: the exact sentence appears in the Quick and the Full report", () => {
+    expect(docs.nsQEn.flat).toContain(NO_SPECIFIC.en);
+    expect(docs.nsFRu.flat).toContain(NO_SPECIFIC.ru);
+    expect(docs.qWfEn.flat).not.toContain("No specific clinical outcome established");   // older API: field absent
   });
 
   it("reference set: its own source document, MedDRA term quoted, severity grades not reproduced", () => {

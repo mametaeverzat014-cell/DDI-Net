@@ -1,4 +1,5 @@
 {
+ "_comment": "SYNTHETIC reference-set fixture. The response shape is real engine output; the reference-set records are synthetic test data, not CRESCENDDI records (CRESCENDDI is not redistributed; see docs/DATASET_AUDIT.md). Their pair-event content was chosen to coincide with interactions stated in FDA labels (fluconazole: bleeding with warfarin; simvastatin: myopathy/rhabdomyolysis with clarithromycin).",
  "report": {
   "data": {
    "report_version": "3.0",
@@ -69,11 +70,11 @@
      ]
     },
     {
-     "id": "crescenddi:DB00196+DB00682:10055798",
+     "id": "synthetic-crescenddi:DB00196+DB00682:10055798",
      "category": "reference_set_outcome",
      "source_name": "CRESCENDDI reference set (Kontsioti et al., Sci Data 2022)",
-     "source_version": "elpidakon/CRESCENDDI@1734d7c12ac1 (data records, index crescenddi_index/v1)",
-     "source_record_id": "positive_control:DB00196|DB00682|MedDRA 10055798",
+     "source_version": "SYNTHETIC fixture (shape of a reference-set record; not CRESCENDDI data)",
+     "source_record_id": "synthetic:positive_control:DB00196|DB00682|MedDRA 10055798",
      "source_url": "https://github.com/elpidakon/CRESCENDDI",
      "retrieval_url": null,
      "original_identifiers": {
@@ -599,7 +600,7 @@
          "en": "The CRESCENDDI reference set (built from the BNF, Micromedex and ANSM compendia, 2018–2019) names 1 adverse event(s) for this pair: “Haemorrhage” (MedDRA terms)."
         },
         "refs": [
-         "crescenddi:DB00196+DB00682:10055798"
+         "synthetic-crescenddi:DB00196+DB00682:10055798"
         ]
        },
        {
@@ -758,7 +759,7 @@
         },
         "refs": [
          "drugbank-tdc:DB00682>DB00196:t73",
-         "crescenddi:DB00196+DB00682:10055798"
+         "synthetic-crescenddi:DB00196+DB00682:10055798"
         ]
        },
        {
@@ -910,10 +911,10 @@
       "evidence_status": "documented",
       "supports": [
        {
-        "evidence_record_id": "crescenddi:DB00196+DB00682:10055798",
+        "evidence_record_id": "synthetic-crescenddi:DB00196+DB00682:10055798",
         "source_type": "reference_set",
         "source_name": "CRESCENDDI reference set (Kontsioti et al., Sci Data 2022)",
-        "source_document_id": "positive_control:DB00196|DB00682|MedDRA 10055798",
+        "source_document_id": "synthetic:positive_control:DB00196|DB00682|MedDRA 10055798",
         "source_url": "https://github.com/elpidakon/CRESCENDDI",
         "section": null,
         "excerpt": "CRESCENDDI lists “Haemorrhage” (MedDRA 10055798) as an adverse event of the interaction between fluconazole and warfarin, mapped from the Micromedex interaction description.",

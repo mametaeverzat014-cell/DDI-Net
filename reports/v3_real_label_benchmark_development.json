@@ -1,0 +1,130 @@
+{
+ "split": "development",
+ "rule": "label_lexicon/v4",
+ "units_total": 50,
+ "relations": {
+  "interaction": 20,
+  "advice_only": 10,
+  "not_applicable": 9,
+  "no_interaction": 11
+ },
+ "scored_units": 41,
+ "outcome_micro": {
+  "tp": 12,
+  "fp": 0,
+  "fn": 0,
+  "precision": {
+   "k": 12,
+   "n": 12,
+   "value": 1.0,
+   "wilson95": [
+    0.757,
+    1.0
+   ]
+  },
+  "recall": {
+   "k": 12,
+   "n": 12,
+   "value": 1.0,
+   "wilson95": [
+    0.757,
+    1.0
+   ]
+  },
+  "f1": 1.0
+ },
+ "outcome_macro_f1": 1.0,
+ "per_concept": [
+  {
+   "concept": "hepatotoxicity",
+   "tp": 1,
+   "fp": 0,
+   "fn": 0,
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0
+  },
+  {
+   "concept": "qt_arrhythmia",
+   "tp": 7,
+   "fp": 0,
+   "fn": 0,
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0
+  },
+  {
+   "concept": "reduced_effect",
+   "tp": 3,
+   "fp": 0,
+   "fn": 0,
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0
+  },
+  {
+   "concept": "serotonin_syndrome",
+   "tp": 1,
+   "fp": 0,
+   "fn": 0,
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0
+  }
+ ],
+ "pair_precision_interaction": {
+  "k": 12,
+  "n": 12,
+  "value": 1.0,
+  "wilson95": [
+   0.757,
+   1.0
+  ]
+ },
+ "unsupported_claim_rate": {
+  "k": 0,
+  "n": 12,
+  "value": 0.0,
+  "wilson95": [
+   0.0,
+   0.243
+  ]
+ },
+ "abstention_on_no_or_advice_only": {
+  "k": 21,
+  "n": 21,
+  "value": 1.0,
+  "wilson95": [
+   0.845,
+   1.0
+  ]
+ },
+ "interaction_recall": {
+  "k": 12,
+  "n": 20,
+  "value": 0.6,
+  "wilson95": [
+   0.387,
+   0.781
+  ]
+ },
+ "seriousness_accuracy_on_predicted": {
+  "k": 12,
+  "n": 12,
+  "value": 1.0,
+  "wilson95": [
+   0.757,
+   1.0
+  ]
+ },
+ "citation_accuracy": {
+  "k": 17,
+  "n": 17,
+  "value": 1.0,
+  "wilson95": [
+   0.816,
+   1.0
+  ]
+ },
+ "errors": []
+}

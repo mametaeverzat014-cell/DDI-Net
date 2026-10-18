@@ -38,6 +38,7 @@ import gzip
 import hashlib
 import io
 import json
+import os
 from collections import defaultdict
 from pathlib import Path
 
@@ -56,10 +57,22 @@ INPUTS = {
     "split_assignments": MECH / "split_assignments.csv",
     "tdc_drugbank": ROOT / "data" / "raw" / "drugbank.tab.gz",
     "drug_names": ROOT / "web" / "public" / "data" / "drugs.json",
-    # Derived, committed index (scripts/data/ingest_crescenddi.py); see
-    # data/reference_sets/crescenddi/MANIFEST.json for its provenance.
-    "crescenddi_index": ROOT / "data" / "reference_sets" / "crescenddi" / "crescenddi_index_v1.json.gz",
 }
+
+#: CRESCENDDI reference set: LOCAL RESEARCH USE ONLY, never in a public build.
+#: Its records derive from the BNF, Micromedex and ANSM compendia, whose terms
+#: do not clearly permit redistribution (docs/DATASET_AUDIT.md §CRESCENDDI). The
+#: derived index is git-ignored (scripts/data/ingest_crescenddi.py writes it to
+#: data/restricted/); the committed MANIFEST.json pins its checksum so a local
+#: rebuild is verifiable. Included only when DDINET_ENABLE_CRESCENDDI=1 AND the
+#: file exists; the Dockerfiles copy neither.
+CRESCENDDI_INDEX = ROOT / "data" / "restricted" / "crescenddi" / "crescenddi_index_v1.json.gz"
+CRESCENDDI_MANIFEST = ROOT / "data" / "reference_sets" / "crescenddi" / "MANIFEST.json"
+CRESCENDDI_FLAG = "DDINET_ENABLE_CRESCENDDI"
+
+
+def crescenddi_enabled() -> bool:
+    return os.environ.get(CRESCENDDI_FLAG) == "1" and CRESCENDDI_INDEX.exists()
 
 #: Evidence sources admitted to the annotation table. See the module docstring.
 ANNOTATION_SOURCES = ("DrugBank_v5.1", "ChEMBL_36_drug_mechanism")
@@ -266,12 +279,12 @@ def _crescenddi(idx: dict[str, int]) -> tuple[dict | None, list[list]]:
     Negative controls stay out of the runtime artifact: they are for evaluation
     (scripts/67_v3_reference_validation.py), not evidence.
     """
-    path = INPUTS["crescenddi_index"]
-    if not path.exists():
+    path = CRESCENDDI_INDEX
+    if not crescenddi_enabled():
         return None, []
     with gzip.open(path, "rt", encoding="utf-8") as f:
         payload = json.load(f)
-    manifest = json.loads((path.parent / "MANIFEST.json").read_text())
+    manifest = json.loads(CRESCENDDI_MANIFEST.read_text())
     if manifest["output"]["sha256"] != _sha256(path):
         raise RuntimeError(f"{path} does not match its MANIFEST.json checksum")
     rows = []
@@ -332,8 +345,10 @@ def write(payload: dict, out_dir: Path = OUT_DIR) -> dict:
         "direction_audit": payload.get("direction_audit"),
         "inputs": {
             k: {"path": str(p.relative_to(ROOT)), "sha256": _sha256(p)}
-            for k, p in INPUTS.items()
+            for k, p in {**INPUTS, **({"crescenddi_index": CRESCENDDI_INDEX}
+                                     if "crescenddi" in payload["sources"] else {})}.items()
         },
+        "restricted_sources_included": sorted({"crescenddi"} & set(payload["sources"])),
     }
     (out_dir / "evidence_v1.meta.json").write_text(json.dumps(meta, indent=2) + "\n")
     return meta

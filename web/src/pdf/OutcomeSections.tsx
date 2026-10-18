@@ -49,7 +49,9 @@ export function OutcomeSummaryBlock({ r, lang }: { r: PairReport; lang: Lang }) 
       </View>
       {shown.length === 0
         ? <View wrap={false} style={{ marginBottom: 6 }}><Text style={st.small}>{o.no_outcome_text ? bi(o.no_outcome_text, lang) : ""}</Text></View>
-        : shown.map((x) => (
+        : [o.no_specific_outcome_text
+          ? <View key="no-specific" wrap={false} style={{ marginBottom: 4 }}><Text style={st.small}>{bi(o.no_specific_outcome_text, lang)}</Text></View>
+          : null, ...shown.map((x) => (
           <View key={x.id} wrap={false} style={{ flexDirection: "row", marginBottom: 3 }}>
             <View style={{ width: 11 }}><Dot color={EV.label} /></View>
             <Text style={[st.small, { flex: 1, color: C.slate }]}>
@@ -58,7 +60,7 @@ export function OutcomeSummaryBlock({ r, lang }: { r: PairReport; lang: Lang }) 
               <Text style={{ fontFamily: FONT.mono, fontSize: 6.8, color: C.navy3 }}>{refs(x).length ? ` ${refs(x).join(" ")}` : ""}</Text>
             </Text>
           </View>
-        ))}
+        ))]}
       <View wrap={false} style={{ marginBottom: 6 }}>
         <Text style={[st.tiny, { marginTop: 2 }]}>{pick(OT.dSeriousness, lang)}: {bi(o.seriousness_text, lang)}</Text>
       </View>
@@ -80,6 +82,9 @@ export function OutcomeEvidence({ r, lang }: { r: PairReport; lang: Lang }) {
     <>
       <SubTitle>{t("outcomesTitle", lang)}</SubTitle>
       <View wrap={false} style={{ marginBottom: 4 }}><Text style={st.tiny}>{t("outcomesLead", lang)}</Text></View>
+      {all.length > 0 && o.no_specific_outcome_text
+        ? <View wrap={false} style={{ marginBottom: 4 }}><Text style={st.small}>{bi(o.no_specific_outcome_text, lang)}</Text></View>
+        : null}
       {all.length === 0
         ? <View wrap={false}><Text style={st.small}>{o.no_outcome_text ? bi(o.no_outcome_text, lang) : ""}</Text></View>
         : (

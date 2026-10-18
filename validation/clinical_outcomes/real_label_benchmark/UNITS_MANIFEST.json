@@ -1,0 +1,18 @@
+{
+ "source": "https://github.com/tatonetti-lab/onsides",
+ "commit": "fe6a4a4e3415d93d02245692df9fd8277c6177e4",
+ "files": {
+  "database/annotations/demner-fushman-train-labels.json": "d7bc860201288b136a7931a199df29195a7dfec06a9957f7ece510b569ed7f9d",
+  "database/annotations/demner-fushman-test-labels.json": "1c3614b1fcaffaddc78c8719ba77b42a5d22d31db27d8ba2d30edc27ee4dcf00"
+ },
+ "seed": 20261018,
+ "n": {
+  "development": 50,
+  "evaluation": 100
+ },
+ "citation": "Demner-Fushman D et al. Sci Data 5, 180001 (2018) (TAC 2017 ADR labels), via OnSIDES",
+ "licence": "OnSIDES data CC BY 4.0; FDA label text is a U.S. Government work",
+ "label_date": "historical labels used for TAC 2017 (about 2016-2017); not current labelling",
+ "development_candidates": 216,
+ "evaluation_candidates": 209
+}
