@@ -1,0 +1,76 @@
+# DDI-Net 3.0 release: read-only browser smoke test of the PUBLIC website.
+#
+# Runs scripts/release/site_smoke.cjs (Playwright, headless Chromium) on a
+# GitHub-hosted runner against the production site: the 20 release checks of
+# docs/RELEASE_RUNBOOK.md §3. It only loads pages, clicks and downloads; it
+# never deploys, merges or changes Vercel, Render or any branch. No secrets.
+# Screenshots, PDFs and the JSON export are uploaded as an artifact.
+name: Production site smoke test
+
+on:
+  workflow_dispatch:
+    inputs:
+      site_url:
+        description: "Website URL"
+        required: true
+        default: "https://ddi-net.vercel.app"
+      expected_api:
+        description: "API the production build must call"
+        required: true
+        default: "https://ddinet-api.onrender.com"
+
+permissions:
+  contents: read
+
+jobs:
+  site:
+    name: Production site smoke test (20 checks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SITE_URL: ${{ inputs.site_url }}
+      EXPECTED_API: ${{ inputs.expected_api }}
+      OUT_DIR: site-smoke
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check the URLs
+        run: |
+          for u in "$SITE_URL" "$EXPECTED_API"; do
+            case "$u" in https://*) ;; *) echo "::error::URLs must start with https://"; exit 1 ;; esac
+          done
+          echo "site: $SITE_URL   expected API: $EXPECTED_API"
+
+      # Only what the browser test needs: Playwright + Chromium, and pdftotext to read the PDFs.
+      - name: Install Playwright (Chromium) and poppler
+        run: |
+          mkdir -p /tmp/pw && cd /tmp/pw && npm init -y >/dev/null && npm install --no-audit --no-fund playwright@1.56.1
+          npx playwright install --with-deps chromium
+          sudo apt-get install -y poppler-utils >/dev/null
+
+      - name: Wake the API (Render may be asleep)
+        run: |
+          for i in $(seq 1 24); do
+            code=$(curl -s -o /dev/null -m 20 -w '%{http_code}' "$EXPECTED_API/api/health/ready" || true)
+            echo "attempt $i: /api/health/ready -> HTTP $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 10
+          done
+          echo "::warning::API not ready after ~4 minutes; running the checks anyway."
+
+      - name: Run the 20 production site checks (PASS/FAIL per check)
+        run: NODE_PATH=/tmp/pw/node_modules node scripts/release/site_smoke.cjs
+
+      - name: Upload screenshots, PDFs and JSON
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-site-smoke
+          path: site-smoke/
+          retention-days: 14
