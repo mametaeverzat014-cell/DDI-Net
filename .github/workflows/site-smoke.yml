@@ -4,6 +4,7 @@
 # GitHub-hosted runner against the production site: the 20 release checks of
 # docs/RELEASE_RUNBOOK.md §3. It only loads pages, clicks and downloads; it
 # never deploys, merges or changes Vercel, Render or any branch. No secrets.
+# Starts on a push to ci/production-site-smoke, or manually (Run workflow).
 # Screenshots, PDFs and the JSON export are uploaded as an artifact.
 name: Production site smoke test
 
@@ -18,6 +19,10 @@ on:
         description: "API the production build must call"
         required: true
         default: "https://ddinet-api.onrender.com"
+  # Registers the workflow and runs it when this CI branch is pushed (only this
+  # branch; the production branch is untouched, so no production deployment).
+  push:
+    branches: [ci/production-site-smoke]
 
 permissions:
   contents: read
@@ -28,8 +33,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
-      SITE_URL: ${{ inputs.site_url }}
-      EXPECTED_API: ${{ inputs.expected_api }}
+      SITE_URL: ${{ inputs.site_url || 'https://ddi-net.vercel.app' }}
+      EXPECTED_API: ${{ inputs.expected_api || 'https://ddinet-api.onrender.com' }}
       OUT_DIR: site-smoke
     steps:
       - uses: actions/checkout@v4
