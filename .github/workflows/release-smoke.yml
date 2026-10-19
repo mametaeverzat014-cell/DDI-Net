@@ -1,0 +1,71 @@
+# DDI-Net 3.0 release: read-only smoke test of a deployed API.
+#
+# Runs scripts/release/smoke_api.py on a GitHub-hosted runner. It only sends
+# read-only HTTP requests to the API; it never deploys, merges or changes
+# Vercel, Render or any branch. No secrets are used.
+#
+# How it starts:
+#   * pull_request: automatically on every push to a pull request into the
+#     production branch (PR #1, release/ddinet-v3). Re-run from the browser:
+#     Actions -> the run -> "Re-run all jobs".
+#   * workflow_dispatch: "Run workflow" button (Actions tab). GitHub shows that
+#     button only once this file is on the default branch, i.e. after the
+#     release is merged.
+name: Release API smoke test
+
+on:
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: "API base URL (no trailing slash)"
+        required: true
+        default: "https://ddinet-api.onrender.com"
+  pull_request:
+    branches: [claude/ddi-net-drug-interaction-hxrqii]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: API smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      # Hide response bodies in the log; only status codes and derived facts are printed.
+      SMOKE_REDACT: "1"
+      API_URL: ${{ inputs.api_url || 'https://ddinet-api.onrender.com' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # The smoke test uses the Python standard library only: nothing to install.
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Check the URL
+        run: |
+          case "$API_URL" in
+            https://*) echo "API: $API_URL" ;;
+            *) echo "::error::api_url must start with https://"; exit 1 ;;
+          esac
+
+      # A Render service may be asleep or still starting: wait up to ~4 minutes.
+      - name: Wait for the API to answer
+        run: |
+          for i in $(seq 1 24); do
+            code=$(curl -s -o /dev/null -m 20 -w '%{http_code}' "$API_URL/api/health/ready" || true)
+            echo "attempt $i: /api/health/ready -> HTTP $code"
+            [ "$code" = "200" ] && exit 0
+            sleep 10
+          done
+          echo "::warning::API not ready after ~4 minutes; running the checks anyway so the failures are listed."
+
+      - name: Run smoke checks (PASS/FAIL per check)
+        run: python3 scripts/release/smoke_api.py "$API_URL"
