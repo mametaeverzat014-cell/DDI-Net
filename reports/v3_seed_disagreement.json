@@ -1,0 +1,247 @@
+{
+  "question": "On held-out pairs, does across-seed SD of BIO-GINE M4 predictions rank the 5-seed ensemble's errors?",
+  "source": "reports/v2_final/v2_final_pair_predictions.csv @ v2-final-github-safe-2026-09-03",
+  "error_definition": "5-seed mean prediction >= 0.5 disagrees with the frozen label (prevalence 0.5 test set; negatives are sampled unlabelled pairs).",
+  "bootstrap": {
+    "n": 1000,
+    "rng_seed": 20261014
+  },
+  "views": {
+    "pooled": {
+      "n_pairs": 84690,
+      "prevalence": 0.5,
+      "ensemble_error_rate_at_0_5": 0.23556500177116543,
+      "auroc_sd_detects_error": 0.6857387045773222,
+      "auroc_sd_detects_error_ci95": [
+        0.6814380977331768,
+        0.6897385964488063
+      ],
+      "auroc_margin_detects_error": 0.6981572257799271,
+      "spearman_sd_abs_error": 0.7185160367296247,
+      "within_mean_score_bins": [
+        {
+          "mean_bin": 0,
+          "n": 16938,
+          "mean_range": [
+            1.4009502573000001e-12,
+            0.0025843107164000003
+          ],
+          "error_rate": 0.13189278545282795,
+          "auroc_sd_wrong": 0.5891978309302374
+        },
+        {
+          "mean_bin": 1,
+          "n": 16938,
+          "mean_range": [
+            0.0025850638254000004,
+            0.1097320426
+          ],
+          "error_rate": 0.24424371236273468,
+          "auroc_sd_wrong": 0.550260729607838
+        },
+        {
+          "mean_bin": 2,
+          "n": 16938,
+          "mean_range": [
+            0.109756867752,
+            0.4636099148
+          ],
+          "error_rate": 0.45637029165190696,
+          "auroc_sd_wrong": 0.5521134808249308
+        },
+        {
+          "mean_bin": 3,
+          "n": 16938,
+          "mean_range": [
+            0.463638995,
+            0.931737024
+          ],
+          "error_rate": 0.2652025032471366,
+          "auroc_sd_wrong": 0.5777015656880824
+        },
+        {
+          "mean_bin": 4,
+          "n": 16938,
+          "mean_range": [
+            0.93174895,
+            1.0
+          ],
+          "error_rate": 0.08011571614122093,
+          "auroc_sd_wrong": 0.6038156226119932
+        }
+      ],
+      "by_sd_quintile": [
+        {
+          "sd_bin": 0,
+          "n": 16938,
+          "sd_range": [
+            0.0,
+            0.00046035801813990425
+          ],
+          "error_rate": 0.08655095052544574,
+          "auprc_mean_score": 0.9085278855192309
+        },
+        {
+          "sd_bin": 1,
+          "n": 16938,
+          "sd_range": [
+            0.00046039653886622005,
+            0.013679991730202078
+          ],
+          "error_rate": 0.15113944975794072,
+          "auprc_mean_score": 0.8235480012645805
+        },
+        {
+          "sd_bin": 2,
+          "n": 16938,
+          "sd_range": [
+            0.013680029945279913,
+            0.13521250191647174
+          ],
+          "error_rate": 0.2158460266855591,
+          "auprc_mean_score": 0.804691130320792
+        },
+        {
+          "sd_bin": 3,
+          "n": 16938,
+          "sd_range": [
+            0.13521756343785396,
+            0.36414184318315057
+          ],
+          "error_rate": 0.32754752627228717,
+          "auprc_mean_score": 0.7735597997294312
+        },
+        {
+          "sd_bin": 4,
+          "n": 16938,
+          "sd_range": [
+            0.36414676677022667,
+            0.5476730587978774
+          ],
+          "error_rate": 0.3967410556145944,
+          "auprc_mean_score": 0.7491040352152
+        }
+      ],
+      "sd_median": 0.049655823243778485,
+      "sd_p90": 0.4290086903350492
+    },
+    "S3": {
+      "n_pairs": 7758,
+      "prevalence": 0.5,
+      "ensemble_error_rate_at_0_5": 0.3185099252384635,
+      "auroc_sd_detects_error": 0.6260673366565686,
+      "auroc_sd_detects_error_ci95": [
+        0.6136652416195095,
+        0.6396212226706365
+      ],
+      "auroc_margin_detects_error": 0.633539066410383,
+      "spearman_sd_abs_error": 0.5182900829723633,
+      "within_mean_score_bins": [
+        {
+          "mean_bin": 0,
+          "n": 1552,
+          "mean_range": [
+            6.619147542653068e-11,
+            0.0044778030709453995
+          ],
+          "error_rate": 0.22551546391752578,
+          "auroc_sd_wrong": 0.4988756833848348
+        },
+        {
+          "mean_bin": 1,
+          "n": 1551,
+          "mean_range": [
+            0.004489157873127571,
+            0.08788883659999999
+          ],
+          "error_rate": 0.31334622823984526,
+          "auroc_sd_wrong": 0.5311752545451033
+        },
+        {
+          "mean_bin": 2,
+          "n": 1552,
+          "mean_range": [
+            0.08800162689084,
+            0.30081642278
+          ],
+          "error_rate": 0.4542525773195876,
+          "auroc_sd_wrong": 0.5365771559195156
+        },
+        {
+          "mean_bin": 3,
+          "n": 1551,
+          "mean_range": [
+            0.3008664734,
+            0.6972152428599999
+          ],
+          "error_rate": 0.46679561573178596,
+          "auroc_sd_wrong": 0.5314389359129383
+        },
+        {
+          "mean_bin": 4,
+          "n": 1552,
+          "mean_range": [
+            0.697452068,
+            1.0
+          ],
+          "error_rate": 0.1327319587628866,
+          "auroc_sd_wrong": 0.6010347090985155
+        }
+      ],
+      "by_sd_quintile": [
+        {
+          "sd_bin": 0,
+          "n": 1552,
+          "sd_range": [
+            0.0,
+            0.0029237806214939526
+          ],
+          "error_rate": 0.19201030927835053,
+          "auprc_mean_score": 0.7492386938856209
+        },
+        {
+          "sd_bin": 1,
+          "n": 1551,
+          "sd_range": [
+            0.002934462933091619,
+            0.052154966614334664
+          ],
+          "error_rate": 0.2379110251450677,
+          "auprc_mean_score": 0.6897256309167401
+        },
+        {
+          "sd_bin": 2,
+          "n": 1552,
+          "sd_range": [
+            0.05219937432038837,
+            0.23559800612781623
+          ],
+          "error_rate": 0.3286082474226804,
+          "auprc_mean_score": 0.7342855740709041
+        },
+        {
+          "sd_bin": 3,
+          "n": 1551,
+          "sd_range": [
+            0.23580844905652334,
+            0.39756917506339073
+          ],
+          "error_rate": 0.3894261766602192,
+          "auprc_mean_score": 0.7683237940083993
+        },
+        {
+          "sd_bin": 4,
+          "n": 1552,
+          "sd_range": [
+            0.39757006880481777,
+            0.547578464025508
+          ],
+          "error_rate": 0.44458762886597936,
+          "auprc_mean_score": 0.730309375345191
+        }
+      ],
+      "sd_median": 0.12991960584590753,
+      "sd_p90": 0.4367602409475822
+    }
+  }
+}

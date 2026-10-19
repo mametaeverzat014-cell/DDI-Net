@@ -78,6 +78,53 @@ const ITEMS: { title: Bi; body: Bi }[] = [
   },
 ];
 
+// Limitations of the DDI-Net 3.0 evidence layer, kept apart from the frozen
+// study's: they concern what the explanations can and cannot say, not the model.
+const V3_ITEMS: { title: Bi; body: Bi }[] = [
+  {
+    title: { ru: "Отсутствие записи — не доказательство безопасности", en: "No record is not evidence of safety" },
+    body: {
+      ru: "Источники описывают далеко не все пары, а официальные инструкции часто говорят о целых группах препаратов («сильные ингибиторы CYP3A4»). Поиск по названию такие утверждения не находит. Пустой результат означает только, что в проверенных источниках записи нет.",
+      en: "Sources describe far from every pair, and official labels often speak of whole drug classes (“strong CYP3A4 inhibitors”). A name search does not find such statements. An empty result means only that the sources checked hold no record.",
+    },
+  },
+  {
+    title: { ru: "Степень тяжести не присваивается", en: "No severity is assigned" },
+    body: {
+      ru: "Выгрузка DrugBank не содержит степени тяжести, а раздел инструкции — это структурный факт документа, а не шкала опасности. Оценка модели тоже не является степенью тяжести и не переводится в неё.",
+      en: "The DrugBank export carries no severity, and a label section is a structural fact of the document, not a danger scale. The model score is not a severity either and is never converted into one.",
+    },
+  },
+  {
+    title: { ru: "Направление в записях DrugBank часто не подтверждено", en: "Direction in DrugBank records is often unverified" },
+    body: {
+      ru: "Мы измерили, что порядок препаратов в выгрузке TDC для ряда типов записей перевёрнут. Для таких записей сайт не указывает, какой препарат на какой влияет, — даже если это снижает пользу текста.",
+      en: "We measured that the drug order in the TDC export is reversed for several record types. For those records the site does not say which drug affects which — even where that makes the text less useful.",
+    },
+  },
+  {
+    title: { ru: "Гипотезы о механизме не проверены и не независимы", en: "Mechanism hypotheses are untested and not independent" },
+    body: {
+      ru: "Гипотезы собраны из ролей препаратов (субстрат, ингибитор, индуктор) без учёта силы действия и доли участия белка. Совпадение гипотезы с записью DrugBank не служит независимым подтверждением: DrugBank мог вывести запись из тех же аннотаций.",
+      en: "Hypotheses are assembled from drug roles (substrate, inhibitor, inducer) without strength of effect or the protein's share of the work. Agreement with a DrugBank record is not independent confirmation: DrugBank may have derived the record from the same annotations.",
+    },
+  },
+  {
+    title: { ru: "Только попарный анализ", en: "Pairwise analysis only" },
+    body: {
+      ru: "Режим нескольких препаратов рассматривает каждую пару отдельно. Модели совместного действия трёх и более препаратов нет, и попарные результаты о таком сочетании ничего не говорят.",
+      en: "The multi-drug mode examines each pair separately. There is no model of three or more drugs acting together, and pairwise results say nothing about such a combination.",
+    },
+  },
+  {
+    title: { ru: "Внешние источники могут быть недоступны", en: "External sources may be unavailable" },
+    body: {
+      ru: "Инструкции FDA и справочник RxNorm запрашиваются по сети. Если источник недоступен, отчёт прямо сообщает об этом и не выдаёт пустой результат за «ничего не найдено». Инструкции FDA описывают американский рынок.",
+      en: "FDA labels and RxNorm are queried over the network. When a source is unavailable the report says so, and never presents an empty result as “nothing found”. FDA labels describe the US market.",
+    },
+  },
+];
+
 export function Limitations() {
   const { t, lang } = useI18n();
   return (
@@ -93,6 +140,19 @@ export function Limitations() {
           {ITEMS.map((it, i) => (
             <div key={it.title.en} style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 20, padding: "22px 0", borderTop: "1px solid var(--border-soft)" }}>
               <span className="mono" style={{ fontSize: 12, color: "var(--text-3)" }}>{String(i + 1).padStart(2, "0")}</span>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text)" }}>{pick(it.title, lang)}</div>
+                <p style={{ marginTop: 8, maxWidth: 720 }}>{pick(it.body, lang)}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <h2 style={{ marginTop: 70, fontSize: "clamp(24px, 3vw, 40px)" }}>{lang === "ru" ? "Ограничения слоя доказательств DDI-Net 3.0" : "Limitations of the DDI-Net 3.0 evidence layer"}</h2>
+        <div style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 2 }}>
+          {V3_ITEMS.map((it, i) => (
+            <div key={it.title.en} style={{ display: "grid", gridTemplateColumns: "auto 1fr", gap: 20, padding: "22px 0", borderTop: "1px solid var(--border-soft)" }}>
+              <span className="mono" style={{ fontSize: 12, color: "var(--text-3)" }}>E{i + 1}</span>
               <div>
                 <div style={{ fontSize: 16, fontWeight: 600, color: "var(--text)" }}>{pick(it.title, lang)}</div>
                 <p style={{ marginTop: 8, maxWidth: 720 }}>{pick(it.body, lang)}</p>

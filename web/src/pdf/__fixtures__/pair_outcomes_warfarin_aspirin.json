@@ -1,0 +1,2526 @@
+{
+ "report": {
+  "data": {
+   "report_version": "3.0",
+   "drug_a": {
+    "id": "DB00682",
+    "inn": "warfarin",
+    "name_ru": "варфарин",
+    "name_ru_is_transliteration": true,
+    "groups": "approved",
+    "drug_type": "small molecule",
+    "query": "DB00682",
+    "matched_on": null
+   },
+   "drug_b": {
+    "id": "DB00945",
+    "inn": "acetylsalicylic acid",
+    "name_ru": "ацетилсалициловая кислота",
+    "name_ru_is_transliteration": true,
+    "groups": "approved|vet_approved",
+    "drug_type": "small molecule",
+    "query": "DB00945",
+    "matched_on": null
+   },
+   "evidence_status": "documented_no_severity",
+   "evidence_status_label": {
+    "ru": "Взаимодействие задокументировано в базе данных; степень тяжести источником не указана",
+    "en": "Interaction documented in a database; the source gives no severity"
+   },
+   "evidence": [
+    {
+     "id": "drugbank-tdc:DB00682>DB00945:t6",
+     "category": "database_interaction_record",
+     "source_name": "DrugBank DDI records via Therapeutics Data Commons",
+     "source_version": "PyTDC 1.1.15, tdc.multi_pred.DDI(name='DrugBank')",
+     "source_record_id": "DB00682|DB00945|Y=6",
+     "source_url": "https://tdcommons.ai/multi_pred_tasks/ddi/",
+     "retrieval_url": null,
+     "original_identifiers": {
+      "drugbank_id_drug1_as_exported": "DB00682",
+      "drugbank_id_drug2_as_exported": "DB00945",
+      "tdc_interaction_type": "6"
+     },
+     "statement": "One of the two drugs may increase the anticoagulant activities of the other drug.",
+     "statement_origin": "source_template_direction_neutral",
+     "source_template": "#Drug1 may increase the anticoagulant activities of #Drug2.",
+     "direction": "not_verified",
+     "direction_check": null,
+     "statement_ru": "Один из двух препаратов может усиливать антикоагулянтное действие другого препарата.",
+     "section": null,
+     "also_in_sections": [],
+     "drug1_id": null,
+     "drug2_id": null,
+     "retrieved_at": "2026-08-24",
+     "license": "TDC: CC BY 4.0; underlying DrugBank content: DrugBank non-commercial licence",
+     "source_severity": null,
+     "qualifiers": [
+      "DrugBank's standard sentence for this interaction type, not a quotation from a study or a label.",
+      "This export carries no severity grade. None is implied.",
+      "The export does not state the basis of each record (clinical study, label text, or inference from pharmacological properties).",
+      "The export's drug order for this interaction type cannot be checked, and for checkable types it proved unreliable (reversed in about 90% of records for types 47 and 73), so the statement is shown without naming which drug is affected."
+     ]
+    }
+   ],
+   "conflicts": [],
+   "mechanism": {
+    "findings": [
+     {
+      "id": "mech:P33261:enzyme:inducer_substrate:DB00945",
+      "protein": {
+       "uniprot": "P33261",
+       "gene": "CYP2C19",
+       "name": "Cytochrome P450 2C19",
+       "organism": "Humans",
+       "family": "cytochrome_p450",
+       "plain": {
+        "ru": "Фермент из семейства цитохромов P450. Такие ферменты работают в основном в печени и кишечнике и расщепляют многие лекарства, чтобы организм мог их вывести.",
+        "en": "An enzyme of the cytochrome P450 family. These work mainly in the liver and gut and break down many medicines so the body can clear them."
+       }
+      },
+      "relation": "enzyme",
+      "pattern": "inducer_substrate",
+      "actor_drug_id": "DB00945",
+      "affected_drug_id": "DB00682",
+      "roles_a": [
+       "inhibitor",
+       "substrate"
+      ],
+      "roles_b": [
+       "inducer"
+      ],
+      "annotation_ids": [
+       "annot:drugbank:DB00682:P33261:enzyme",
+       "annot:drugbank:DB00945:P33261:enzyme"
+      ],
+      "consistent_with_records": [],
+      "status": "hypothesis"
+     },
+     {
+      "id": "mech:P11712:enzyme:inducer_substrate:DB00682",
+      "protein": {
+       "uniprot": "P11712",
+       "gene": "CYP2C9",
+       "name": "Cytochrome P450 2C9",
+       "organism": "Humans",
+       "family": "cytochrome_p450",
+       "plain": {
+        "ru": "Фермент из семейства цитохромов P450. Такие ферменты работают в основном в печени и кишечнике и расщепляют многие лекарства, чтобы организм мог их вывести.",
+        "en": "An enzyme of the cytochrome P450 family. These work mainly in the liver and gut and break down many medicines so the body can clear them."
+       }
+      },
+      "relation": "enzyme",
+      "pattern": "inducer_substrate",
+      "actor_drug_id": "DB00682",
+      "affected_drug_id": "DB00945",
+      "roles_a": [
+       "inducer",
+       "substrate"
+      ],
+      "roles_b": [
+       "substrate"
+      ],
+      "annotation_ids": [
+       "annot:drugbank:DB00682:P11712:enzyme",
+       "annot:drugbank:DB00945:P11712:enzyme"
+      ],
+      "consistent_with_records": [],
+      "status": "hypothesis"
+     }
+    ],
+    "shared_pathways": [
+     {
+      "id": "R-HSA-9027307",
+      "name": "Biosynthesis of maresin-like SPMs",
+      "n_proteins_in_pathway": 6,
+      "via_a": [
+       "CYP1A2",
+       "CYP2C8",
+       "CYP2C9",
+       "CYP3A4"
+      ],
+      "via_b": [
+       "CYP2C9"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-211999",
+      "name": "CYP2E1 reactions",
+      "n_proteins_in_pathway": 8,
+      "via_a": [
+       "CYP2C19",
+       "CYP2C8",
+       "CYP2C9"
+      ],
+      "via_b": [
+       "CYP2C19",
+       "CYP2C9"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-2142816",
+      "name": "Synthesis of (16-20)-hydroxyeicosatetraenoic acids (HETE)",
+      "n_proteins_in_pathway": 8,
+      "via_a": [
+       "CYP1A2",
+       "CYP2C19",
+       "CYP2C8",
+       "CYP2C9"
+      ],
+      "via_b": [
+       "CYP2C19",
+       "CYP2C9"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-2142670",
+      "name": "Synthesis of epoxy (EET) and dihydroxyeicosatrienoic acids (DHET)",
+      "n_proteins_in_pathway": 8,
+      "via_a": [
+       "CYP1A2",
+       "CYP2C19",
+       "CYP2C8",
+       "CYP2C9"
+      ],
+      "via_b": [
+       "CYP2C19",
+       "CYP2C9"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-211981",
+      "name": "Xenobiotics",
+      "n_proteins_in_pathway": 16,
+      "via_a": [
+       "CYP2C18",
+       "CYP2C19",
+       "CYP2C8",
+       "CYP2C9",
+       "CYP3A4"
+      ],
+      "via_b": [
+       "CYP2C19",
+       "CYP2C9"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-9749641",
+      "name": "Aspirin ADME",
+      "n_proteins_in_pathway": 25,
+      "via_a": [
+       "ALB",
+       "CYP2C19",
+       "CYP2C8",
+       "CYP2C9",
+       "CYP3A4"
+      ],
+      "via_b": [
+       "CYP2C19",
+       "CYP2C9",
+       "UGT1A6"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-9793528",
+      "name": "Ciprofloxacin ADME",
+      "n_proteins_in_pathway": 5,
+      "via_a": [
+       "ALB"
+      ],
+      "via_b": [
+       "SLC22A8"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-9754706",
+      "name": "Atorvastatin ADME",
+      "n_proteins_in_pathway": 8,
+      "via_a": [
+       "CYP3A4"
+      ],
+      "via_b": [
+       "ABCB1"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-9757110",
+      "name": "Prednisone ADME",
+      "n_proteins_in_pathway": 10,
+      "via_a": [
+       "ALB",
+       "CYP3A4"
+      ],
+      "via_b": [
+       "ABCB1",
+       "AKR1C1"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-114608",
+      "name": "Platelet degranulation",
+      "n_proteins_in_pathway": 44,
+      "via_a": [
+       "ALB",
+       "ORM1"
+      ],
+      "via_b": [
+       "HSPA5"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-6798695",
+      "name": "Neutrophil degranulation",
+      "n_proteins_in_pathway": 154,
+      "via_a": [
+       "ORM1"
+      ],
+      "via_b": [
+       "MAPK1",
+       "NEU1",
+       "TNFAIP6"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     }
+    ],
+    "n_shared_pathways_total": 11,
+    "annotations": {
+     "annot:drugbank:DB00682:P33261:enzyme": {
+      "id": "annot:drugbank:DB00682:P33261:enzyme",
+      "drug_id": "DB00682",
+      "uniprot": "P33261",
+      "relation": "enzyme",
+      "roles": [
+       "inhibitor",
+       "substrate"
+      ],
+      "raw_action": "substrate|inhibitor",
+      "source_name": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "known_action": "unknown",
+      "pmids": [
+       "19515014",
+       "16162970",
+       "16372822"
+      ],
+      "organism": "Humans",
+      "retrieved_at": "2026-08-28"
+     },
+     "annot:drugbank:DB00945:P33261:enzyme": {
+      "id": "annot:drugbank:DB00945:P33261:enzyme",
+      "drug_id": "DB00945",
+      "uniprot": "P33261",
+      "relation": "enzyme",
+      "roles": [
+       "inducer"
+      ],
+      "raw_action": "inducer",
+      "source_name": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "known_action": "unknown",
+      "pmids": [
+       "12621391"
+      ],
+      "organism": "Humans",
+      "retrieved_at": "2026-08-28"
+     },
+     "annot:drugbank:DB00682:P11712:enzyme": {
+      "id": "annot:drugbank:DB00682:P11712:enzyme",
+      "drug_id": "DB00682",
+      "uniprot": "P11712",
+      "relation": "enzyme",
+      "roles": [
+       "inducer",
+       "substrate"
+      ],
+      "raw_action": "substrate|inducer",
+      "source_name": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "known_action": "unknown",
+      "pmids": [
+       "29283396",
+       "16372822",
+       "20735727"
+      ],
+      "organism": "Humans",
+      "retrieved_at": "2026-08-28"
+     },
+     "annot:drugbank:DB00945:P11712:enzyme": {
+      "id": "annot:drugbank:DB00945:P11712:enzyme",
+      "drug_id": "DB00945",
+      "uniprot": "P11712",
+      "relation": "enzyme",
+      "roles": [
+       "substrate"
+      ],
+      "raw_action": "substrate",
+      "source_name": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "known_action": "unknown",
+      "pmids": [
+       "21966608"
+      ],
+      "organism": "Humans",
+      "retrieved_at": "2026-08-28"
+     }
+    },
+    "coverage": {
+     "DB00682": {
+      "target": 2,
+      "enzyme": 6,
+      "transporter": 0,
+      "carrier": 2
+     },
+     "DB00945": {
+      "target": 19,
+      "enzyme": 4,
+      "transporter": 3,
+      "carrier": 0
+     }
+    },
+    "note": {
+     "ru": "Ниже — задокументированные роли каждого препарата по отдельности (DrugBank, ChEMBL) и то, как они складываются. Это гипотезы о механизме, а не доказательство взаимодействия: базы не указывают силу действия и долю участия белка в переработке препарата.",
+     "en": "Below are each drug's documented roles on their own (DrugBank, ChEMBL) and how they line up. These are mechanism hypotheses, not evidence of an interaction: the databases do not record strength of effect or how much of a drug's processing a protein handles."
+    }
+   },
+   "model": {
+    "available": true,
+    "unavailable_reason": null,
+    "model": "BIO-GINE M4",
+    "checkpoint": "bd45f84e3c1b2c33",
+    "raw_model_score": 0.9997894984380711,
+    "calibrated_model_score": 0.7641836505184048,
+    "band": "high",
+    "regime": "S3",
+    "split_a": "val",
+    "split_b": "val",
+    "training_label_seen": false,
+    "reliability": "held_out_like",
+    "measured_performance": [
+     {
+      "view": "S3 (both drugs unseen in training)",
+      "metric": "AUPRC",
+      "mean": 0.7372412574502945,
+      "sd": 0.015253024558550193,
+      "n_seeds": 5,
+      "source": "paper/FACTS.json models.M4_s3 (v2_final_s3_posthoc.csv @ frozen tag)"
+     },
+     {
+      "view": "S3, both annotated",
+      "metric": "AUROC",
+      "mean": 0.7354349608962428,
+      "sd": 0.01792476158231145,
+      "n_seeds": 5,
+      "source": "reports/v3_coverage_reliability.json"
+     }
+    ],
+    "biology_available_a": true,
+    "biology_available_b": true,
+    "notes": [
+     {
+      "ru": "Один из препаратов входил в проверочную выборку: модель на нём не обучалась, но по нему выбирали конфигурацию и калибровку.",
+      "en": "One drug was in the validation set: the model was not trained on it, but it was used to choose the configuration and the calibration."
+     },
+     {
+      "ru": "Калиброванная оценка подобрана на проверочных парах, где задокументированных и случайно набранных пар поровну. Это не вероятность вреда и не частота взаимодействий в реальной практике.",
+      "en": "The calibrated score was fitted on validation pairs with equal numbers of documented and randomly drawn pairs. It is not a probability of harm, nor how often interactions happen in practice."
+     }
+    ],
+    "abstain": false,
+    "modality_reliance": {
+     "baseline_raw": 0.9997894984380711,
+     "without_molecular_raw": 0.43483463690374363,
+     "without_protein_raw": 0.9961536048387593,
+     "without_pathway_raw": 0.9932174892123217,
+     "delta_molecular": 0.5649548615343274,
+     "delta_protein": 0.0036358935993118235,
+     "delta_pathway": 0.006572009225749409,
+     "method": "branch zeroed before the frozen fusion layer for both drugs; mask unchanged (as scripts/49_v2_interpretability.py at the frozen tag)",
+     "validation": {
+      "n_rows": 84690,
+      "max_abs_diff": 6.051126069828161e-06,
+      "source": "reports/v3_modality_parity.json (vs reports/v2_interpretability/seed0_modality_contribution.csv @ frozen tag)"
+     },
+     "interpretation": {
+      "ru": "Это показывает, на какие данные модель опирается для этой пары, а не почему препараты взаимодействуют: модель никогда не видела «обнулённые» данные при обучении.",
+      "en": "This shows which data the model leans on for this pair, not why the drugs interact: the model never saw zeroed inputs in training."
+     }
+    }
+   },
+   "explanation": {
+    "method": "deterministic templates over retrieved records; no language model",
+    "sections": [
+     {
+      "id": "known",
+      "title": {
+       "ru": "Что известно",
+       "en": "What is known"
+      },
+      "statements": [
+       {
+        "kind": "documented",
+        "text": {
+         "ru": "В базе DrugBank это сочетание описано так: «Один из двух препаратов может усиливать антикоагулянтное действие другого препарата.» (перевод проекта; оригинал — в карточке источника).",
+         "en": "DrugBank describes this combination as: “One of the two drugs may increase the anticoagulant activities of the other drug.”"
+        },
+        "refs": [
+         "drugbank-tdc:DB00682>DB00945:t6"
+        ]
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Для этого типа записей порядок препаратов в выгрузке DrugBank оказался ненадёжным (мы это измерили), поэтому здесь не сказано, какой из двух препаратов на какой влияет.",
+         "en": "For this record type the drug order in the DrugBank export proved unreliable (we measured it), so the text does not say which drug affects which."
+        },
+        "refs": [
+         "drugbank-tdc:DB00682>DB00945:t6"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "why",
+      "title": {
+       "ru": "Почему это может происходить",
+       "en": "Why this may happen"
+      },
+      "statements": [
+       {
+        "kind": "hypothesis",
+        "text": {
+         "ru": "Препарат ацетилсалициловая кислота отмечен в базах как вещество, усиливающее выработку белка CYP2C19, а препарат варфарин — как вещество, которое этот белок перерабатывает. Тогда препарат варфарин может перерабатываться быстрее обычного.",
+         "en": "acetylsalicylic acid is recorded as inducing CYP2C19, and warfarin as something CYP2C19 processes. With more CYP2C19 available, warfarin may be broken down faster than usual."
+        },
+        "refs": [
+         "mech:P33261:enzyme:inducer_substrate:DB00945",
+         "annot:drugbank:DB00682:P33261:enzyme",
+         "annot:drugbank:DB00945:P33261:enzyme"
+        ]
+       },
+       {
+        "kind": "hypothesis",
+        "text": {
+         "ru": "Препарат варфарин отмечен в базах как вещество, усиливающее выработку белка CYP2C9, а препарат ацетилсалициловая кислота — как вещество, которое этот белок перерабатывает. Тогда препарат ацетилсалициловая кислота может перерабатываться быстрее обычного.",
+         "en": "warfarin is recorded as inducing CYP2C9, and acetylsalicylic acid as something CYP2C9 processes. With more CYP2C9 available, acetylsalicylic acid may be broken down faster than usual."
+        },
+        "refs": [
+         "mech:P11712:enzyme:inducer_substrate:DB00682",
+         "annot:drugbank:DB00682:P11712:enzyme",
+         "annot:drugbank:DB00945:P11712:enzyme"
+        ]
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Базы не указывают, насколько сильно препарат подавляет или усиливает белок и какую долю работы с препаратом этот белок выполняет. Поэтому это гипотезы, а не вывод о том, что взаимодействие произойдёт.",
+         "en": "The databases record neither how strongly a drug inhibits or induces a protein nor how much of a drug's handling that protein does. These are hypotheses, not a conclusion that an interaction will happen."
+        },
+        "refs": [
+         "mech:P33261:enzyme:inducer_substrate:DB00945",
+         "mech:P11712:enzyme:inducer_substrate:DB00682"
+        ]
+       },
+       {
+        "kind": "annotation",
+        "text": {
+         "ru": "Белки обоих препаратов участвуют в 11 общих биологических процессах по базе Reactome — например, «Biosynthesis of maresin-like SPMs». Общий процесс — это фон, а не причина взаимодействия.",
+         "en": "Proteins of both drugs take part in 11 shared biological process(es) in Reactome — for example “Biosynthesis of maresin-like SPMs”. A shared process is background, not a cause of interaction."
+        },
+        "refs": [
+         "pathway:R-HSA-9027307"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "ai",
+      "title": {
+       "ru": "Что нашла модель",
+       "en": "What the AI found"
+      },
+      "statements": [
+       {
+        "kind": "model",
+        "text": {
+         "ru": "Модель BIO-GINE считает, что эта пара сильно похожа на пары, уже описанные как взаимодействующие. Это сходство с уже описанными парами, а не оценка вреда.",
+         "en": "BIO-GINE finds this pair strongly resembles pairs already recorded as interacting. This is resemblance to recorded pairs, not an estimate of harm."
+        },
+        "refs": [
+         "model"
+        ]
+       },
+       {
+        "kind": "model",
+        "text": {
+         "ru": "Сильнее всего оценка модели для этой пары зависит от строения молекул: без них она меняется на 0.56. Это говорит о том, на что опирается модель, а не о том, почему препараты взаимодействуют.",
+         "en": "For this pair the model's score depends most on the molecular structure: without it the score moves by 0.56. This says what the model leans on, not why the drugs interact."
+        },
+        "refs": [
+         "model"
+        ]
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Один из препаратов входил в проверочную выборку: модель на нём не обучалась, но по нему выбирали конфигурацию и калибровку.",
+         "en": "One drug was in the validation set: the model was not trained on it, but it was used to choose the configuration and the calibration."
+        },
+        "refs": [
+         "model"
+        ]
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Калиброванная оценка подобрана на проверочных парах, где задокументированных и случайно набранных пар поровну. Это не вероятность вреда и не частота взаимодействий в реальной практике.",
+         "en": "The calibrated score was fitted on validation pairs with equal numbers of documented and randomly drawn pairs. It is not a probability of harm, nor how often interactions happen in practice."
+        },
+        "refs": [
+         "model"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "certainty",
+      "title": {
+       "ru": "Насколько это надёжно",
+       "en": "How certain is this?"
+      },
+      "statements": [
+       {
+        "kind": "documented",
+        "text": {
+         "ru": "Задокументировано: 1 запись DrugBank. Несколько фрагментов одной инструкции — один источник, а не отдельные подтверждения; запись DrugBank тоже может опираться на текст инструкции. Это самая надёжная часть страницы.",
+         "en": "Documented: 1 DrugBank record(s). Several excerpts of one label are one source, not separate confirmations, and a DrugBank record may itself rest on label text. This is the most reliable part of the page."
+        },
+        "refs": [
+         "drugbank-tdc:DB00682>DB00945:t6"
+        ]
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Степень тяжести здесь не присваивается: в выгрузке DrugBank её нет, а для инструкций показан только раздел, в котором упомянут препарат.",
+         "en": "No severity is assigned: the DrugBank export has none, and for labels only the section that names the drug is shown."
+        },
+        "refs": []
+       },
+       {
+        "kind": "hypothesis",
+        "text": {
+         "ru": "Гипотезы о механизме (2) собраны из задокументированных ролей каждого препарата по отдельности. Для этой пары они не проверялись.",
+         "en": "The 2 mechanism hypothesis(es) are assembled from each drug's documented roles separately. None was tested for this pair."
+        },
+        "refs": [
+         "mech:P33261:enzyme:inducer_substrate:DB00945",
+         "mech:P11712:enzyme:inducer_substrate:DB00682"
+        ]
+       },
+       {
+        "kind": "model",
+        "text": {
+         "ru": "Качество модели на отложенных парах, где модель не видела при обучении ни один из препаратов (S3, как здесь): AUPRC 0.737 ± 0.015 (разброс между 5 запусками обучения). Это средняя характеристика по многим парам, а не уверенность в этой конкретной паре.",
+         "en": "Model quality on held-out pairs where the model saw neither drug in training (S3, as here): AUPRC 0.737 ± 0.015 (spread across 5 training runs). That is an average over many pairs, not confidence in this particular pair."
+        },
+        "refs": [
+         "model"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "missing",
+      "title": {
+       "ru": "Чего мы не знаем",
+       "en": "What is missing"
+      },
+      "statements": [
+       {
+        "kind": "missing",
+        "text": {
+         "ru": "Источник «официальные инструкции FDA (openFDA)» сейчас не удалось проверить. Его данные в этот ответ не вошли.",
+         "en": "The source “FDA labels (openFDA)” could not be checked right now. Its data is not part of this answer."
+        },
+        "refs": []
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Здесь не учитываются дозы, длительность приёма, возраст, работа почек и печени, другие лекарства и особенности конкретного человека — всё, от чего зависит, проявится ли взаимодействие и насколько сильно.",
+         "en": "Doses, duration, age, kidney and liver function, other medicines and individual factors are not taken into account — everything that decides whether an interaction shows up and how strongly."
+        },
+        "refs": []
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Решения о приёме лекарств принимают врач или фармацевт. Эта страница не может их заменить.",
+         "en": "Decisions about medicines belong to a doctor or pharmacist. This page cannot replace them."
+        },
+        "refs": []
+       }
+      ]
+     }
+    ]
+   },
+   "sources_checked": [
+    {
+     "source": "drugbank_tdc",
+     "status": "ok",
+     "detail": "1 record(s) in the local DrugBank export (TDC, retrieved 2026-08-24)."
+    },
+    {
+     "source": "openfda_label",
+     "status": "unavailable",
+     "detail": "openfda_label: recently unreachable; retrying after a cooldown"
+    }
+   ],
+   "limitations": [
+    {
+     "ru": "Только 1 705 препаратов исследовательского набора данных; международные названия есть у 1 497 из них.",
+     "en": "Only the 1,705 drugs of the research dataset; 1,497 of them have an international name."
+    },
+    {
+     "ru": "Записи DrugBank не содержат степени тяжести и не указывают, на чём основаны. Для многих типов записей порядок препаратов в выгрузке ненадёжен (измерено).",
+     "en": "DrugBank records carry no severity and do not state their basis. For many record types the drug order in the export is unreliable (measured)."
+    },
+    {
+     "ru": "Инструкции ищутся по названию препарата. Утверждения о целых группах препаратов («сильные ингибиторы CYP3A4») не распознаются, поэтому отсутствие совпадения не означает, что в инструкции ничего нет.",
+     "en": "Labels are searched by drug name. Statements about whole drug classes (“strong CYP3A4 inhibitors”) are not recognised, so no match does not mean the label is silent."
+    },
+    {
+     "ru": "Гипотезы о механизме собраны из ролей каждого препарата по отдельности; сила действия и доля участия белка неизвестны.",
+     "en": "Mechanism hypotheses are assembled from each drug's roles separately; strength of effect and the protein's share of the work are unknown."
+    },
+    {
+     "ru": "Оценка BIO-GINE — исследовательский сигнал сходства с задокументированными парами. Это не вероятность вреда.",
+     "en": "The BIO-GINE score is a research signal of resemblance to documented pairs. It is not a probability of harm."
+    }
+   ],
+   "disclaimer": {
+    "ru": "Это исследовательский прототип, а не медицинское изделие. Он не заменяет врача или фармацевта и не может сказать, безопасно ли сочетание лекарств для конкретного человека.",
+    "en": "This is a research prototype, not a medical device. It does not replace a doctor or pharmacist and cannot say whether a combination is safe for a particular person."
+   },
+   "generated_at": "2026-10-15T19:29:46+00:00",
+   "outcomes": {
+    "method": "deterministic: DrugBank type map v1 + label outcome lexicon v1; no language model",
+    "interaction_status": "documented_interaction",
+    "interaction_status_label": {
+     "ru": "Найдено задокументированное взаимодействие",
+     "en": "Documented interaction found"
+    },
+    "interaction_status_hint": {
+     "ru": "Источники называют конкретные последствия или изменения действия для этой пары. Ниже — что именно и на каком основании.",
+     "en": "Sources name specific consequences or changes in effect for this pair. What they are, and on what basis, is below."
+    },
+    "outcomes": [
+     {
+      "id": "outcome:DB00682+DB00945:bleeding_coagulation:anticoagulant_increase",
+      "drug_a": "DB00682",
+      "drug_b": "DB00945",
+      "category": "bleeding_coagulation",
+      "effect": "anticoagulant_increase",
+      "effect_level": "pharmacodynamic_effect",
+      "label": {
+       "ru": "Усиление антикоагулянтного (противосвёртывающего) действия",
+       "en": "Stronger anticoagulant (blood-thinning) effect"
+      },
+      "explanation": {
+       "ru": "Источник описывает усиление (или изменение) фармакологического действия одного из препаратов. Он не утверждает, что наступает конкретный вред.",
+       "en": "The source describes a stronger (or altered) pharmacological effect of one of the drugs. It does not state that a particular harm follows."
+      },
+      "evidence_status": "documented",
+      "supports": [
+       {
+        "evidence_record_id": "drugbank-tdc:DB00682>DB00945:t6",
+        "source_type": "drugbank_tdc",
+        "source_name": "DrugBank DDI records via Therapeutics Data Commons",
+        "source_document_id": "DB00682|DB00945|Y=6",
+        "source_url": "https://tdcommons.ai/multi_pred_tasks/ddi/",
+        "section": null,
+        "excerpt": "#Drug1 may increase the anticoagulant activities of #Drug2.",
+        "matched_terms": [
+         "anticoagulant"
+        ],
+        "extraction_method": "drugbank_type_map/v1:type=6",
+        "direction": "not_verified",
+        "affected_drug_id": null,
+        "source_seriousness": null,
+        "retrieved_at": "2026-08-24",
+        "qualifiers": [
+         "DrugBank gives no severity and does not state the basis of the record."
+        ]
+       }
+      ],
+      "n_source_documents": 1,
+      "affected_drug_id": null,
+      "direction_note": {
+       "ru": "Какой из препаратов затронут, источник не указывает (или порядок не проверен); отчёт его не называет.",
+       "en": "The source does not say which drug is affected (or its order is unverified); the report does not name one."
+      },
+      "seriousness": "documented_no_standard_severity",
+      "seriousness_basis": {
+       "ru": "Степень серьёзности не установлена по доступным данным.",
+       "en": "Severity not established from available evidence."
+      },
+      "evidence_strength": "database_standard_sentence",
+      "evidence_strength_text": {
+       "ru": "Стандартная фраза базы DrugBank; на чём основана запись, источник не указывает.",
+       "en": "DrugBank standard sentence; the source does not state what the record is based on."
+      },
+      "extraction_note": null,
+      "limitations": [
+       {
+        "ru": "Описано изменение действия, а не наступление вреда.",
+        "en": "A change in effect is described, not that harm occurs."
+       },
+       {
+        "ru": "Доступные данные не устанавливают механизм этого последствия.",
+        "en": "The available evidence does not establish a mechanism for this outcome."
+       }
+      ],
+      "research_only": false
+     },
+     {
+      "id": "outcome:DB00682+DB00945:exposure_decrease:hypothesis:DB00682",
+      "drug_a": "DB00682",
+      "drug_b": "DB00945",
+      "category": "exposure_decrease",
+      "effect": "exposure_hypothesis",
+      "effect_level": "pharmacokinetic_change",
+      "label": {
+       "ru": "Возможно снижение содержания препарата «Варфарин» (гипотеза)",
+       "en": "Possible lower exposure of Warfarin (hypothesis)"
+      },
+      "explanation": {
+       "ru": "Собрано из ролей каждого препарата по отдельности; для этой пары не задокументировано.",
+       "en": "Assembled from each drug's separate roles; not documented for this pair."
+      },
+      "evidence_status": "hypothesized",
+      "supports": [
+       {
+        "evidence_record_id": null,
+        "source_type": "annotation",
+        "source_name": "DrugBank / ChEMBL drug–protein annotations",
+        "source_document_id": "mech:P33261:enzyme:inducer_substrate:DB00945",
+        "source_url": null,
+        "section": null,
+        "excerpt": "CYP2C19 (enzyme): roles A — inhibitor, substrate; roles B — inducer",
+        "matched_terms": [
+         "inducer_substrate"
+        ],
+        "extraction_method": "annotation_chain/v1:inducer_substrate",
+        "direction": "from_annotation",
+        "affected_drug_id": "DB00682",
+        "source_seriousness": null,
+        "retrieved_at": null,
+        "qualifiers": []
+       }
+      ],
+      "n_source_documents": 0,
+      "affected_drug_id": "DB00682",
+      "direction_note": {
+       "ru": "Направление гипотезы — по ролям белков.",
+       "en": "The hypothesis's direction comes from the protein roles."
+      },
+      "seriousness": "not_applicable",
+      "seriousness_basis": {
+       "ru": "Неприменимо: задокументированного последствия нет.",
+       "en": "Not applicable: there is no documented outcome."
+      },
+      "evidence_strength": "annotation_hypothesis",
+      "evidence_strength_text": {
+       "ru": "Только роли препаратов по отдельности (аннотации белков). Это гипотеза.",
+       "en": "Only the drugs' separate protein roles (annotations). This is a hypothesis."
+      },
+      "extraction_note": null,
+      "limitations": [
+       {
+        "ru": "Сила подавления и доля участия белка неизвестны.",
+        "en": "The strength of inhibition and the protein's share of the work are unknown."
+       }
+      ],
+      "research_only": true
+     },
+     {
+      "id": "outcome:DB00682+DB00945:exposure_decrease:hypothesis:DB00945",
+      "drug_a": "DB00682",
+      "drug_b": "DB00945",
+      "category": "exposure_decrease",
+      "effect": "exposure_hypothesis",
+      "effect_level": "pharmacokinetic_change",
+      "label": {
+       "ru": "Возможно снижение содержания препарата «Ацетилсалициловая кислота» (гипотеза)",
+       "en": "Possible lower exposure of Acetylsalicylic acid (hypothesis)"
+      },
+      "explanation": {
+       "ru": "Собрано из ролей каждого препарата по отдельности; для этой пары не задокументировано.",
+       "en": "Assembled from each drug's separate roles; not documented for this pair."
+      },
+      "evidence_status": "hypothesized",
+      "supports": [
+       {
+        "evidence_record_id": null,
+        "source_type": "annotation",
+        "source_name": "DrugBank / ChEMBL drug–protein annotations",
+        "source_document_id": "mech:P11712:enzyme:inducer_substrate:DB00682",
+        "source_url": null,
+        "section": null,
+        "excerpt": "CYP2C9 (enzyme): roles A — inducer, substrate; roles B — substrate",
+        "matched_terms": [
+         "inducer_substrate"
+        ],
+        "extraction_method": "annotation_chain/v1:inducer_substrate",
+        "direction": "from_annotation",
+        "affected_drug_id": "DB00945",
+        "source_seriousness": null,
+        "retrieved_at": null,
+        "qualifiers": []
+       }
+      ],
+      "n_source_documents": 0,
+      "affected_drug_id": "DB00945",
+      "direction_note": {
+       "ru": "Направление гипотезы — по ролям белков.",
+       "en": "The hypothesis's direction comes from the protein roles."
+      },
+      "seriousness": "not_applicable",
+      "seriousness_basis": {
+       "ru": "Неприменимо: задокументированного последствия нет.",
+       "en": "Not applicable: there is no documented outcome."
+      },
+      "evidence_strength": "annotation_hypothesis",
+      "evidence_strength_text": {
+       "ru": "Только роли препаратов по отдельности (аннотации белков). Это гипотеза.",
+       "en": "Only the drugs' separate protein roles (annotations). This is a hypothesis."
+      },
+      "extraction_note": null,
+      "limitations": [
+       {
+        "ru": "Сила подавления и доля участия белка неизвестны.",
+        "en": "The strength of inhibition and the protein's share of the work are unknown."
+       }
+      ],
+      "research_only": true
+     }
+    ],
+    "chains": [
+     {
+      "id": "chain:mech:P33261:enzyme:inducer_substrate:DB00945",
+      "nodes": [
+       {
+        "id": "drug:DB00945",
+        "kind": "drug",
+        "label": {
+         "ru": "Ацетилсалициловая кислота",
+         "en": "Acetylsalicylic acid"
+        },
+        "ref": "DB00945"
+       },
+       {
+        "id": "protein:P33261",
+        "kind": "protein",
+        "label": {
+         "ru": "CYP2C19 (фермент)",
+         "en": "CYP2C19 (enzyme)"
+        },
+        "ref": "mech:P33261:enzyme:inducer_substrate:DB00945"
+       },
+       {
+        "id": "drug:DB00682",
+        "kind": "drug",
+        "label": {
+         "ru": "Варфарин",
+         "en": "Warfarin"
+        },
+        "ref": "DB00682"
+       },
+       {
+        "id": "effect:DB00682:down",
+        "kind": "effect",
+        "label": {
+         "ru": "Меньше препарата «Варфарин» в организме",
+         "en": "Lower exposure of Warfarin"
+        },
+        "ref": null
+       }
+      ],
+      "links": [
+       {
+        "source": "drug:DB00945",
+        "target": "protein:P33261",
+        "relation": "inducer",
+        "provenance": "verified_annotation",
+        "text": {
+         "ru": "«Ацетилсалициловая кислота» отмечен как индуктор CYP2C19.",
+         "en": "Acetylsalicylic acid is annotated as an inducer of CYP2C19."
+        },
+        "refs": [
+         "annot:drugbank:DB00682:P33261:enzyme",
+         "annot:drugbank:DB00945:P33261:enzyme"
+        ]
+       },
+       {
+        "source": "protein:P33261",
+        "target": "drug:DB00682",
+        "relation": "substrate",
+        "provenance": "verified_annotation",
+        "text": {
+         "ru": "«Варфарин» отмечен как субстрат CYP2C19.",
+         "en": "Warfarin is annotated as a substrate of CYP2C19."
+        },
+        "refs": [
+         "annot:drugbank:DB00682:P33261:enzyme",
+         "annot:drugbank:DB00945:P33261:enzyme"
+        ]
+       },
+       {
+        "source": "protein:P33261",
+        "target": "effect:DB00682:down",
+        "relation": "exposure_change",
+        "provenance": "plausible_unconfirmed",
+        "text": {
+         "ru": "Изменение концентрации правдоподобно, но для этой пары не подтверждено.",
+         "en": "A change in exposure is plausible but not confirmed for this pair."
+        },
+        "refs": []
+       }
+      ],
+      "outcome_ids": [],
+      "research_only": true,
+      "summary": {
+       "ru": "«Ацетилсалициловая кислота» усиливает выработку CYP2C19, а «Варфарин» этим белком перерабатывается (аннотации). Изменение концентрации — гипотеза.",
+       "en": "Acetylsalicylic acid induces CYP2C19, which processes Warfarin (annotations). The exposure change is a hypothesis."
+      }
+     },
+     {
+      "id": "chain:mech:P11712:enzyme:inducer_substrate:DB00682",
+      "nodes": [
+       {
+        "id": "drug:DB00682",
+        "kind": "drug",
+        "label": {
+         "ru": "Варфарин",
+         "en": "Warfarin"
+        },
+        "ref": "DB00682"
+       },
+       {
+        "id": "protein:P11712",
+        "kind": "protein",
+        "label": {
+         "ru": "CYP2C9 (фермент)",
+         "en": "CYP2C9 (enzyme)"
+        },
+        "ref": "mech:P11712:enzyme:inducer_substrate:DB00682"
+       },
+       {
+        "id": "drug:DB00945",
+        "kind": "drug",
+        "label": {
+         "ru": "Ацетилсалициловая кислота",
+         "en": "Acetylsalicylic acid"
+        },
+        "ref": "DB00945"
+       },
+       {
+        "id": "effect:DB00945:down",
+        "kind": "effect",
+        "label": {
+         "ru": "Меньше препарата «Ацетилсалициловая кислота» в организме",
+         "en": "Lower exposure of Acetylsalicylic acid"
+        },
+        "ref": null
+       }
+      ],
+      "links": [
+       {
+        "source": "drug:DB00682",
+        "target": "protein:P11712",
+        "relation": "inducer",
+        "provenance": "verified_annotation",
+        "text": {
+         "ru": "«Варфарин» отмечен как индуктор CYP2C9.",
+         "en": "Warfarin is annotated as an inducer of CYP2C9."
+        },
+        "refs": [
+         "annot:drugbank:DB00682:P11712:enzyme",
+         "annot:drugbank:DB00945:P11712:enzyme"
+        ]
+       },
+       {
+        "source": "protein:P11712",
+        "target": "drug:DB00945",
+        "relation": "substrate",
+        "provenance": "verified_annotation",
+        "text": {
+         "ru": "«Ацетилсалициловая кислота» отмечен как субстрат CYP2C9.",
+         "en": "Acetylsalicylic acid is annotated as a substrate of CYP2C9."
+        },
+        "refs": [
+         "annot:drugbank:DB00682:P11712:enzyme",
+         "annot:drugbank:DB00945:P11712:enzyme"
+        ]
+       },
+       {
+        "source": "protein:P11712",
+        "target": "effect:DB00945:down",
+        "relation": "exposure_change",
+        "provenance": "plausible_unconfirmed",
+        "text": {
+         "ru": "Изменение концентрации правдоподобно, но для этой пары не подтверждено.",
+         "en": "A change in exposure is plausible but not confirmed for this pair."
+        },
+        "refs": []
+       }
+      ],
+      "outcome_ids": [],
+      "research_only": true,
+      "summary": {
+       "ru": "«Варфарин» усиливает выработку CYP2C9, а «Ацетилсалициловая кислота» этим белком перерабатывается (аннотации). Изменение концентрации — гипотеза.",
+       "en": "Warfarin induces CYP2C9, which processes Acetylsalicylic acid (annotations). The exposure change is a hypothesis."
+      }
+     }
+    ],
+    "seriousness": "documented_no_standard_severity",
+    "seriousness_text": {
+     "ru": "Степень серьёзности не установлена по доступным данным.",
+     "en": "Severity not established from available evidence."
+    },
+    "coverage": [
+     {
+      "ru": "DrugBank (локальная выгрузка TDC): записей для пары — 1. Степень тяжести и основание записей не указаны.",
+      "en": "DrugBank (local TDC export): 1 record(s) for the pair. No severity and no stated basis."
+     },
+     {
+      "ru": "Инструкции FDA сейчас недоступны — их данные в анализ не вошли. Ищутся названия препаратов, не группы; раздел «Нежелательные реакции» не используется.",
+      "en": "FDA labels unavailable now — not part of this analysis. Drug names are searched, not classes; Adverse Reactions sections are not used."
+     }
+    ],
+    "no_outcome_text": null,
+    "mechanism_without_outcome_text": null,
+    "individual_limit": {
+     "ru": "Платформа не может определить, безопасно ли конкретное сочетание для конкретного человека. Это исследовательский и учебный инструмент.",
+     "en": "This platform cannot determine whether a particular combination is safe for an individual. It is a research and educational tool."
+    }
+   }
+  },
+  "meta": {
+   "endpoint": "http://127.0.0.1:8765/api/v3/report",
+   "request": {
+    "drug_a": "DB00682",
+    "drug_b": "DB00945",
+    "include_labels": true
+   },
+   "receivedAt": "2026-10-15T19:29:46.610Z"
+  }
+ },
+ "graph": {
+  "data": {
+   "drug_a": "DB00682",
+   "drug_b": "DB00945",
+   "nodes": [
+    {
+     "id": "DB00682",
+     "kind": "drug",
+     "label": "warfarin",
+     "side": "a",
+     "detail": {
+      "inn": "warfarin",
+      "name_ru": "варфарин"
+     }
+    },
+    {
+     "id": "DB00945",
+     "kind": "drug",
+     "label": "acetylsalicylic acid",
+     "side": "b",
+     "detail": {
+      "inn": "acetylsalicylic acid",
+      "name_ru": "ацетилсалициловая кислота"
+     }
+    },
+    {
+     "id": "P:P11712",
+     "kind": "protein",
+     "label": "CYP2C9",
+     "side": "shared",
+     "detail": {
+      "uniprot": "P11712",
+      "gene": "CYP2C9",
+      "name": "Cytochrome P450 2C9",
+      "organism": "Humans",
+      "family": "cytochrome_p450",
+      "plain": {
+       "ru": "Фермент из семейства цитохромов P450. Такие ферменты работают в основном в печени и кишечнике и расщепляют многие лекарства, чтобы организм мог их вывести.",
+       "en": "An enzyme of the cytochrome P450 family. These work mainly in the liver and gut and break down many medicines so the body can clear them."
+      }
+     }
+    },
+    {
+     "id": "P:P33261",
+     "kind": "protein",
+     "label": "CYP2C19",
+     "side": "shared",
+     "detail": {
+      "uniprot": "P33261",
+      "gene": "CYP2C19",
+      "name": "Cytochrome P450 2C19",
+      "organism": "Humans",
+      "family": "cytochrome_p450",
+      "plain": {
+       "ru": "Фермент из семейства цитохромов P450. Такие ферменты работают в основном в печени и кишечнике и расщепляют многие лекарства, чтобы организм мог их вывести.",
+       "en": "An enzyme of the cytochrome P450 family. These work mainly in the liver and gut and break down many medicines so the body can clear them."
+      }
+     }
+    },
+    {
+     "id": "P:P05177",
+     "kind": "protein",
+     "label": "CYP1A2",
+     "side": "a",
+     "detail": {
+      "uniprot": "P05177",
+      "gene": "CYP1A2",
+      "name": "Cytochrome P450 1A2",
+      "organism": "Humans",
+      "family": "cytochrome_p450",
+      "plain": {
+       "ru": "Фермент из семейства цитохромов P450. Такие ферменты работают в основном в печени и кишечнике и расщепляют многие лекарства, чтобы организм мог их вывести.",
+       "en": "An enzyme of the cytochrome P450 family. These work mainly in the liver and gut and break down many medicines so the body can clear them."
+      }
+     }
+    },
+    {
+     "id": "P:P33260",
+     "kind": "protein",
+     "label": "CYP2C18",
+     "side": "a",
+     "detail": {
+      "uniprot": "P33260",
+      "gene": "CYP2C18",
+      "name": "Cytochrome P450 2C18",
+      "organism": "Humans",
+      "family": "cytochrome_p450",
+      "plain": {
+       "ru": "Фермент из семейства цитохромов P450. Такие ферменты работают в основном в печени и кишечнике и расщепляют многие лекарства, чтобы организм мог их вывести.",
+       "en": "An enzyme of the cytochrome P450 family. These work mainly in the liver and gut and break down many medicines so the body can clear them."
+      }
+     }
+    },
+    {
+     "id": "P:P10632",
+     "kind": "protein",
+     "label": "CYP2C8",
+     "side": "a",
+     "detail": {
+      "uniprot": "P10632",
+      "gene": "CYP2C8",
+      "name": "Cytochrome P450 2C8",
+      "organism": "Humans",
+      "family": "cytochrome_p450",
+      "plain": {
+       "ru": "Фермент из семейства цитохромов P450. Такие ферменты работают в основном в печени и кишечнике и расщепляют многие лекарства, чтобы организм мог их вывести.",
+       "en": "An enzyme of the cytochrome P450 family. These work mainly in the liver and gut and break down many medicines so the body can clear them."
+      }
+     }
+    },
+    {
+     "id": "P:P08684",
+     "kind": "protein",
+     "label": "CYP3A4",
+     "side": "a",
+     "detail": {
+      "uniprot": "P08684",
+      "gene": "CYP3A4",
+      "name": "Cytochrome P450 3A4",
+      "organism": "Humans",
+      "family": "cytochrome_p450",
+      "plain": {
+       "ru": "Фермент из семейства цитохромов P450. Такие ферменты работают в основном в печени и кишечнике и расщепляют многие лекарства, чтобы организм мог их вывести.",
+       "en": "An enzyme of the cytochrome P450 family. These work mainly in the liver and gut and break down many medicines so the body can clear them."
+      }
+     }
+    },
+    {
+     "id": "P:P02768",
+     "kind": "protein",
+     "label": "ALB",
+     "side": "a",
+     "detail": {
+      "uniprot": "P02768",
+      "gene": "ALB",
+      "name": "Albumin",
+      "organism": "Humans",
+      "family": "albumin",
+      "plain": {
+       "ru": "Альбумин — главный белок крови. Многие лекарства путешествуют по крови, прицепившись к нему.",
+       "en": "Albumin — the main protein in blood. Many drugs travel through the bloodstream attached to it."
+      }
+     }
+    },
+    {
+     "id": "P:P02763",
+     "kind": "protein",
+     "label": "ORM1",
+     "side": "a",
+     "detail": {
+      "uniprot": "P02763",
+      "gene": "ORM1",
+      "name": "Alpha-1-acid glycoprotein 1",
+      "organism": "Humans",
+      "family": "orosomucoid",
+      "plain": {
+       "ru": "Альфа-1-кислый гликопротеин — белок крови, который связывает и переносит многие лекарства.",
+       "en": "Alpha-1-acid glycoprotein — a blood protein that binds and carries many drugs."
+      }
+     }
+    },
+    {
+     "id": "P:O75469",
+     "kind": "protein",
+     "label": "NR1I2",
+     "side": "a",
+     "detail": {
+      "uniprot": "O75469",
+      "gene": "NR1I2",
+      "name": "Nuclear receptor subfamily 1 group I member 2",
+      "organism": "Humans",
+      "family": "other",
+      "plain": {
+       "ru": "Мишень: белок, на который лекарство действует, чтобы оказать свой эффект.",
+       "en": "A target: a protein the drug acts on to produce its effect."
+      }
+     }
+    },
+    {
+     "id": "P:Q9BQB6",
+     "kind": "protein",
+     "label": "VKORC1",
+     "side": "a",
+     "detail": {
+      "uniprot": "Q9BQB6",
+      "gene": "VKORC1",
+      "name": "Vitamin K epoxide reductase complex subunit 1",
+      "organism": "Humans",
+      "family": "other",
+      "plain": {
+       "ru": "Мишень: белок, на который лекарство действует, чтобы оказать свой эффект.",
+       "en": "A target: a protein the drug acts on to produce its effect."
+      }
+     }
+    },
+    {
+     "id": "P:P11245",
+     "kind": "protein",
+     "label": "NAT2",
+     "side": "b",
+     "detail": {
+      "uniprot": "P11245",
+      "gene": "NAT2",
+      "name": "Arylamine N-acetyltransferase 2",
+      "organism": "Humans",
+      "family": "other",
+      "plain": {
+       "ru": "Фермент: белок, который химически перерабатывает вещества, в том числе лекарства.",
+       "en": "An enzyme: a protein that chemically processes substances, including drugs."
+      }
+     }
+    },
+    {
+     "id": "P:P19224",
+     "kind": "protein",
+     "label": "UGT1A6",
+     "side": "b",
+     "detail": {
+      "uniprot": "P19224",
+      "gene": "UGT1A6",
+      "name": "UDP-glucuronosyltransferase 1A6",
+      "organism": "Humans",
+      "family": "ugt",
+      "plain": {
+       "ru": "Фермент печени, который присоединяет к лекарству химическую «метку», облегчающую его выведение с мочой или желчью.",
+       "en": "A liver enzyme that attaches a chemical tag to a drug so it can be flushed out in urine or bile."
+      }
+     }
+    },
+    {
+     "id": "P:P08183",
+     "kind": "protein",
+     "label": "ABCB1",
+     "side": "b",
+     "detail": {
+      "uniprot": "P08183",
+      "gene": "ABCB1",
+      "name": "ATP-dependent translocase ABCB1",
+      "organism": "Humans",
+      "family": "p_glycoprotein",
+      "plain": {
+       "ru": "P-гликопротеин — «насос» в стенках кишечника, печени, почек и сосудов мозга. Он выталкивает лекарства из клеток и этим ограничивает, сколько препарата попадает в кровь и в мозг.",
+       "en": "P-glycoprotein — a pump in the walls of the gut, liver, kidney and brain blood vessels. It pushes drugs back out of cells, limiting how much reaches the blood and the brain."
+      }
+     }
+    },
+    {
+     "id": "P:Q4U2R8",
+     "kind": "protein",
+     "label": "SLC22A6",
+     "side": "b",
+     "detail": {
+      "uniprot": "Q4U2R8",
+      "gene": "SLC22A6",
+      "name": "Solute carrier family 22 member 6",
+      "organism": "Humans",
+      "family": "oat_oct",
+      "plain": {
+       "ru": "Белок-переносчик органических ионов. Много работает в почках и печени и помогает выводить лекарства из организма.",
+       "en": "An organic ion transporter. Highly active in the kidney and liver, it helps remove drugs from the body."
+      }
+     }
+    },
+    {
+     "id": "P:Q8TCC7",
+     "kind": "protein",
+     "label": "SLC22A8",
+     "side": "b",
+     "detail": {
+      "uniprot": "Q8TCC7",
+      "gene": "SLC22A8",
+      "name": "Organic anion transporter 3",
+      "organism": "Humans",
+      "family": "oat_oct",
+      "plain": {
+       "ru": "Белок-переносчик органических ионов. Много работает в почках и печени и помогает выводить лекарства из организма.",
+       "en": "An organic ion transporter. Highly active in the kidney and liver, it helps remove drugs from the body."
+      }
+     }
+    },
+    {
+     "id": "P:Q04828",
+     "kind": "protein",
+     "label": "AKR1C1",
+     "side": "b",
+     "detail": {
+      "uniprot": "Q04828",
+      "gene": "AKR1C1",
+      "name": "Aldo-keto reductase family 1 member C1",
+      "organism": "Humans",
+      "family": "other",
+      "plain": {
+       "ru": "Мишень: белок, на который лекарство действует, чтобы оказать свой эффект.",
+       "en": "A target: a protein the drug acts on to produce its effect."
+      }
+     }
+    },
+    {
+     "id": "P:P29466",
+     "kind": "protein",
+     "label": "CASP1",
+     "side": "b",
+     "detail": {
+      "uniprot": "P29466",
+      "gene": "CASP1",
+      "name": "Caspase-1",
+      "organism": "Humans",
+      "family": "other",
+      "plain": {
+       "ru": "Мишень: белок, на который лекарство действует, чтобы оказать свой эффект.",
+       "en": "A target: a protein the drug acts on to produce its effect."
+      }
+     }
+    },
+    {
+     "id": "P:P42574",
+     "kind": "protein",
+     "label": "CASP3",
+     "side": "b",
+     "detail": {
+      "uniprot": "P42574",
+      "gene": "CASP3",
+      "name": "Caspase-3",
+      "organism": "Humans",
+      "family": "other",
+      "plain": {
+       "ru": "Мишень: белок, на который лекарство действует, чтобы оказать свой эффект.",
+       "en": "A target: a protein the drug acts on to produce its effect."
+      }
+     }
+    },
+    {
+     "id": "P:P24385",
+     "kind": "protein",
+     "label": "CCND1",
+     "side": "b",
+     "detail": {
+      "uniprot": "P24385",
+      "gene": "CCND1",
+      "name": "G1/S-specific cyclin-D1",
+      "organism": "Humans",
+      "family": "other",
+      "plain": {
+       "ru": "Мишень: белок, на который лекарство действует, чтобы оказать свой эффект.",
+       "en": "A target: a protein the drug acts on to produce its effect."
+      }
+     }
+    },
+    {
+     "id": "P:P25101",
+     "kind": "protein",
+     "label": "EDNRA",
+     "side": "b",
+     "detail": {
+      "uniprot": "P25101",
+      "gene": "EDNRA",
+      "name": "Endothelin-1 receptor",
+      "organism": "Humans",
+      "family": "other",
+      "plain": {
+       "ru": "Мишень: белок, на который лекарство действует, чтобы оказать свой эффект.",
+       "en": "A target: a protein the drug acts on to produce its effect."
+      }
+     }
+    },
+    {
+     "id": "W:R-HSA-9027307",
+     "kind": "pathway",
+     "label": "Biosynthesis of maresin-like SPMs",
+     "side": "pathway",
+     "detail": {
+      "reactome_id": "R-HSA-9027307",
+      "n_proteins_in_pathway": 6,
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     }
+    },
+    {
+     "id": "W:R-HSA-211999",
+     "kind": "pathway",
+     "label": "CYP2E1 reactions",
+     "side": "pathway",
+     "detail": {
+      "reactome_id": "R-HSA-211999",
+      "n_proteins_in_pathway": 8,
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     }
+    },
+    {
+     "id": "W:R-HSA-2142816",
+     "kind": "pathway",
+     "label": "Synthesis of (16-20)-hydroxyeicosatetraenoic acids (HETE)",
+     "side": "pathway",
+     "detail": {
+      "reactome_id": "R-HSA-2142816",
+      "n_proteins_in_pathway": 8,
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     }
+    },
+    {
+     "id": "W:R-HSA-2142670",
+     "kind": "pathway",
+     "label": "Synthesis of epoxy (EET) and dihydroxyeicosatrienoic acids (DHET)",
+     "side": "pathway",
+     "detail": {
+      "reactome_id": "R-HSA-2142670",
+      "n_proteins_in_pathway": 8,
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     }
+    },
+    {
+     "id": "W:R-HSA-211981",
+     "kind": "pathway",
+     "label": "Xenobiotics",
+     "side": "pathway",
+     "detail": {
+      "reactome_id": "R-HSA-211981",
+      "n_proteins_in_pathway": 16,
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     }
+    },
+    {
+     "id": "W:R-HSA-9749641",
+     "kind": "pathway",
+     "label": "Aspirin ADME",
+     "side": "pathway",
+     "detail": {
+      "reactome_id": "R-HSA-9749641",
+      "n_proteins_in_pathway": 25,
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     }
+    },
+    {
+     "id": "W:R-HSA-9793528",
+     "kind": "pathway",
+     "label": "Ciprofloxacin ADME",
+     "side": "pathway",
+     "detail": {
+      "reactome_id": "R-HSA-9793528",
+      "n_proteins_in_pathway": 5,
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     }
+    },
+    {
+     "id": "W:R-HSA-9754706",
+     "kind": "pathway",
+     "label": "Atorvastatin ADME",
+     "side": "pathway",
+     "detail": {
+      "reactome_id": "R-HSA-9754706",
+      "n_proteins_in_pathway": 8,
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     }
+    }
+   ],
+   "edges": [
+    {
+     "id": "annot:drugbank:DB00682:P11712:enzyme",
+     "source": "DB00682",
+     "target": "P:P11712",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "enzyme",
+      "roles": [
+       "inducer",
+       "substrate"
+      ],
+      "raw_action": "substrate|inducer",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "29283396",
+       "16372822",
+       "20735727"
+      ],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB00682:P33261:enzyme",
+     "source": "DB00682",
+     "target": "P:P33261",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "enzyme",
+      "roles": [
+       "inhibitor",
+       "substrate"
+      ],
+      "raw_action": "substrate|inhibitor",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "19515014",
+       "16162970",
+       "16372822"
+      ],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB00682:P05177:enzyme",
+     "source": "DB00682",
+     "target": "P:P05177",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "enzyme",
+      "roles": [
+       "substrate"
+      ],
+      "raw_action": "substrate",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "19515014",
+       "18576910",
+       "16372822"
+      ],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB00682:P33260:enzyme",
+     "source": "DB00682",
+     "target": "P:P33260",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "enzyme",
+      "roles": [
+       "substrate"
+      ],
+      "raw_action": "substrate",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "16372822",
+       "19958090",
+       "17048007"
+      ],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB00682:P10632:enzyme",
+     "source": "DB00682",
+     "target": "P:P10632",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "enzyme",
+      "roles": [
+       "substrate"
+      ],
+      "raw_action": "substrate",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "19515014",
+       "26721703",
+       "16372822"
+      ],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB00682:P08684:enzyme",
+     "source": "DB00682",
+     "target": "P:P08684",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "enzyme",
+      "roles": [
+       "inducer",
+       "substrate"
+      ],
+      "raw_action": "substrate|inducer",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "19515014",
+       "16372822",
+       "20735727"
+      ],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB00682:P02768:carrier",
+     "source": "DB00682",
+     "target": "P:P02768",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "carrier",
+      "roles": [
+       "unspecified"
+      ],
+      "raw_action": "binder|regulator",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "8695640",
+       "20537832",
+       "18721856",
+       "9275312",
+       "11785700"
+      ],
+      "known_action": "no"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB00682:P02763:carrier",
+     "source": "DB00682",
+     "target": "P:P02763",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "carrier",
+      "roles": [
+       "unspecified"
+      ],
+      "raw_action": "",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "16290938",
+       "14616427"
+      ],
+      "known_action": "no"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB00682:O75469:target",
+     "source": "DB00682",
+     "target": "P:O75469",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "target",
+      "roles": [
+       "unspecified"
+      ],
+      "raw_action": "",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "20735727"
+      ],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB00682:Q9BQB6:target",
+     "source": "DB00682",
+     "target": "P:Q9BQB6",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "target",
+      "roles": [
+       "inhibiting"
+      ],
+      "raw_action": "inhibitor",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "17275317",
+       "17510308",
+       "17161452",
+       "17413769",
+       "17653141",
+       "11752352",
+       "37713619"
+      ],
+      "known_action": "yes"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB00945:P11712:enzyme",
+     "source": "DB00945",
+     "target": "P:P11712",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "enzyme",
+      "roles": [
+       "substrate"
+      ],
+      "raw_action": "substrate",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "21966608"
+      ],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB00945:P33261:enzyme",
+     "source": "DB00945",
+     "target": "P:P33261",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "enzyme",
+      "roles": [
+       "inducer"
+      ],
+      "raw_action": "inducer",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "12621391"
+      ],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB00945:P11245:enzyme",
+     "source": "DB00945",
+     "target": "P:P11245",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "enzyme",
+      "roles": [
+       "substrate"
+      ],
+      "raw_action": "substrate",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "21966608",
+       "24892773"
+      ],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB00945:P19224:enzyme",
+     "source": "DB00945",
+     "target": "P:P19224",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "enzyme",
+      "roles": [
+       "substrate"
+      ],
+      "raw_action": "substrate",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "21966608",
+       "15770010",
+       "17622933"
+      ],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB00945:P08183:transporter",
+     "source": "DB00945",
+     "target": "P:P08183",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "transporter",
+      "roles": [
+       "inducer",
+       "substrate"
+      ],
+      "raw_action": "substrate|inducer|modulator",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "12954186",
+       "25669934",
+       "24566733",
+       "24107783",
+       "11205285"
+      ],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB00945:Q4U2R8:transporter",
+     "source": "DB00945",
+     "target": "P:Q4U2R8",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "transporter",
+      "roles": [
+       "inhibitor"
+      ],
+      "raw_action": "inhibitor",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "10220563",
+       "28223391"
+      ],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB00945:Q8TCC7:transporter",
+     "source": "DB00945",
+     "target": "P:Q8TCC7",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "transporter",
+      "roles": [
+       "inhibitor"
+      ],
+      "raw_action": "inhibitor",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "28223391",
+       "24692216"
+      ],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB00945:Q04828:target",
+     "source": "DB00945",
+     "target": "P:Q04828",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "target",
+      "roles": [
+       "inhibiting"
+      ],
+      "raw_action": "inhibitor",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "18045204"
+      ],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB00945:P29466:target",
+     "source": "DB00945",
+     "target": "P:P29466",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "target",
+      "roles": [
+       "inhibiting"
+      ],
+      "raw_action": "inhibitor|downregulator",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "24874482",
+       "23110215",
+       "30693272",
+       "26980842"
+      ],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB00945:P42574:target",
+     "source": "DB00945",
+     "target": "P:P42574",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "target",
+      "roles": [
+       "inhibiting"
+      ],
+      "raw_action": "inhibitor|downregulator",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "24874482",
+       "23110215"
+      ],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB00945:P24385:target",
+     "source": "DB00945",
+     "target": "P:P24385",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "target",
+      "roles": [
+       "inhibiting"
+      ],
+      "raw_action": "downregulator",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "10993886",
+       "28415819",
+       "29218104"
+      ],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "annot:drugbank:DB00945:P25101:target",
+     "source": "DB00945",
+     "target": "P:P25101",
+     "kind": "annotation",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "relation": "target",
+      "roles": [
+       "inhibiting"
+      ],
+      "raw_action": "inhibitor",
+      "source": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "pmids": [
+       "10727528",
+       "11093786",
+       "26956245"
+      ],
+      "known_action": "unknown"
+     }
+    },
+    {
+     "id": "pw:P05177:R-HSA-9027307",
+     "source": "P:P05177",
+     "target": "W:R-HSA-9027307",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P08684:R-HSA-9027307",
+     "source": "P:P08684",
+     "target": "W:R-HSA-9027307",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P10632:R-HSA-9027307",
+     "source": "P:P10632",
+     "target": "W:R-HSA-9027307",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P11712:R-HSA-9027307",
+     "source": "P:P11712",
+     "target": "W:R-HSA-9027307",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P10632:R-HSA-211999",
+     "source": "P:P10632",
+     "target": "W:R-HSA-211999",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P11712:R-HSA-211999",
+     "source": "P:P11712",
+     "target": "W:R-HSA-211999",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P33261:R-HSA-211999",
+     "source": "P:P33261",
+     "target": "W:R-HSA-211999",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P05177:R-HSA-2142816",
+     "source": "P:P05177",
+     "target": "W:R-HSA-2142816",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P10632:R-HSA-2142816",
+     "source": "P:P10632",
+     "target": "W:R-HSA-2142816",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P11712:R-HSA-2142816",
+     "source": "P:P11712",
+     "target": "W:R-HSA-2142816",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P33261:R-HSA-2142816",
+     "source": "P:P33261",
+     "target": "W:R-HSA-2142816",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P05177:R-HSA-2142670",
+     "source": "P:P05177",
+     "target": "W:R-HSA-2142670",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P10632:R-HSA-2142670",
+     "source": "P:P10632",
+     "target": "W:R-HSA-2142670",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P11712:R-HSA-2142670",
+     "source": "P:P11712",
+     "target": "W:R-HSA-2142670",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P33261:R-HSA-2142670",
+     "source": "P:P33261",
+     "target": "W:R-HSA-2142670",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P08684:R-HSA-211981",
+     "source": "P:P08684",
+     "target": "W:R-HSA-211981",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P10632:R-HSA-211981",
+     "source": "P:P10632",
+     "target": "W:R-HSA-211981",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P11712:R-HSA-211981",
+     "source": "P:P11712",
+     "target": "W:R-HSA-211981",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P33260:R-HSA-211981",
+     "source": "P:P33260",
+     "target": "W:R-HSA-211981",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P33261:R-HSA-211981",
+     "source": "P:P33261",
+     "target": "W:R-HSA-211981",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P02768:R-HSA-9749641",
+     "source": "P:P02768",
+     "target": "W:R-HSA-9749641",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P08684:R-HSA-9749641",
+     "source": "P:P08684",
+     "target": "W:R-HSA-9749641",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P10632:R-HSA-9749641",
+     "source": "P:P10632",
+     "target": "W:R-HSA-9749641",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P11712:R-HSA-9749641",
+     "source": "P:P11712",
+     "target": "W:R-HSA-9749641",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P19224:R-HSA-9749641",
+     "source": "P:P19224",
+     "target": "W:R-HSA-9749641",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P33261:R-HSA-9749641",
+     "source": "P:P33261",
+     "target": "W:R-HSA-9749641",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P02768:R-HSA-9793528",
+     "source": "P:P02768",
+     "target": "W:R-HSA-9793528",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:Q8TCC7:R-HSA-9793528",
+     "source": "P:Q8TCC7",
+     "target": "W:R-HSA-9793528",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "IEA"
+      ]
+     }
+    },
+    {
+     "id": "pw:P08183:R-HSA-9754706",
+     "source": "P:P08183",
+     "target": "W:R-HSA-9754706",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "pw:P08684:R-HSA-9754706",
+     "source": "P:P08684",
+     "target": "W:R-HSA-9754706",
+     "kind": "pathway_membership",
+     "established": true,
+     "directed": true,
+     "detail": {
+      "reactome_evidence_codes": [
+       "TAS"
+      ]
+     }
+    },
+    {
+     "id": "drugbank-tdc:DB00682>DB00945:t6",
+     "source": "DB00682",
+     "target": "DB00945",
+     "kind": "documented_interaction",
+     "established": true,
+     "directed": false,
+     "detail": {
+      "statement": "One of the two drugs may increase the anticoagulant activities of the other drug.",
+      "direction": "not_verified",
+      "source": "DrugBank DDI records via Therapeutics Data Commons"
+     }
+    }
+   ],
+   "truncated": {
+    "proteins_a": 0,
+    "proteins_b": 14
+   },
+   "legend": {
+    "annotation": {
+     "ru": "Задокументированная связь препарата с белком (DrugBank / ChEMBL)",
+     "en": "Documented drug-protein relation (DrugBank / ChEMBL)"
+    },
+    "pathway_membership": {
+     "ru": "Белок участвует в биологическом пути (Reactome)",
+     "en": "Protein belongs to a biological pathway (Reactome)"
+    },
+    "documented_interaction": {
+     "ru": "Задокументированное взаимодействие (запись DrugBank)",
+     "en": "Documented interaction (DrugBank record)"
+    },
+    "shared": {
+     "ru": "Общий белок или путь — повод присмотреться, а не доказательство",
+     "en": "Shared protein or pathway — a reason to look closer, not proof"
+    }
+   }
+  },
+  "meta": {
+   "endpoint": "http://127.0.0.1:8765/api/v3/graph",
+   "request": {
+    "drug_a": "DB00682",
+    "drug_b": "DB00945"
+   },
+   "receivedAt": "2026-10-15T19:29:46.618Z"
+  }
+ }
+}

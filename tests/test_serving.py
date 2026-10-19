@@ -404,3 +404,27 @@ def test_every_shared_protein_carries_a_readable_label(biology, engine, frozen_s
         for proteins in biology.shared(engine.index[a], engine.index[b]).values():
             for p in proteins:
                 assert p.gene and p.name and p.uniprot
+
+
+# -- DDI-Net 3.0 model-reliance readout --------------------------------------
+
+def test_lean_modality_reliance_matches_the_torch_path(engine):
+    """Branch-zeroed encodings in the artifact == recomputing them with torch."""
+    import torch
+
+    from serving.lean import ARTIFACT, LeanEngine
+
+    if not ARTIFACT.exists():
+        pytest.skip("lean artifact not built")
+    lean = LeanEngine()
+    if not lean.has_modality_reliance:
+        pytest.skip("artifact predates branch-zeroed encodings")
+    zeroed = engine.branch_zeroed_encodings()
+    pairs = [("DB00682", "DB00196"), ("DB00331", "DB00682"), ("DB00641", "DB01211")]
+    for a, b in pairs:
+        r = lean.modality_reliance(a, b)
+        ia, ib = torch.tensor([engine.index[a]]), torch.tensor([engine.index[b]])
+        for name, h in zeroed.items():
+            with torch.no_grad():
+                p = engine.model.score_pairs(h, engine._mask, ia, ib).interaction_prob().item()
+            assert abs(r[f"without_{name}"] - p) < 1e-5, (a, b, name)

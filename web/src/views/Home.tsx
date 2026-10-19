@@ -5,6 +5,7 @@ import { Metric } from "../components/Metric";
 import { frozen, model } from "../data/frozen";
 import { auprc, count, delta, meanSd, pct } from "../lib/format";
 import { useI18n } from "../i18n";
+import { ThreeKinds } from "../components/v3/ThreeKinds";
 
 export function Home({ setView }: { setView: (v: View) => void }) {
   const { t, lang } = useI18n();
@@ -29,7 +30,7 @@ export function Home({ setView }: { setView: (v: View) => void }) {
             {t("home.lede")}
           </p>
           <div style={{ marginTop: 34, display: "flex", gap: 14, flexWrap: "wrap", pointerEvents: "auto" }}>
-            <button onClick={() => setView("analyze")} style={btnFilled}>{t("home.cta.pair")}</button>
+            <button onClick={() => setView("analyzer")} style={btnFilled}>{t("home.cta.pair")}</button>
             <button onClick={() => setView("model")} style={btnOutline}>{t("home.cta.model")}</button>
           </div>
         </div>
@@ -40,6 +41,9 @@ export function Home({ setView }: { setView: (v: View) => void }) {
           <span className="mono" style={{ fontSize: 11, color: "var(--text-3)" }}>{t("home.rail.research")}</span>
         </div>
       </section>
+
+      {/* DDI-NET 3.0: three kinds of statement */}
+      <ThreeKinds setView={setView} />
 
       {/* 01 THE PROBLEM */}
       <section className="section">

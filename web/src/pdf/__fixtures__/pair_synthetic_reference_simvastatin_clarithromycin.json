@@ -1,0 +1,1794 @@
+{
+ "_comment": "SYNTHETIC reference-set fixture. The response shape is real engine output; the reference-set records are synthetic test data, not CRESCENDDI records (CRESCENDDI is not redistributed; see docs/DATASET_AUDIT.md). Their pair-event content was chosen to coincide with interactions stated in FDA labels (fluconazole: bleeding with warfarin; simvastatin: myopathy/rhabdomyolysis with clarithromycin).",
+ "report": {
+  "data": {
+   "report_version": "3.0",
+   "drug_a": {
+    "id": "DB00641",
+    "inn": "simvastatin",
+    "name_ru": "симвастатин",
+    "name_ru_is_transliteration": true,
+    "groups": "approved",
+    "drug_type": "small molecule",
+    "query": "DB00641",
+    "matched_on": null
+   },
+   "drug_b": {
+    "id": "DB01211",
+    "inn": "clarithromycin",
+    "name_ru": "кларитромицин",
+    "name_ru_is_transliteration": true,
+    "groups": "approved",
+    "drug_type": "small molecule",
+    "query": "DB01211",
+    "matched_on": null
+   },
+   "evidence_status": "documented_no_severity",
+   "evidence_status_label": {
+    "ru": "Взаимодействие задокументировано в базе данных или справочном наборе; степень тяжести в отчёте не указывается",
+    "en": "Interaction documented in a database or reference set; no severity grade is shown in this report"
+   },
+   "evidence": [
+    {
+     "id": "drugbank-tdc:DB00641>DB01211:t73",
+     "category": "database_interaction_record",
+     "source_name": "DrugBank DDI records via Therapeutics Data Commons",
+     "source_version": "PyTDC 1.1.15, tdc.multi_pred.DDI(name='DrugBank')",
+     "source_record_id": "DB00641|DB01211|Y=73",
+     "source_url": "https://tdcommons.ai/multi_pred_tasks/ddi/",
+     "retrieval_url": null,
+     "original_identifiers": {
+      "drugbank_id_drug1_as_exported": "DB00641",
+      "drugbank_id_drug2_as_exported": "DB01211",
+      "tdc_interaction_type": "73"
+     },
+     "statement": "The serum concentration of one of the two drugs can be increased when it is combined with the other drug.",
+     "statement_origin": "source_template_direction_neutral",
+     "source_template": "The serum concentration of #Drug2 can be increased when it is combined with #Drug1.",
+     "direction": "not_verified",
+     "direction_check": {
+      "checkable": true,
+      "consistency": 0.10318492037699058,
+      "n_consistent": 1270,
+      "n_informative": 12308,
+      "n_reversed": 11038,
+      "n_rows": 23779
+     },
+     "statement_ru": "Концентрация одного из двух препаратов в сыворотке может повышаться при сочетании с другим препаратом.",
+     "section": null,
+     "also_in_sections": [],
+     "drug1_id": null,
+     "drug2_id": null,
+     "retrieved_at": "2026-08-24",
+     "license": "TDC: CC BY 4.0; underlying DrugBank content: DrugBank non-commercial licence",
+     "source_severity": null,
+     "qualifiers": [
+      "DrugBank's standard sentence for this interaction type, not a quotation from a study or a label.",
+      "This export carries no severity grade. None is implied.",
+      "The export does not state the basis of each record (clinical study, label text, or inference from pharmacological properties).",
+      "Drug order for this interaction type matched documented DrugBank roles in only 1,270 of 12,308 checkable records, so the statement is shown without naming which drug is affected."
+     ]
+    },
+    {
+     "id": "synthetic-crescenddi:DB00641+DB01211:10028641",
+     "category": "reference_set_outcome",
+     "source_name": "CRESCENDDI reference set (Kontsioti et al., Sci Data 2022)",
+     "source_version": "SYNTHETIC fixture (shape of a reference-set record; not CRESCENDDI data)",
+     "source_record_id": "synthetic:positive_control:DB00641|DB01211|MedDRA 10028641",
+     "source_url": "https://github.com/elpidakon/CRESCENDDI",
+     "retrieval_url": null,
+     "original_identifiers": {
+      "meddra_code": "10028641",
+      "meddra_term": "Myopathy",
+      "event_source": "Micromedex",
+      "effect_key": "myopathy_rhabdomyolysis",
+      "event_map": "meddra_effect_map/v1"
+     },
+     "statement": "CRESCENDDI lists “Myopathy” (MedDRA 10028641) as an adverse event of the interaction between simvastatin and clarithromycin, mapped from the Micromedex interaction description.",
+     "statement_origin": "source_template_filled",
+     "source_template": "CRESCENDDI positive control: drug pair + MedDRA event + event source",
+     "direction": "symmetric",
+     "direction_check": null,
+     "statement_ru": "В CRESCENDDI нежелательное явление «Myopathy» (MedDRA 10028641) указано как последствие взаимодействия препаратов симвастатин и кларитромицин; оно взято из описания взаимодействия в Micromedex.",
+     "section": null,
+     "also_in_sections": [],
+     "drug1_id": null,
+     "drug2_id": null,
+     "retrieved_at": "2026-10-16",
+     "license": "MIT License (authors' GitHub repository, which contains the data records); figshare licence not verified from the build environment",
+     "source_severity": null,
+     "qualifiers": [
+      "CRESCENDDI positive control: the pair is documented as interacting in all three compendia the authors used (BNF, Nov 2018; IBM Micromedex, Sep 2018; ANSM Thesaurus, Sep 2019).",
+      "The adverse event is the MedDRA term the authors mapped from the compendium's interaction description; the compendium text itself is not reproduced.",
+      "The compendia grade severity, but those grades are proprietary editorial classifications and are not shown here. Severity is therefore not established from the evidence shown.",
+      "Snapshot of 2018–2019 sources; later changes to the compendia are not reflected."
+     ]
+    },
+    {
+     "id": "synthetic-crescenddi:DB00641+DB01211:10039020",
+     "category": "reference_set_outcome",
+     "source_name": "CRESCENDDI reference set (Kontsioti et al., Sci Data 2022)",
+     "source_version": "SYNTHETIC fixture (shape of a reference-set record; not CRESCENDDI data)",
+     "source_record_id": "synthetic:positive_control:DB00641|DB01211|MedDRA 10039020",
+     "source_url": "https://github.com/elpidakon/CRESCENDDI",
+     "retrieval_url": null,
+     "original_identifiers": {
+      "meddra_code": "10039020",
+      "meddra_term": "Rhabdomyolysis",
+      "event_source": "Micromedex",
+      "effect_key": "myopathy_rhabdomyolysis",
+      "event_map": "meddra_effect_map/v1"
+     },
+     "statement": "CRESCENDDI lists “Rhabdomyolysis” (MedDRA 10039020) as an adverse event of the interaction between simvastatin and clarithromycin, mapped from the Micromedex interaction description.",
+     "statement_origin": "source_template_filled",
+     "source_template": "CRESCENDDI positive control: drug pair + MedDRA event + event source",
+     "direction": "symmetric",
+     "direction_check": null,
+     "statement_ru": "В CRESCENDDI нежелательное явление «Rhabdomyolysis» (MedDRA 10039020) указано как последствие взаимодействия препаратов симвастатин и кларитромицин; оно взято из описания взаимодействия в Micromedex.",
+     "section": null,
+     "also_in_sections": [],
+     "drug1_id": null,
+     "drug2_id": null,
+     "retrieved_at": "2026-10-16",
+     "license": "MIT License (authors' GitHub repository, which contains the data records); figshare licence not verified from the build environment",
+     "source_severity": null,
+     "qualifiers": [
+      "CRESCENDDI positive control: the pair is documented as interacting in all three compendia the authors used (BNF, Nov 2018; IBM Micromedex, Sep 2018; ANSM Thesaurus, Sep 2019).",
+      "The adverse event is the MedDRA term the authors mapped from the compendium's interaction description; the compendium text itself is not reproduced.",
+      "The compendia grade severity, but those grades are proprietary editorial classifications and are not shown here. Severity is therefore not established from the evidence shown.",
+      "Snapshot of 2018–2019 sources; later changes to the compendia are not reflected."
+     ]
+    }
+   ],
+   "conflicts": [],
+   "mechanism": {
+    "findings": [
+     {
+      "id": "mech:P08183:transporter:inhibitor_substrate:DB00641",
+      "protein": {
+       "uniprot": "P08183",
+       "gene": "ABCB1",
+       "name": "ATP-dependent translocase ABCB1",
+       "organism": "Humans",
+       "family": "p_glycoprotein",
+       "plain": {
+        "ru": "P-гликопротеин — «насос» в стенках кишечника, печени, почек и сосудов мозга. Он выталкивает лекарства из клеток и этим ограничивает, сколько препарата попадает в кровь и в мозг.",
+        "en": "P-glycoprotein — a pump in the walls of the gut, liver, kidney and brain blood vessels. It pushes drugs back out of cells, limiting how much reaches the blood and the brain."
+       }
+      },
+      "relation": "transporter",
+      "pattern": "inhibitor_substrate",
+      "actor_drug_id": "DB00641",
+      "affected_drug_id": "DB01211",
+      "roles_a": [
+       "inhibitor"
+      ],
+      "roles_b": [
+       "inhibitor",
+       "substrate"
+      ],
+      "annotation_ids": [
+       "annot:drugbank:DB00641:P08183:transporter",
+       "annot:drugbank:DB01211:P08183:transporter"
+      ],
+      "consistent_with_records": [
+       "drugbank-tdc:DB00641>DB01211:t73"
+      ],
+      "status": "hypothesis"
+     },
+     {
+      "id": "mech:P08684:enzyme:inhibitor_substrate:DB01211",
+      "protein": {
+       "uniprot": "P08684",
+       "gene": "CYP3A4",
+       "name": "Cytochrome P450 3A4",
+       "organism": "Humans",
+       "family": "cytochrome_p450",
+       "plain": {
+        "ru": "Фермент из семейства цитохромов P450. Такие ферменты работают в основном в печени и кишечнике и расщепляют многие лекарства, чтобы организм мог их вывести.",
+        "en": "An enzyme of the cytochrome P450 family. These work mainly in the liver and gut and break down many medicines so the body can clear them."
+       }
+      },
+      "relation": "enzyme",
+      "pattern": "inhibitor_substrate",
+      "actor_drug_id": "DB01211",
+      "affected_drug_id": "DB00641",
+      "roles_a": [
+       "substrate"
+      ],
+      "roles_b": [
+       "inhibitor",
+       "substrate"
+      ],
+      "annotation_ids": [
+       "annot:drugbank:DB00641:P08684:enzyme",
+       "annot:drugbank:DB01211:P08684:enzyme"
+      ],
+      "consistent_with_records": [
+       "drugbank-tdc:DB00641>DB01211:t73"
+      ],
+      "status": "hypothesis"
+     },
+     {
+      "id": "mech:P20815:enzyme:inhibitor_substrate:DB01211",
+      "protein": {
+       "uniprot": "P20815",
+       "gene": "CYP3A5",
+       "name": "Cytochrome P450 3A5",
+       "organism": "Humans",
+       "family": "cytochrome_p450",
+       "plain": {
+        "ru": "Фермент из семейства цитохромов P450. Такие ферменты работают в основном в печени и кишечнике и расщепляют многие лекарства, чтобы организм мог их вывести.",
+        "en": "An enzyme of the cytochrome P450 family. These work mainly in the liver and gut and break down many medicines so the body can clear them."
+       }
+      },
+      "relation": "enzyme",
+      "pattern": "inhibitor_substrate",
+      "actor_drug_id": "DB01211",
+      "affected_drug_id": "DB00641",
+      "roles_a": [
+       "substrate"
+      ],
+      "roles_b": [
+       "inhibitor",
+       "substrate"
+      ],
+      "annotation_ids": [
+       "annot:drugbank:DB00641:P20815:enzyme",
+       "annot:drugbank:DB01211:P20815:enzyme"
+      ],
+      "consistent_with_records": [
+       "drugbank-tdc:DB00641>DB01211:t73"
+      ],
+      "status": "hypothesis"
+     },
+     {
+      "id": "mech:Q9Y6L6:transporter:inhibitor_substrate:DB01211",
+      "protein": {
+       "uniprot": "Q9Y6L6",
+       "gene": "SLCO1B1",
+       "name": "Solute carrier organic anion transporter family member 1B1",
+       "organism": "Humans",
+       "family": "oatp",
+       "plain": {
+        "ru": "Белок-переносчик семейства OATP: затягивает лекарства внутрь клеток, особенно в клетки печени, где они перерабатываются.",
+        "en": "An OATP-family transporter: it pulls drugs into cells, especially liver cells where they are processed."
+       }
+      },
+      "relation": "transporter",
+      "pattern": "inhibitor_substrate",
+      "actor_drug_id": "DB01211",
+      "affected_drug_id": "DB00641",
+      "roles_a": [
+       "inhibitor",
+       "substrate"
+      ],
+      "roles_b": [
+       "inhibitor"
+      ],
+      "annotation_ids": [
+       "annot:drugbank:DB00641:Q9Y6L6:transporter",
+       "annot:drugbank:DB01211:Q9Y6L6:transporter"
+      ],
+      "consistent_with_records": [
+       "drugbank-tdc:DB00641>DB01211:t73"
+      ],
+      "status": "hypothesis"
+     },
+     {
+      "id": "mech:O95342:transporter:shared_substrate",
+      "protein": {
+       "uniprot": "O95342",
+       "gene": "ABCB11",
+       "name": "Bile salt export pump",
+       "organism": "Humans",
+       "family": "p_glycoprotein",
+       "plain": {
+        "ru": "P-гликопротеин — «насос» в стенках кишечника, печени, почек и сосудов мозга. Он выталкивает лекарства из клеток и этим ограничивает, сколько препарата попадает в кровь и в мозг.",
+        "en": "P-glycoprotein — a pump in the walls of the gut, liver, kidney and brain blood vessels. It pushes drugs back out of cells, limiting how much reaches the blood and the brain."
+       }
+      },
+      "relation": "transporter",
+      "pattern": "shared_substrate",
+      "actor_drug_id": null,
+      "affected_drug_id": null,
+      "roles_a": [
+       "substrate"
+      ],
+      "roles_b": [
+       "substrate"
+      ],
+      "annotation_ids": [
+       "annot:drugbank:DB00641:O95342:transporter",
+       "annot:drugbank:DB01211:O95342:transporter"
+      ],
+      "consistent_with_records": [],
+      "status": "hypothesis"
+     },
+     {
+      "id": "mech:Q9NPD5:transporter:shared_annotation",
+      "protein": {
+       "uniprot": "Q9NPD5",
+       "gene": "SLCO1B3",
+       "name": "Solute carrier organic anion transporter family member 1B3",
+       "organism": "Humans",
+       "family": "oatp",
+       "plain": {
+        "ru": "Белок-переносчик семейства OATP: затягивает лекарства внутрь клеток, особенно в клетки печени, где они перерабатываются.",
+        "en": "An OATP-family transporter: it pulls drugs into cells, especially liver cells where they are processed."
+       }
+      },
+      "relation": "transporter",
+      "pattern": "shared_annotation",
+      "actor_drug_id": null,
+      "affected_drug_id": null,
+      "roles_a": [
+       "unspecified"
+      ],
+      "roles_b": [
+       "inhibitor"
+      ],
+      "annotation_ids": [
+       "annot:drugbank:DB00641:Q9NPD5:transporter",
+       "annot:drugbank:DB01211:Q9NPD5:transporter"
+      ],
+      "consistent_with_records": [],
+      "status": "hypothesis"
+     }
+    ],
+    "shared_pathways": [
+     {
+      "id": "R-HSA-5678520",
+      "name": "Defective ABCB11 causes PFIC2 and BRIC2",
+      "n_proteins_in_pathway": 1,
+      "via_a": [
+       "ABCB11"
+      ],
+      "via_b": [
+       "ABCB11"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-5619110",
+      "name": "Defective SLCO1B1 causes hyperbilirubinemia, Rotor type (HBLRR)",
+      "n_proteins_in_pathway": 1,
+      "via_a": [
+       "SLCO1B1"
+      ],
+      "via_b": [
+       "SLCO1B1"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-5619058",
+      "name": "Defective SLCO1B3 causes hyperbilirubinemia, Rotor type (HBLRR)",
+      "n_proteins_in_pathway": 1,
+      "via_a": [
+       "SLCO1B3"
+      ],
+      "via_b": [
+       "SLCO1B3"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-2161517",
+      "name": "Abacavir transmembrane transport",
+      "n_proteins_in_pathway": 5,
+      "via_a": [
+       "ABCB1"
+      ],
+      "via_b": [
+       "ABCB1"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-9027307",
+      "name": "Biosynthesis of maresin-like SPMs",
+      "n_proteins_in_pathway": 6,
+      "via_a": [
+       "CYP2C8",
+       "CYP2C9",
+       "CYP2D6",
+       "CYP3A4"
+      ],
+      "via_b": [
+       "CYP3A4"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-5423646",
+      "name": "Aflatoxin activation and detoxification",
+      "n_proteins_in_pathway": 8,
+      "via_a": [
+       "CYP3A4",
+       "CYP3A5"
+      ],
+      "via_b": [
+       "CYP3A4",
+       "CYP3A5"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-9754706",
+      "name": "Atorvastatin ADME",
+      "n_proteins_in_pathway": 8,
+      "via_a": [
+       "ABCB1",
+       "ABCC2",
+       "CYP3A4",
+       "SLCO1B1",
+       "SLCO1B3",
+       "UGT1A3"
+      ],
+      "via_b": [
+       "ABCB1",
+       "CYP3A4",
+       "SLCO1B1",
+       "SLCO1B3"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-879518",
+      "name": "Organic anion transport by SLCO transporters",
+      "n_proteins_in_pathway": 9,
+      "via_a": [
+       "SLCO1A2",
+       "SLCO1B1",
+       "SLCO1B3",
+       "SLCO2B1"
+      ],
+      "via_b": [
+       "SLCO1B1",
+       "SLCO1B3"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-9757110",
+      "name": "Prednisone ADME",
+      "n_proteins_in_pathway": 10,
+      "via_a": [
+       "ABCB1",
+       "CYP3A4",
+       "UGT1A3",
+       "UGT2B7"
+      ],
+      "via_b": [
+       "ABCB1",
+       "CYP3A4"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-193368",
+      "name": "Synthesis of bile acids and bile salts via 7alpha-hydroxycholesterol",
+      "n_proteins_in_pathway": 12,
+      "via_a": [
+       "ABCB11"
+      ],
+      "via_b": [
+       "ABCB11"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-211945",
+      "name": "Phase I - Functionalization of compounds",
+      "n_proteins_in_pathway": 13,
+      "via_a": [
+       "CES1",
+       "CES2",
+       "CYP2B6",
+       "CYP3A4"
+      ],
+      "via_b": [
+       "CYP3A4"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     },
+     {
+      "id": "R-HSA-189483",
+      "name": "Heme degradation",
+      "n_proteins_in_pathway": 14,
+      "via_a": [
+       "ABCC2",
+       "SLCO1B1",
+       "SLCO1B3",
+       "UGT1A1"
+      ],
+      "via_b": [
+       "SLCO1B1",
+       "SLCO1B3"
+      ],
+      "source": "Reactome (UniProt2Reactome, all levels)"
+     }
+    ],
+    "n_shared_pathways_total": 16,
+    "annotations": {
+     "annot:drugbank:DB00641:P08684:enzyme": {
+      "id": "annot:drugbank:DB00641:P08684:enzyme",
+      "drug_id": "DB00641",
+      "uniprot": "P08684",
+      "relation": "enzyme",
+      "roles": [
+       "substrate"
+      ],
+      "raw_action": "substrate",
+      "source_name": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "known_action": "unknown",
+      "pmids": [
+       "17178259",
+       "11523064",
+       "19515014",
+       "12433827",
+       "23047648",
+       "17192506",
+       "18213452"
+      ],
+      "organism": "Humans",
+      "retrieved_at": "2026-08-28"
+     },
+     "annot:drugbank:DB01211:P08684:enzyme": {
+      "id": "annot:drugbank:DB01211:P08684:enzyme",
+      "drug_id": "DB01211",
+      "uniprot": "P08684",
+      "relation": "enzyme",
+      "roles": [
+       "inhibitor",
+       "substrate"
+      ],
+      "raw_action": "substrate|inhibitor",
+      "source_name": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "known_action": "unknown",
+      "pmids": [
+       "19909895",
+       "11452245",
+       "24035278",
+       "23514827",
+       "15762770"
+      ],
+      "organism": "Humans",
+      "retrieved_at": "2026-08-28"
+     },
+     "annot:drugbank:DB00641:P20815:enzyme": {
+      "id": "annot:drugbank:DB00641:P20815:enzyme",
+      "drug_id": "DB00641",
+      "uniprot": "P20815",
+      "relation": "enzyme",
+      "roles": [
+       "substrate"
+      ],
+      "raw_action": "substrate",
+      "source_name": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "known_action": "unknown",
+      "pmids": [
+       "17192506",
+       "18213452"
+      ],
+      "organism": "Humans",
+      "retrieved_at": "2026-08-28"
+     },
+     "annot:drugbank:DB01211:P20815:enzyme": {
+      "id": "annot:drugbank:DB01211:P20815:enzyme",
+      "drug_id": "DB01211",
+      "uniprot": "P20815",
+      "relation": "enzyme",
+      "roles": [
+       "inhibitor",
+       "substrate"
+      ],
+      "raw_action": "substrate|inhibitor",
+      "source_name": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "known_action": "unknown",
+      "pmids": [],
+      "organism": "Humans",
+      "retrieved_at": "2026-08-28"
+     },
+     "annot:drugbank:DB00641:P08183:transporter": {
+      "id": "annot:drugbank:DB00641:P08183:transporter",
+      "drug_id": "DB00641",
+      "uniprot": "P08183",
+      "relation": "transporter",
+      "roles": [
+       "inhibitor"
+      ],
+      "raw_action": "inhibitor",
+      "source_name": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "known_action": "unknown",
+      "pmids": [
+       "11474784",
+       "11716514",
+       "15497697",
+       "19739078",
+       "27757045"
+      ],
+      "organism": "Humans",
+      "retrieved_at": "2026-08-28"
+     },
+     "annot:drugbank:DB01211:P08183:transporter": {
+      "id": "annot:drugbank:DB01211:P08183:transporter",
+      "drug_id": "DB01211",
+      "uniprot": "P08183",
+      "relation": "transporter",
+      "roles": [
+       "inhibitor",
+       "substrate"
+      ],
+      "raw_action": "substrate|inhibitor",
+      "source_name": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "known_action": "unknown",
+      "pmids": [
+       "11602674",
+       "11716514",
+       "15258108",
+       "18486039",
+       "15175422"
+      ],
+      "organism": "Humans",
+      "retrieved_at": "2026-08-28"
+     },
+     "annot:drugbank:DB00641:O95342:transporter": {
+      "id": "annot:drugbank:DB00641:O95342:transporter",
+      "drug_id": "DB00641",
+      "uniprot": "O95342",
+      "relation": "transporter",
+      "roles": [
+       "substrate"
+      ],
+      "raw_action": "substrate",
+      "source_name": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "known_action": "no",
+      "pmids": [
+       "24014644"
+      ],
+      "organism": "Humans",
+      "retrieved_at": "2026-08-28"
+     },
+     "annot:drugbank:DB01211:O95342:transporter": {
+      "id": "annot:drugbank:DB01211:O95342:transporter",
+      "drug_id": "DB01211",
+      "uniprot": "O95342",
+      "relation": "transporter",
+      "roles": [
+       "substrate"
+      ],
+      "raw_action": "substrate",
+      "source_name": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "known_action": "no",
+      "pmids": [
+       "24014644"
+      ],
+      "organism": "Humans",
+      "retrieved_at": "2026-08-28"
+     },
+     "annot:drugbank:DB00641:Q9Y6L6:transporter": {
+      "id": "annot:drugbank:DB00641:Q9Y6L6:transporter",
+      "drug_id": "DB00641",
+      "uniprot": "Q9Y6L6",
+      "relation": "transporter",
+      "roles": [
+       "inhibitor",
+       "substrate"
+      ],
+      "raw_action": "substrate|inhibitor",
+      "source_name": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "known_action": "unknown",
+      "pmids": [
+       "10601278",
+       "15970799",
+       "27757045",
+       "23047648",
+       "17108811"
+      ],
+      "organism": "Humans",
+      "retrieved_at": "2026-08-28"
+     },
+     "annot:drugbank:DB01211:Q9Y6L6:transporter": {
+      "id": "annot:drugbank:DB01211:Q9Y6L6:transporter",
+      "drug_id": "DB01211",
+      "uniprot": "Q9Y6L6",
+      "relation": "transporter",
+      "roles": [
+       "inhibitor"
+      ],
+      "raw_action": "inhibitor",
+      "source_name": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "known_action": "unknown",
+      "pmids": [],
+      "organism": "Humans",
+      "retrieved_at": "2026-08-28"
+     },
+     "annot:drugbank:DB00641:Q9NPD5:transporter": {
+      "id": "annot:drugbank:DB00641:Q9NPD5:transporter",
+      "drug_id": "DB00641",
+      "uniprot": "Q9NPD5",
+      "relation": "transporter",
+      "roles": [
+       "unspecified"
+      ],
+      "raw_action": "",
+      "source_name": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "known_action": "unknown",
+      "pmids": [
+       "27757045"
+      ],
+      "organism": "Humans",
+      "retrieved_at": "2026-08-28"
+     },
+     "annot:drugbank:DB01211:Q9NPD5:transporter": {
+      "id": "annot:drugbank:DB01211:Q9NPD5:transporter",
+      "drug_id": "DB01211",
+      "uniprot": "Q9NPD5",
+      "relation": "transporter",
+      "roles": [
+       "inhibitor"
+      ],
+      "raw_action": "inhibitor",
+      "source_name": "DrugBank drug-protein annotation",
+      "source_version": "5.1 (export 2025-01-02)",
+      "known_action": "unknown",
+      "pmids": [],
+      "organism": "Humans",
+      "retrieved_at": "2026-08-28"
+     }
+    },
+    "coverage": {
+     "DB00641": {
+      "target": 3,
+      "enzyme": 12,
+      "transporter": 7,
+      "carrier": 0
+     },
+     "DB01211": {
+      "target": 4,
+      "enzyme": 2,
+      "transporter": 5,
+      "carrier": 0
+     }
+    },
+    "note": {
+     "ru": "Ниже — задокументированные роли каждого препарата по отдельности (DrugBank, ChEMBL) и то, как они складываются. Это гипотезы о механизме, а не доказательство взаимодействия: базы не указывают силу действия и долю участия белка в переработке препарата.",
+     "en": "Below are each drug's documented roles on their own (DrugBank, ChEMBL) and how they line up. These are mechanism hypotheses, not evidence of an interaction: the databases do not record strength of effect or how much of a drug's processing a protein handles."
+    }
+   },
+   "model": {
+    "available": true,
+    "unavailable_reason": null,
+    "model": "BIO-GINE M4",
+    "checkpoint": "bd45f84e3c1b2c33",
+    "raw_model_score": 0.9999938743836655,
+    "calibrated_model_score": 0.8411772377234219,
+    "band": "high",
+    "regime": "S2",
+    "split_a": "train",
+    "split_b": "test",
+    "training_label_seen": false,
+    "reliability": "held_out_like",
+    "measured_performance": [
+     {
+      "view": "pooled drug-disjoint test (S2 and S3; 91% S2)",
+      "metric": "AUPRC",
+      "mean": 0.8117107056824635,
+      "sd": 0.009671090046444024,
+      "n_seeds": 5,
+      "source": "paper/FACTS.json models.M4_pooled (v2_final_test.csv @ frozen tag)"
+     },
+     {
+      "view": "pooled, both annotated",
+      "metric": "AUROC",
+      "mean": 0.8176889406938518,
+      "sd": 0.009571260994343847,
+      "n_seeds": 5,
+      "source": "reports/v3_coverage_reliability.json"
+     }
+    ],
+    "biology_available_a": true,
+    "biology_available_b": true,
+    "notes": [
+     {
+      "ru": "Калиброванная оценка подобрана на проверочных парах, где задокументированных и случайно набранных пар поровну. Это не вероятность вреда и не частота взаимодействий в реальной практике.",
+      "en": "The calibrated score was fitted on validation pairs with equal numbers of documented and randomly drawn pairs. It is not a probability of harm, nor how often interactions happen in practice."
+     }
+    ],
+    "abstain": false,
+    "modality_reliance": {
+     "baseline_raw": 0.9999938743836655,
+     "without_molecular_raw": 0.999999990938817,
+     "without_protein_raw": 0.6174241636941579,
+     "without_pathway_raw": 0.9999677514661809,
+     "delta_molecular": -6.116555151480796e-06,
+     "delta_protein": 0.3825697106895076,
+     "delta_pathway": 2.61229174846056e-05,
+     "method": "branch zeroed before the frozen fusion layer for both drugs; mask unchanged (as scripts/49_v2_interpretability.py at the frozen tag)",
+     "validation": {
+      "n_rows": 84690,
+      "max_abs_diff": 6.051126069828161e-06,
+      "source": "reports/v3_modality_parity.json (vs reports/v2_interpretability/seed0_modality_contribution.csv @ frozen tag)"
+     },
+     "interpretation": {
+      "ru": "Это показывает, на какие данные модель опирается для этой пары, а не почему препараты взаимодействуют: модель никогда не видела «обнулённые» данные при обучении.",
+      "en": "This shows which data the model leans on for this pair, not why the drugs interact: the model never saw zeroed inputs in training."
+     }
+    }
+   },
+   "explanation": {
+    "method": "deterministic templates over retrieved records; no language model",
+    "sections": [
+     {
+      "id": "known",
+      "title": {
+       "ru": "Что известно",
+       "en": "What is known"
+      },
+      "statements": [
+       {
+        "kind": "documented",
+        "text": {
+         "ru": "В базе DrugBank это сочетание описано так: «Концентрация одного из двух препаратов в сыворотке может повышаться при сочетании с другим препаратом.» (перевод проекта; оригинал — в карточке источника).",
+         "en": "DrugBank describes this combination as: “The serum concentration of one of the two drugs can be increased when it is combined with the other drug.”"
+        },
+        "refs": [
+         "drugbank-tdc:DB00641>DB01211:t73"
+        ]
+       },
+       {
+        "kind": "documented",
+        "text": {
+         "ru": "Справочный набор CRESCENDDI (по клиническим справочникам BNF, Micromedex и ANSM, 2018–2019) называет для этой пары 2 нежелательных явления: «Myopathy», «Rhabdomyolysis» (термины MedDRA).",
+         "en": "The CRESCENDDI reference set (built from the BNF, Micromedex and ANSM compendia, 2018–2019) names 2 adverse event(s) for this pair: “Myopathy”, “Rhabdomyolysis” (MedDRA terms)."
+        },
+        "refs": [
+         "synthetic-crescenddi:DB00641+DB01211:10028641",
+         "synthetic-crescenddi:DB00641+DB01211:10039020"
+        ]
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Для этого типа записей порядок препаратов в выгрузке DrugBank оказался ненадёжным (мы это измерили), поэтому здесь не сказано, какой из двух препаратов на какой влияет.",
+         "en": "For this record type the drug order in the DrugBank export proved unreliable (we measured it), so the text does not say which drug affects which."
+        },
+        "refs": [
+         "drugbank-tdc:DB00641>DB01211:t73"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "why",
+      "title": {
+       "ru": "Почему это может происходить",
+       "en": "Why this may happen"
+      },
+      "statements": [
+       {
+        "kind": "hypothesis",
+        "text": {
+         "ru": "Препарат симвастатин отмечен в базах как вещество, подавляющее белок ABCB1, а препарат кларитромицин — как вещество, которое этот белок переносит. Когда белок подавлен, препарат кларитромицин может переноситься хуже обычного.",
+         "en": "simvastatin is recorded as inhibiting ABCB1, and clarithromycin as something ABCB1 moves. With ABCB1 inhibited, clarithromycin may be moved less efficiently than usual."
+        },
+        "refs": [
+         "mech:P08183:transporter:inhibitor_substrate:DB00641",
+         "annot:drugbank:DB00641:P08183:transporter",
+         "annot:drugbank:DB01211:P08183:transporter"
+        ]
+       },
+       {
+        "kind": "hypothesis",
+        "text": {
+         "ru": "Препарат кларитромицин отмечен в базах как вещество, подавляющее белок CYP3A4, а препарат симвастатин — как вещество, которое этот белок перерабатывает. Когда белок подавлен, препарат симвастатин может перерабатываться медленнее обычного.",
+         "en": "clarithromycin is recorded as inhibiting CYP3A4, and simvastatin as something CYP3A4 processes. With CYP3A4 inhibited, simvastatin may be broken down more slowly than usual."
+        },
+        "refs": [
+         "mech:P08684:enzyme:inhibitor_substrate:DB01211",
+         "annot:drugbank:DB00641:P08684:enzyme",
+         "annot:drugbank:DB01211:P08684:enzyme"
+        ]
+       },
+       {
+        "kind": "hypothesis",
+        "text": {
+         "ru": "Препарат кларитромицин отмечен в базах как вещество, подавляющее белок CYP3A5, а препарат симвастатин — как вещество, которое этот белок перерабатывает. Когда белок подавлен, препарат симвастатин может перерабатываться медленнее обычного.",
+         "en": "clarithromycin is recorded as inhibiting CYP3A5, and simvastatin as something CYP3A5 processes. With CYP3A5 inhibited, simvastatin may be broken down more slowly than usual."
+        },
+        "refs": [
+         "mech:P20815:enzyme:inhibitor_substrate:DB01211",
+         "annot:drugbank:DB00641:P20815:enzyme",
+         "annot:drugbank:DB01211:P20815:enzyme"
+        ]
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Эти гипотезы согласуются с записью DrugBank о взаимодействии. Но это не независимое подтверждение: DrugBank мог составить запись по тем же сведениям о белках.",
+         "en": "These hypotheses agree with a DrugBank interaction record. That is not independent confirmation: DrugBank may have derived the record from the same protein annotations."
+        },
+        "refs": [
+         "mech:P08183:transporter:inhibitor_substrate:DB00641",
+         "mech:P08684:enzyme:inhibitor_substrate:DB01211",
+         "mech:P20815:enzyme:inhibitor_substrate:DB01211",
+         "drugbank-tdc:DB00641>DB01211:t73"
+        ]
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Базы не указывают, насколько сильно препарат подавляет или усиливает белок и какую долю работы с препаратом этот белок выполняет. Поэтому это гипотезы, а не вывод о том, что взаимодействие произойдёт.",
+         "en": "The databases record neither how strongly a drug inhibits or induces a protein nor how much of a drug's handling that protein does. These are hypotheses, not a conclusion that an interaction will happen."
+        },
+        "refs": [
+         "mech:P08183:transporter:inhibitor_substrate:DB00641",
+         "mech:P08684:enzyme:inhibitor_substrate:DB01211",
+         "mech:P20815:enzyme:inhibitor_substrate:DB01211"
+        ]
+       },
+       {
+        "kind": "annotation",
+        "text": {
+         "ru": "Белки обоих препаратов участвуют в 16 общих биологических процессах по базе Reactome — например, «Defective ABCB11 causes PFIC2 and BRIC2». Общий процесс — это фон, а не причина взаимодействия.",
+         "en": "Proteins of both drugs take part in 16 shared biological process(es) in Reactome — for example “Defective ABCB11 causes PFIC2 and BRIC2”. A shared process is background, not a cause of interaction."
+        },
+        "refs": [
+         "pathway:R-HSA-5678520"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "ai",
+      "title": {
+       "ru": "Что нашла модель",
+       "en": "What the AI found"
+      },
+      "statements": [
+       {
+        "kind": "model",
+        "text": {
+         "ru": "Модель BIO-GINE считает, что эта пара сильно похожа на пары, уже описанные как взаимодействующие. Это сходство с уже описанными парами, а не оценка вреда.",
+         "en": "BIO-GINE finds this pair strongly resembles pairs already recorded as interacting. This is resemblance to recorded pairs, not an estimate of harm."
+        },
+        "refs": [
+         "model"
+        ]
+       },
+       {
+        "kind": "model",
+        "text": {
+         "ru": "Сильнее всего оценка модели для этой пары зависит от данных о белках: без них она меняется на 0.38. Это говорит о том, на что опирается модель, а не о том, почему препараты взаимодействуют.",
+         "en": "For this pair the model's score depends most on the protein data: without it the score moves by 0.38. This says what the model leans on, not why the drugs interact."
+        },
+        "refs": [
+         "model"
+        ]
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Калиброванная оценка подобрана на проверочных парах, где задокументированных и случайно набранных пар поровну. Это не вероятность вреда и не частота взаимодействий в реальной практике.",
+         "en": "The calibrated score was fitted on validation pairs with equal numbers of documented and randomly drawn pairs. It is not a probability of harm, nor how often interactions happen in practice."
+        },
+        "refs": [
+         "model"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "certainty",
+      "title": {
+       "ru": "Насколько это надёжно",
+       "en": "How certain is this?"
+      },
+      "statements": [
+       {
+        "kind": "documented",
+        "text": {
+         "ru": "Задокументировано: 1 запись DrugBank и 2 записи справочного набора CRESCENDDI. Несколько фрагментов одной инструкции — один источник, а не отдельные подтверждения; запись DrugBank тоже может опираться на текст инструкции. Это самая надёжная часть страницы.",
+         "en": "Documented: 1 DrugBank record(s) and 2 CRESCENDDI reference-set record(s). Several excerpts of one label are one source, not separate confirmations, and a DrugBank record may itself rest on label text. This is the most reliable part of the page."
+        },
+        "refs": [
+         "drugbank-tdc:DB00641>DB01211:t73",
+         "synthetic-crescenddi:DB00641+DB01211:10028641",
+         "synthetic-crescenddi:DB00641+DB01211:10039020"
+        ]
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Степень тяжести здесь не присваивается: в выгрузке DrugBank её нет, а для инструкций показан только раздел, в котором упомянут препарат.",
+         "en": "No severity is assigned: the DrugBank export has none, and for labels only the section that names the drug is shown."
+        },
+        "refs": []
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Справочники, на которых основан CRESCENDDI, оценивают тяжесть взаимодействий, но эти оценки — их собственная редакционная классификация и здесь не воспроизводятся.",
+         "en": "The compendia behind CRESCENDDI grade interaction severity, but those grades are their own editorial classifications and are not reproduced here."
+        },
+        "refs": []
+       },
+       {
+        "kind": "hypothesis",
+        "text": {
+         "ru": "Гипотезы о механизме (5) собраны из задокументированных ролей каждого препарата по отдельности. Для этой пары они не проверялись.",
+         "en": "The 5 mechanism hypothesis(es) are assembled from each drug's documented roles separately. None was tested for this pair."
+        },
+        "refs": [
+         "mech:P08183:transporter:inhibitor_substrate:DB00641",
+         "mech:P08684:enzyme:inhibitor_substrate:DB01211",
+         "mech:P20815:enzyme:inhibitor_substrate:DB01211",
+         "mech:Q9Y6L6:transporter:inhibitor_substrate:DB01211",
+         "mech:O95342:transporter:shared_substrate"
+        ]
+       },
+       {
+        "kind": "model",
+        "text": {
+         "ru": "Качество модели на объединённом отложенном тесте (пары S2 и S3 вместе, 91 % — S2; отдельной оценки только для S2 в замороженных результатах нет): AUPRC 0.812 ± 0.010 (разброс между 5 запусками обучения). Это средняя характеристика по многим парам, а не уверенность в этой конкретной паре.",
+         "en": "Model quality on the pooled held-out test (S2 and S3 pairs together, 91% S2; the frozen results hold no S2-only figure): AUPRC 0.812 ± 0.010 (spread across 5 training runs). That is an average over many pairs, not confidence in this particular pair."
+        },
+        "refs": [
+         "model"
+        ]
+       }
+      ]
+     },
+     {
+      "id": "missing",
+      "title": {
+       "ru": "Чего мы не знаем",
+       "en": "What is missing"
+      },
+      "statements": [
+       {
+        "kind": "missing",
+        "text": {
+         "ru": "Источник «официальные инструкции FDA (openFDA)» сейчас не удалось проверить. Его данные в этот ответ не вошли.",
+         "en": "The source “FDA labels (openFDA)” could not be checked right now. Its data is not part of this answer."
+        },
+        "refs": []
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Здесь не учитываются дозы, длительность приёма, возраст, работа почек и печени, другие лекарства и особенности конкретного человека — всё, от чего зависит, проявится ли взаимодействие и насколько сильно.",
+         "en": "Doses, duration, age, kidney and liver function, other medicines and individual factors are not taken into account — everything that decides whether an interaction shows up and how strongly."
+        },
+        "refs": []
+       },
+       {
+        "kind": "caveat",
+        "text": {
+         "ru": "Решения о приёме лекарств принимают врач или фармацевт. Эта страница не может их заменить.",
+         "en": "Decisions about medicines belong to a doctor or pharmacist. This page cannot replace them."
+        },
+        "refs": []
+       }
+      ]
+     }
+    ]
+   },
+   "sources_checked": [
+    {
+     "source": "drugbank_tdc",
+     "status": "ok",
+     "detail": "1 record(s) in the local DrugBank export (TDC, retrieved 2026-08-24)."
+    },
+    {
+     "source": "crescenddi",
+     "status": "ok",
+     "detail": "2 pair–event record(s) in the CRESCENDDI reference set (positive controls, compendia of 2018–2019)."
+    },
+    {
+     "source": "openfda_label",
+     "status": "unavailable",
+     "detail": "openfda_label: recently unreachable; retrying after a cooldown"
+    }
+   ],
+   "limitations": [
+    {
+     "ru": "Только 1 705 препаратов исследовательского набора данных; международные названия есть у 1 497 из них.",
+     "en": "Only the 1,705 drugs of the research dataset; 1,497 of them have an international name."
+    },
+    {
+     "ru": "Записи DrugBank не содержат степени тяжести и не указывают, на чём основаны. Для многих типов записей порядок препаратов в выгрузке ненадёжен (измерено).",
+     "en": "DrugBank records carry no severity and do not state their basis. For many record types the drug order in the export is unreliable (measured)."
+    },
+    {
+     "ru": "Инструкции ищутся по названию препарата. Утверждения о целых группах препаратов («сильные ингибиторы CYP3A4») не распознаются, поэтому отсутствие совпадения не означает, что в инструкции ничего нет.",
+     "en": "Labels are searched by drug name. Statements about whole drug classes (“strong CYP3A4 inhibitors”) are not recognised, so no match does not mean the label is silent."
+    },
+    {
+     "ru": "Гипотезы о механизме собраны из ролей каждого препарата по отдельности; сила действия и доля участия белка неизвестны.",
+     "en": "Mechanism hypotheses are assembled from each drug's roles separately; strength of effect and the protein's share of the work are unknown."
+    },
+    {
+     "ru": "Оценка BIO-GINE — исследовательский сигнал сходства с задокументированными парами. Это не вероятность вреда.",
+     "en": "The BIO-GINE score is a research signal of resemblance to documented pairs. It is not a probability of harm."
+    }
+   ],
+   "disclaimer": {
+    "ru": "Это исследовательский прототип, а не медицинское изделие. Он не заменяет врача или фармацевта и не может сказать, безопасно ли сочетание лекарств для конкретного человека.",
+    "en": "This is a research prototype, not a medical device. It does not replace a doctor or pharmacist and cannot say whether a combination is safe for a particular person."
+   },
+   "generated_at": "2026-10-16T05:17:30+00:00",
+   "outcomes": {
+    "method": "deterministic: DrugBank type map v1 + label outcome lexicon v1; no language model",
+    "interaction_status": "documented_interaction",
+    "interaction_status_label": {
+     "ru": "Найдено задокументированное взаимодействие",
+     "en": "Documented interaction found"
+    },
+    "interaction_status_hint": {
+     "ru": "Источники называют конкретные последствия или изменения действия для этой пары. Ниже — что именно и на каком основании.",
+     "en": "Sources name specific consequences or changes in effect for this pair. What they are, and on what basis, is below."
+    },
+    "outcomes": [
+     {
+      "id": "outcome:DB00641+DB01211:muscle:myopathy_rhabdomyolysis",
+      "drug_a": "DB00641",
+      "drug_b": "DB01211",
+      "category": "muscle",
+      "effect": "myopathy_rhabdomyolysis",
+      "effect_level": "clinical_outcome",
+      "label": {
+       "ru": "Миопатия или рабдомиолиз",
+       "en": "Myopathy or rhabdomyolysis"
+      },
+      "explanation": {
+       "ru": "Справочный набор называет это последствие для данной пары. Частоту он не указывает; оценки тяжести, которые дают справочники, здесь не воспроизводятся.",
+       "en": "The reference set names this consequence for this pair. It gives no frequency; the severity grades the compendia give are not reproduced here."
+      },
+      "evidence_status": "documented",
+      "supports": [
+       {
+        "evidence_record_id": "synthetic-crescenddi:DB00641+DB01211:10028641",
+        "source_type": "reference_set",
+        "source_name": "CRESCENDDI reference set (Kontsioti et al., Sci Data 2022)",
+        "source_document_id": "synthetic:positive_control:DB00641|DB01211|MedDRA 10028641",
+        "source_url": "https://github.com/elpidakon/CRESCENDDI",
+        "section": null,
+        "excerpt": "CRESCENDDI lists “Myopathy” (MedDRA 10028641) as an adverse event of the interaction between simvastatin and clarithromycin, mapped from the Micromedex interaction description.",
+        "matched_terms": [
+         "Myopathy"
+        ],
+        "extraction_method": "meddra_effect_map/v1:meddra=10028641",
+        "direction": "not_applicable",
+        "affected_drug_id": null,
+        "source_seriousness": null,
+        "retrieved_at": "2026-10-16",
+        "qualifiers": [
+         "CRESCENDDI positive control: the pair is documented as interacting in all three compendia the authors used (BNF, Nov 2018; IBM Micromedex, Sep 2018; ANSM Thesaurus, Sep 2019).",
+         "The adverse event is the MedDRA term the authors mapped from the compendium's interaction description; the compendium text itself is not reproduced.",
+         "The compendia grade severity, but those grades are proprietary editorial classifications and are not shown here. Severity is therefore not established from the evidence shown.",
+         "Snapshot of 2018–2019 sources; later changes to the compendia are not reflected."
+        ]
+       },
+       {
+        "evidence_record_id": "synthetic-crescenddi:DB00641+DB01211:10039020",
+        "source_type": "reference_set",
+        "source_name": "CRESCENDDI reference set (Kontsioti et al., Sci Data 2022)",
+        "source_document_id": "synthetic:positive_control:DB00641|DB01211|MedDRA 10039020",
+        "source_url": "https://github.com/elpidakon/CRESCENDDI",
+        "section": null,
+        "excerpt": "CRESCENDDI lists “Rhabdomyolysis” (MedDRA 10039020) as an adverse event of the interaction between simvastatin and clarithromycin, mapped from the Micromedex interaction description.",
+        "matched_terms": [
+         "Rhabdomyolysis"
+        ],
+        "extraction_method": "meddra_effect_map/v1:meddra=10039020",
+        "direction": "not_applicable",
+        "affected_drug_id": null,
+        "source_seriousness": null,
+        "retrieved_at": "2026-10-16",
+        "qualifiers": [
+         "CRESCENDDI positive control: the pair is documented as interacting in all three compendia the authors used (BNF, Nov 2018; IBM Micromedex, Sep 2018; ANSM Thesaurus, Sep 2019).",
+         "The adverse event is the MedDRA term the authors mapped from the compendium's interaction description; the compendium text itself is not reproduced.",
+         "The compendia grade severity, but those grades are proprietary editorial classifications and are not shown here. Severity is therefore not established from the evidence shown.",
+         "Snapshot of 2018–2019 sources; later changes to the compendia are not reflected."
+        ]
+       }
+      ],
+      "n_source_documents": 1,
+      "affected_drug_id": null,
+      "direction_note": {
+       "ru": "Какой из препаратов затронут, источник не указывает (или порядок не проверен); отчёт его не называет.",
+       "en": "The source does not say which drug is affected (or its order is unverified); the report does not name one."
+      },
+      "seriousness": "documented_no_standard_severity",
+      "seriousness_basis": {
+       "ru": "Степень серьёзности не установлена по доступным данным. Справочники, на которых основан CRESCENDDI, оценивают тяжесть, но их оценки здесь не воспроизводятся.",
+       "en": "Severity not established from available evidence. The compendia behind CRESCENDDI grade severity, but their grades are not reproduced here."
+      },
+      "evidence_strength": "reference_set_statement",
+      "evidence_strength_text": {
+       "ru": "Справочный набор CRESCENDDI: пара задокументирована в трёх клинических справочниках (2018–2019), явление взято из их описания взаимодействия. Текст справочников не приводится.",
+       "en": "CRESCENDDI reference set: the pair is documented in three clinical compendia (2018–2019) and the event comes from their interaction description. The compendium text is not reproduced."
+      },
+      "extraction_note": null,
+      "limitations": [],
+      "research_only": false
+     },
+     {
+      "id": "outcome:DB00641+DB01211:exposure_increase:serum_concentration_increase",
+      "drug_a": "DB00641",
+      "drug_b": "DB01211",
+      "category": "exposure_increase",
+      "effect": "serum_concentration_increase",
+      "effect_level": "pharmacokinetic_change",
+      "label": {
+       "ru": "Повышение концентрации в крови",
+       "en": "Higher serum concentration"
+      },
+      "explanation": {
+       "ru": "Источник описывает изменение того, сколько препарата находится в организме. Само по себе это не задокументированное клиническое последствие.",
+       "en": "The source describes a change in how much of a drug is in the body. That, by itself, is not a documented clinical outcome."
+      },
+      "evidence_status": "documented",
+      "supports": [
+       {
+        "evidence_record_id": "drugbank-tdc:DB00641>DB01211:t73",
+        "source_type": "drugbank_tdc",
+        "source_name": "DrugBank DDI records via Therapeutics Data Commons",
+        "source_document_id": "DB00641|DB01211|Y=73",
+        "source_url": "https://tdcommons.ai/multi_pred_tasks/ddi/",
+        "section": null,
+        "excerpt": "The serum concentration of #Drug2 can be increased when it is combined with #Drug1.",
+        "matched_terms": [
+         "serum concentration"
+        ],
+        "extraction_method": "drugbank_type_map/v1:type=73",
+        "direction": "not_verified",
+        "affected_drug_id": null,
+        "source_seriousness": null,
+        "retrieved_at": "2026-08-24",
+        "qualifiers": [
+         "DrugBank gives no severity and does not state the basis of the record."
+        ]
+       }
+      ],
+      "n_source_documents": 1,
+      "affected_drug_id": null,
+      "direction_note": {
+       "ru": "Какой из препаратов затронут, источник не указывает (или порядок не проверен); отчёт его не называет.",
+       "en": "The source does not say which drug is affected (or its order is unverified); the report does not name one."
+      },
+      "seriousness": "documented_no_standard_severity",
+      "seriousness_basis": {
+       "ru": "Степень серьёзности не установлена по доступным данным.",
+       "en": "Severity not established from available evidence."
+      },
+      "evidence_strength": "database_standard_sentence",
+      "evidence_strength_text": {
+       "ru": "Стандартная фраза базы DrugBank; на чём основана запись, источник не указывает.",
+       "en": "DrugBank standard sentence; the source does not state what the record is based on."
+      },
+      "extraction_note": null,
+      "limitations": [
+       {
+        "ru": "Изменение концентрации само по себе не задокументированное клиническое последствие.",
+        "en": "A change in concentration is not, by itself, a documented clinical outcome."
+       }
+      ],
+      "research_only": false
+     }
+    ],
+    "chains": [
+     {
+      "id": "chain:mech:P08183:transporter:inhibitor_substrate:DB00641",
+      "nodes": [
+       {
+        "id": "drug:DB00641",
+        "kind": "drug",
+        "label": {
+         "ru": "Симвастатин",
+         "en": "Simvastatin"
+        },
+        "ref": "DB00641"
+       },
+       {
+        "id": "protein:P08183",
+        "kind": "protein",
+        "label": {
+         "ru": "ABCB1 (переносчик)",
+         "en": "ABCB1 (transporter)"
+        },
+        "ref": "mech:P08183:transporter:inhibitor_substrate:DB00641"
+       },
+       {
+        "id": "drug:DB01211",
+        "kind": "drug",
+        "label": {
+         "ru": "Кларитромицин",
+         "en": "Clarithromycin"
+        },
+        "ref": "DB01211"
+       },
+       {
+        "id": "effect:DB01211:up",
+        "kind": "effect",
+        "label": {
+         "ru": "Больше препарата «Кларитромицин» в организме",
+         "en": "Higher exposure of Clarithromycin"
+        },
+        "ref": null
+       },
+       {
+        "id": "outcome:outcome:DB00641+DB01211:muscle:myopathy_rhabdomyolysis",
+        "kind": "outcome",
+        "label": {
+         "ru": "Миопатия или рабдомиолиз",
+         "en": "Myopathy or rhabdomyolysis"
+        },
+        "ref": "outcome:DB00641+DB01211:muscle:myopathy_rhabdomyolysis"
+       }
+      ],
+      "links": [
+       {
+        "source": "drug:DB00641",
+        "target": "protein:P08183",
+        "relation": "inhibitor",
+        "provenance": "verified_annotation",
+        "text": {
+         "ru": "«Симвастатин» отмечен как ингибитор ABCB1.",
+         "en": "Simvastatin is annotated as an inhibitor of ABCB1."
+        },
+        "refs": [
+         "annot:drugbank:DB00641:P08183:transporter",
+         "annot:drugbank:DB01211:P08183:transporter"
+        ]
+       },
+       {
+        "source": "protein:P08183",
+        "target": "drug:DB01211",
+        "relation": "substrate",
+        "provenance": "verified_annotation",
+        "text": {
+         "ru": "«Кларитромицин» отмечен как субстрат ABCB1.",
+         "en": "Clarithromycin is annotated as a substrate of ABCB1."
+        },
+        "refs": [
+         "annot:drugbank:DB00641:P08183:transporter",
+         "annot:drugbank:DB01211:P08183:transporter"
+        ]
+       },
+       {
+        "source": "protein:P08183",
+        "target": "effect:DB01211:up",
+        "relation": "exposure_change",
+        "provenance": "plausible_unconfirmed",
+        "text": {
+         "ru": "Задокументировано изменение концентрации одного из двух препаратов; что это именно этот препарат, не установлено.",
+         "en": "A change in exposure of one of the two drugs is documented; that it is this drug is not established."
+        },
+        "refs": [
+         "outcome:DB00641+DB01211:exposure_increase:serum_concentration_increase"
+        ]
+       },
+       {
+        "source": "effect:DB01211:up",
+        "target": "outcome:outcome:DB00641+DB01211:muscle:myopathy_rhabdomyolysis",
+        "relation": "may_lead_to",
+        "provenance": "plausible_unconfirmed",
+        "text": {
+         "ru": "Последствие задокументировано для пары, но то, что оно вызвано именно этим путём, не подтверждено.",
+         "en": "The outcome is documented for the pair, but that it arises through this route is not confirmed."
+        },
+        "refs": [
+         "outcome:DB00641+DB01211:muscle:myopathy_rhabdomyolysis"
+        ]
+       }
+      ],
+      "outcome_ids": [
+       "outcome:DB00641+DB01211:exposure_increase:serum_concentration_increase",
+       "outcome:DB00641+DB01211:muscle:myopathy_rhabdomyolysis"
+      ],
+      "research_only": false,
+      "summary": {
+       "ru": "«Симвастатин» подавляет ABCB1, а «Кларитромицин» этим белком перерабатывается (аннотации). Задокументировано изменение концентрации одного из препаратов, но не какого именно.",
+       "en": "Simvastatin inhibits ABCB1, which processes Clarithromycin (annotations). An exposure change of one of the drugs is documented, but not which."
+      }
+     },
+     {
+      "id": "chain:mech:P08684:enzyme:inhibitor_substrate:DB01211",
+      "nodes": [
+       {
+        "id": "drug:DB01211",
+        "kind": "drug",
+        "label": {
+         "ru": "Кларитромицин",
+         "en": "Clarithromycin"
+        },
+        "ref": "DB01211"
+       },
+       {
+        "id": "protein:P08684",
+        "kind": "protein",
+        "label": {
+         "ru": "CYP3A4 (фермент)",
+         "en": "CYP3A4 (enzyme)"
+        },
+        "ref": "mech:P08684:enzyme:inhibitor_substrate:DB01211"
+       },
+       {
+        "id": "drug:DB00641",
+        "kind": "drug",
+        "label": {
+         "ru": "Симвастатин",
+         "en": "Simvastatin"
+        },
+        "ref": "DB00641"
+       },
+       {
+        "id": "effect:DB00641:up",
+        "kind": "effect",
+        "label": {
+         "ru": "Больше препарата «Симвастатин» в организме",
+         "en": "Higher exposure of Simvastatin"
+        },
+        "ref": null
+       },
+       {
+        "id": "outcome:outcome:DB00641+DB01211:muscle:myopathy_rhabdomyolysis",
+        "kind": "outcome",
+        "label": {
+         "ru": "Миопатия или рабдомиолиз",
+         "en": "Myopathy or rhabdomyolysis"
+        },
+        "ref": "outcome:DB00641+DB01211:muscle:myopathy_rhabdomyolysis"
+       }
+      ],
+      "links": [
+       {
+        "source": "drug:DB01211",
+        "target": "protein:P08684",
+        "relation": "inhibitor",
+        "provenance": "verified_annotation",
+        "text": {
+         "ru": "«Кларитромицин» отмечен как ингибитор CYP3A4.",
+         "en": "Clarithromycin is annotated as an inhibitor of CYP3A4."
+        },
+        "refs": [
+         "annot:drugbank:DB00641:P08684:enzyme",
+         "annot:drugbank:DB01211:P08684:enzyme"
+        ]
+       },
+       {
+        "source": "protein:P08684",
+        "target": "drug:DB00641",
+        "relation": "substrate",
+        "provenance": "verified_annotation",
+        "text": {
+         "ru": "«Симвастатин» отмечен как субстрат CYP3A4.",
+         "en": "Simvastatin is annotated as a substrate of CYP3A4."
+        },
+        "refs": [
+         "annot:drugbank:DB00641:P08684:enzyme",
+         "annot:drugbank:DB01211:P08684:enzyme"
+        ]
+       },
+       {
+        "source": "protein:P08684",
+        "target": "effect:DB00641:up",
+        "relation": "exposure_change",
+        "provenance": "plausible_unconfirmed",
+        "text": {
+         "ru": "Задокументировано изменение концентрации одного из двух препаратов; что это именно этот препарат, не установлено.",
+         "en": "A change in exposure of one of the two drugs is documented; that it is this drug is not established."
+        },
+        "refs": [
+         "outcome:DB00641+DB01211:exposure_increase:serum_concentration_increase"
+        ]
+       },
+       {
+        "source": "effect:DB00641:up",
+        "target": "outcome:outcome:DB00641+DB01211:muscle:myopathy_rhabdomyolysis",
+        "relation": "may_lead_to",
+        "provenance": "plausible_unconfirmed",
+        "text": {
+         "ru": "Последствие задокументировано для пары, но то, что оно вызвано именно этим путём, не подтверждено.",
+         "en": "The outcome is documented for the pair, but that it arises through this route is not confirmed."
+        },
+        "refs": [
+         "outcome:DB00641+DB01211:muscle:myopathy_rhabdomyolysis"
+        ]
+       }
+      ],
+      "outcome_ids": [
+       "outcome:DB00641+DB01211:exposure_increase:serum_concentration_increase",
+       "outcome:DB00641+DB01211:muscle:myopathy_rhabdomyolysis"
+      ],
+      "research_only": false,
+      "summary": {
+       "ru": "«Кларитромицин» подавляет CYP3A4, а «Симвастатин» этим белком перерабатывается (аннотации). Задокументировано изменение концентрации одного из препаратов, но не какого именно.",
+       "en": "Clarithromycin inhibits CYP3A4, which processes Simvastatin (annotations). An exposure change of one of the drugs is documented, but not which."
+      }
+     },
+     {
+      "id": "chain:mech:P20815:enzyme:inhibitor_substrate:DB01211",
+      "nodes": [
+       {
+        "id": "drug:DB01211",
+        "kind": "drug",
+        "label": {
+         "ru": "Кларитромицин",
+         "en": "Clarithromycin"
+        },
+        "ref": "DB01211"
+       },
+       {
+        "id": "protein:P20815",
+        "kind": "protein",
+        "label": {
+         "ru": "CYP3A5 (фермент)",
+         "en": "CYP3A5 (enzyme)"
+        },
+        "ref": "mech:P20815:enzyme:inhibitor_substrate:DB01211"
+       },
+       {
+        "id": "drug:DB00641",
+        "kind": "drug",
+        "label": {
+         "ru": "Симвастатин",
+         "en": "Simvastatin"
+        },
+        "ref": "DB00641"
+       },
+       {
+        "id": "effect:DB00641:up",
+        "kind": "effect",
+        "label": {
+         "ru": "Больше препарата «Симвастатин» в организме",
+         "en": "Higher exposure of Simvastatin"
+        },
+        "ref": null
+       },
+       {
+        "id": "outcome:outcome:DB00641+DB01211:muscle:myopathy_rhabdomyolysis",
+        "kind": "outcome",
+        "label": {
+         "ru": "Миопатия или рабдомиолиз",
+         "en": "Myopathy or rhabdomyolysis"
+        },
+        "ref": "outcome:DB00641+DB01211:muscle:myopathy_rhabdomyolysis"
+       }
+      ],
+      "links": [
+       {
+        "source": "drug:DB01211",
+        "target": "protein:P20815",
+        "relation": "inhibitor",
+        "provenance": "verified_annotation",
+        "text": {
+         "ru": "«Кларитромицин» отмечен как ингибитор CYP3A5.",
+         "en": "Clarithromycin is annotated as an inhibitor of CYP3A5."
+        },
+        "refs": [
+         "annot:drugbank:DB00641:P20815:enzyme",
+         "annot:drugbank:DB01211:P20815:enzyme"
+        ]
+       },
+       {
+        "source": "protein:P20815",
+        "target": "drug:DB00641",
+        "relation": "substrate",
+        "provenance": "verified_annotation",
+        "text": {
+         "ru": "«Симвастатин» отмечен как субстрат CYP3A5.",
+         "en": "Simvastatin is annotated as a substrate of CYP3A5."
+        },
+        "refs": [
+         "annot:drugbank:DB00641:P20815:enzyme",
+         "annot:drugbank:DB01211:P20815:enzyme"
+        ]
+       },
+       {
+        "source": "protein:P20815",
+        "target": "effect:DB00641:up",
+        "relation": "exposure_change",
+        "provenance": "plausible_unconfirmed",
+        "text": {
+         "ru": "Задокументировано изменение концентрации одного из двух препаратов; что это именно этот препарат, не установлено.",
+         "en": "A change in exposure of one of the two drugs is documented; that it is this drug is not established."
+        },
+        "refs": [
+         "outcome:DB00641+DB01211:exposure_increase:serum_concentration_increase"
+        ]
+       },
+       {
+        "source": "effect:DB00641:up",
+        "target": "outcome:outcome:DB00641+DB01211:muscle:myopathy_rhabdomyolysis",
+        "relation": "may_lead_to",
+        "provenance": "plausible_unconfirmed",
+        "text": {
+         "ru": "Последствие задокументировано для пары, но то, что оно вызвано именно этим путём, не подтверждено.",
+         "en": "The outcome is documented for the pair, but that it arises through this route is not confirmed."
+        },
+        "refs": [
+         "outcome:DB00641+DB01211:muscle:myopathy_rhabdomyolysis"
+        ]
+       }
+      ],
+      "outcome_ids": [
+       "outcome:DB00641+DB01211:exposure_increase:serum_concentration_increase",
+       "outcome:DB00641+DB01211:muscle:myopathy_rhabdomyolysis"
+      ],
+      "research_only": false,
+      "summary": {
+       "ru": "«Кларитромицин» подавляет CYP3A5, а «Симвастатин» этим белком перерабатывается (аннотации). Задокументировано изменение концентрации одного из препаратов, но не какого именно.",
+       "en": "Clarithromycin inhibits CYP3A5, which processes Simvastatin (annotations). An exposure change of one of the drugs is documented, but not which."
+      }
+     },
+     {
+      "id": "chain:mech:Q9Y6L6:transporter:inhibitor_substrate:DB01211",
+      "nodes": [
+       {
+        "id": "drug:DB01211",
+        "kind": "drug",
+        "label": {
+         "ru": "Кларитромицин",
+         "en": "Clarithromycin"
+        },
+        "ref": "DB01211"
+       },
+       {
+        "id": "protein:Q9Y6L6",
+        "kind": "protein",
+        "label": {
+         "ru": "SLCO1B1 (переносчик)",
+         "en": "SLCO1B1 (transporter)"
+        },
+        "ref": "mech:Q9Y6L6:transporter:inhibitor_substrate:DB01211"
+       },
+       {
+        "id": "drug:DB00641",
+        "kind": "drug",
+        "label": {
+         "ru": "Симвастатин",
+         "en": "Simvastatin"
+        },
+        "ref": "DB00641"
+       },
+       {
+        "id": "effect:DB00641:up",
+        "kind": "effect",
+        "label": {
+         "ru": "Больше препарата «Симвастатин» в организме",
+         "en": "Higher exposure of Simvastatin"
+        },
+        "ref": null
+       },
+       {
+        "id": "outcome:outcome:DB00641+DB01211:muscle:myopathy_rhabdomyolysis",
+        "kind": "outcome",
+        "label": {
+         "ru": "Миопатия или рабдомиолиз",
+         "en": "Myopathy or rhabdomyolysis"
+        },
+        "ref": "outcome:DB00641+DB01211:muscle:myopathy_rhabdomyolysis"
+       }
+      ],
+      "links": [
+       {
+        "source": "drug:DB01211",
+        "target": "protein:Q9Y6L6",
+        "relation": "inhibitor",
+        "provenance": "verified_annotation",
+        "text": {
+         "ru": "«Кларитромицин» отмечен как ингибитор SLCO1B1.",
+         "en": "Clarithromycin is annotated as an inhibitor of SLCO1B1."
+        },
+        "refs": [
+         "annot:drugbank:DB00641:Q9Y6L6:transporter",
+         "annot:drugbank:DB01211:Q9Y6L6:transporter"
+        ]
+       },
+       {
+        "source": "protein:Q9Y6L6",
+        "target": "drug:DB00641",
+        "relation": "substrate",
+        "provenance": "verified_annotation",
+        "text": {
+         "ru": "«Симвастатин» отмечен как субстрат SLCO1B1.",
+         "en": "Simvastatin is annotated as a substrate of SLCO1B1."
+        },
+        "refs": [
+         "annot:drugbank:DB00641:Q9Y6L6:transporter",
+         "annot:drugbank:DB01211:Q9Y6L6:transporter"
+        ]
+       },
+       {
+        "source": "protein:Q9Y6L6",
+        "target": "effect:DB00641:up",
+        "relation": "exposure_change",
+        "provenance": "plausible_unconfirmed",
+        "text": {
+         "ru": "Задокументировано изменение концентрации одного из двух препаратов; что это именно этот препарат, не установлено.",
+         "en": "A change in exposure of one of the two drugs is documented; that it is this drug is not established."
+        },
+        "refs": [
+         "outcome:DB00641+DB01211:exposure_increase:serum_concentration_increase"
+        ]
+       },
+       {
+        "source": "effect:DB00641:up",
+        "target": "outcome:outcome:DB00641+DB01211:muscle:myopathy_rhabdomyolysis",
+        "relation": "may_lead_to",
+        "provenance": "plausible_unconfirmed",
+        "text": {
+         "ru": "Последствие задокументировано для пары, но то, что оно вызвано именно этим путём, не подтверждено.",
+         "en": "The outcome is documented for the pair, but that it arises through this route is not confirmed."
+        },
+        "refs": [
+         "outcome:DB00641+DB01211:muscle:myopathy_rhabdomyolysis"
+        ]
+       }
+      ],
+      "outcome_ids": [
+       "outcome:DB00641+DB01211:exposure_increase:serum_concentration_increase",
+       "outcome:DB00641+DB01211:muscle:myopathy_rhabdomyolysis"
+      ],
+      "research_only": false,
+      "summary": {
+       "ru": "«Кларитромицин» подавляет SLCO1B1, а «Симвастатин» этим белком перерабатывается (аннотации). Задокументировано изменение концентрации одного из препаратов, но не какого именно.",
+       "en": "Clarithromycin inhibits SLCO1B1, which processes Simvastatin (annotations). An exposure change of one of the drugs is documented, but not which."
+      }
+     }
+    ],
+    "seriousness": "documented_no_standard_severity",
+    "seriousness_text": {
+     "ru": "Степень серьёзности не установлена по доступным данным.",
+     "en": "Severity not established from available evidence."
+    },
+    "coverage": [
+     {
+      "ru": "DrugBank (локальная выгрузка TDC): записей для пары — 1. Степень тяжести и основание записей не указаны.",
+      "en": "DrugBank (local TDC export): 1 record(s) for the pair. No severity and no stated basis."
+     },
+     {
+      "ru": "Справочный набор CRESCENDDI (BNF, Micromedex, ANSM; 2018–2019): записей «пара — явление» — 2. Охватывает только пары, общие для трёх справочников.",
+      "en": "CRESCENDDI reference set (BNF, Micromedex, ANSM; 2018–2019): 2 pair–event record(s). It covers only pairs common to all three compendia."
+     },
+     {
+      "ru": "Инструкции FDA сейчас недоступны — их данные в анализ не вошли. Ищутся названия препаратов, не группы; раздел «Нежелательные реакции» не используется.",
+      "en": "FDA labels unavailable now — not part of this analysis. Drug names are searched, not classes; Adverse Reactions sections are not used."
+     }
+    ],
+    "no_outcome_text": null,
+    "mechanism_without_outcome_text": null,
+    "individual_limit": {
+     "ru": "Платформа не может определить, безопасно ли конкретное сочетание для конкретного человека. Это исследовательский и учебный инструмент.",
+     "en": "This platform cannot determine whether a particular combination is safe for an individual. It is a research and educational tool."
+    }
+   }
+  },
+  "meta": {
+   "endpoint": "http://127.0.0.1:8765/api/v3/report",
+   "request": {
+    "drug_a": "DB00641",
+    "drug_b": "DB01211",
+    "include_labels": true
+   },
+   "receivedAt": "2026-10-16T05:17:30.000Z"
+  }
+ },
+ "graph": null
+}

@@ -1,0 +1,44 @@
+{
+  "source": "reports/v2_interpretability/seed0_modality_contribution.csv @ v2-final-github-safe-2026-09-03",
+  "n_rows": 84690,
+  "columns": {
+    "baseline": {
+      "frozen_column": "baseline_prediction",
+      "max_abs_diff": 6.051126069828161e-06,
+      "mean_abs_diff": 1.0432377656435358e-07,
+      "p99_abs_diff": 1.2672545394737393e-06
+    },
+    "molecular": {
+      "frozen_column": "without_molecular",
+      "max_abs_diff": 5.046777129646962e-06,
+      "mean_abs_diff": 9.804155660285291e-08,
+      "p99_abs_diff": 1.318945174766939e-06,
+      "delta_max_abs_diff": 6.040971110732318e-06
+    },
+    "protein": {
+      "frozen_column": "without_protein",
+      "max_abs_diff": 4.9627458005852e-06,
+      "mean_abs_diff": 1.6374569174787406e-07,
+      "p99_abs_diff": 1.2467243386149466e-06,
+      "delta_max_abs_diff": 6.051272026297294e-06
+    },
+    "pathway": {
+      "frozen_column": "without_pathway",
+      "max_abs_diff": 5.109351208676394e-06,
+      "mean_abs_diff": 9.499776184542065e-08,
+      "p99_abs_diff": 1.1246961544442159e-06,
+      "delta_max_abs_diff": 5.9000550339805e-06
+    }
+  },
+  "max_abs_diff_overall": 6.051126069828161e-06,
+  "largest_reliance_share": {
+    "molecular": 0.25344196481284686,
+    "protein": 0.6025859015232022,
+    "pathway": 0.14397213366395087
+  },
+  "median_abs_delta": {
+    "molecular": 0.010844520758837399,
+    "protein": 0.1496284231543541,
+    "pathway": 0.00383725878782565
+  }
+}

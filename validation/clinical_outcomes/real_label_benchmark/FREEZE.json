@@ -1,0 +1,8 @@
+{
+ "rule": "label_lexicon/v4",
+ "rules_sha256": "12bf0351818902aaf7939ced16dcd491258228e67f6e56e267a8801fdc1bdf31",
+ "frozen": "2026-10-18",
+ "note": "Frozen after development analysis, before the evaluation split was annotated or scored.",
+ "evaluation_annotations_sha256": "10df89748fb751da77d995f68b27b4f41fba42d620b96f0a14fc288b075fba87",
+ "evaluation_annotations_recorded": "2026-10-18, before the first scoring of the evaluation split"
+}

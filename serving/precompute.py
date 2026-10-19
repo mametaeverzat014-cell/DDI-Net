@@ -79,6 +79,12 @@ def build(out: Path = ARTIFACT) -> dict:
         "n_distinct_proteins": np.array(engine.n_distinct_proteins, dtype=np.int32),
         "n_pathways": np.array(engine.n_pathways, dtype=np.int32),
     }
+    # Branch-zeroed encodings for the model-reliance readout (DDI-Net 3.0).
+    # Same method as the frozen post-hoc analysis; parity with its stored
+    # output is checked by scripts/64_v3_modality_parity.py.
+    for name, h_zero in engine.branch_zeroed_encodings().items():
+        payload[f"h_no_{name}"] = h_zero.detach().cpu().numpy().astype(np.float32)
+
     for i, lin in enumerate(linears):
         payload[f"w{i}"] = lin.weight.detach().cpu().numpy().astype(np.float32)
         payload[f"b{i}"] = lin.bias.detach().cpu().numpy().astype(np.float32)
@@ -98,6 +104,7 @@ def build(out: Path = ARTIFACT) -> dict:
         "n_documented_pairs": int(len(documented)),
         "n_biology_edges": int(len(bio.edge_drug)),
         "n_biology_proteins": len(bio.uniprot),
+        "modality_ablation": ["molecular", "protein", "pathway"],
     }
     (out.with_suffix(".json")).write_text(json.dumps(meta, indent=2) + "\n")
     return meta

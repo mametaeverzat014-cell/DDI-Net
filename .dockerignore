@@ -1,0 +1,32 @@
+# Docker build context for serving/Dockerfile and serving/Dockerfile.lean.
+#
+# ALLOWLIST. Everything is excluded, then exactly what the two Dockerfiles COPY
+# is re-included. A new COPY source must be added here too;
+# tests/test_docker_context.py fails if a COPY source would be excluded, and
+# fails if anything outside this list (reports, paper, checkpoints, the local
+# runtime/ tree, node_modules) would be sent.
+#
+# Not needed in the context: the 18 MB checkpoint (the build stage downloads it
+# from the GitHub Release and checks its SHA-256), the frozen reports (read from
+# the git tag, never at build time), the web app (built by Vercel).
+
+*
+
+# Build stage: research code, serving code and the frozen inference data.
+!serving/
+!src/
+!data/mechanism_v1/
+
+# Inputs of the DDI-Net 3.0 evidence artifact (serving/evidence/build.py).
+!data/raw/drugbank.tab.gz
+!web/public/data/drugs.json
+
+# Never sent: data/restricted/ (licence-restricted local research data,
+# e.g. the CRESCENDDI index) and data/reference_sets/ (manifests only).
+
+# Never send caches or local build output, even inside allowed directories.
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.mypy_cache
+**/.DS_Store

@@ -22,6 +22,10 @@ RUN pip install --no-cache-dir --extra-index-url https://download.pytorch.org/wh
 COPY src/ /app/src/
 COPY serving/ /app/serving/
 COPY data/mechanism_v1/ /app/data/mechanism_v1/
+# DDI-Net 3.0 evidence artifact inputs, compiled once at build time.
+COPY data/raw/drugbank.tab.gz /app/data/raw/drugbank.tab.gz
+COPY web/public/data/drugs.json /app/web/public/data/drugs.json
+RUN cd /app && PYTHONPATH=/app:/app/src python -m serving.evidence.build
 
 # The 18 MB checkpoint is a GitHub Release asset, never a layer in git history.
 # Fetched at build time and verified by SHA-256 at startup by serving/integrity.py.
@@ -34,8 +38,13 @@ RUN mkdir -p /app/runtime/model_assets && \
       | sha256sum -c -
 
 ENV PYTHONPATH=/app:/app/src
+ENV DDINET_REQUIRE_EVIDENCE=1
 EXPOSE 8000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
+  CMD python -c "import os,urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:%s/api/health/ready' % os.environ.get('PORT','8000'), timeout=4).status == 200 else 1)"
 
 # One worker: the process holds the model and the cached encoding (~1.2 GB RSS),
 # and a second worker would double that for no throughput gain at 2 ms/request.
-CMD ["uvicorn", "serving.api:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "1"]
+# $PORT is what Render and most PaaS hosts inject; 8000 is the local default.
+CMD ["sh", "-c", "uvicorn serving.api:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1"]

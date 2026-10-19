@@ -18,10 +18,15 @@ type Dict = Record<string, { ru: string; en: string }>;
 
 const DICT: Dict = {
   // ── nav / chrome ─────────────────────────────────────────────
+  "nav.overview": { ru: "ОБЗОР", en: "OVERVIEW" },
+  "nav.analyzer": { ru: "АНАЛИЗАТОР", en: "ANALYZER" },
+  "nav.mechanisms": { ru: "МЕХАНИЗМЫ", en: "MECHANISMS" },
+  "nav.multi": { ru: "НЕСКОЛЬКО", en: "MULTI-DRUG" },
+  "nav.menu": { ru: "МЕНЮ", en: "MENU" },
   "nav.analyze": { ru: "АНАЛИЗ", en: "ANALYZE" },
-  "nav.model": { ru: "МОДЕЛЬ", en: "MODEL" },
+  "nav.model": { ru: "МЕТОДЫ", en: "METHODS" },
   "nav.research": { ru: "РЕЗУЛЬТАТЫ", en: "RESEARCH" },
-  "nav.data": { ru: "ДАННЫЕ", en: "DATA" },
+  "nav.data": { ru: "ДАННЫЕ", en: "DATA & EVIDENCE" },
   "nav.drugs": { ru: "ПРЕПАРАТЫ", en: "DRUGS" },
   "nav.limitations": { ru: "ОГРАНИЧЕНИЯ", en: "LIMITATIONS" },
   "nav.repo": { ru: "Репозиторий", en: "Repository" },

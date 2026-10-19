@@ -1,0 +1,555 @@
+{
+ "meta": {
+  "endpoint": "http://127.0.0.1:8765/api/v3/multi",
+  "request": {
+   "drugs": [
+    "DB00682",
+    "DB00196",
+    "DB00641",
+    "DB01211",
+    "DB01118",
+    "DB00390",
+    "DB01045",
+    "DB00331"
+   ],
+   "include_labels": true
+  },
+  "receivedAt": "2026-10-14T16:11:13.902Z"
+ },
+ "data": {
+  "report_version": "3.0",
+  "drugs": [
+   {
+    "id": "DB00682",
+    "inn": "warfarin",
+    "name_ru": "варфарин",
+    "name_ru_is_transliteration": true,
+    "groups": "approved",
+    "drug_type": "small molecule",
+    "query": null,
+    "matched_on": null
+   },
+   {
+    "id": "DB00196",
+    "inn": "fluconazole",
+    "name_ru": "флуконазол",
+    "name_ru_is_transliteration": true,
+    "groups": "approved|investigational",
+    "drug_type": "small molecule",
+    "query": null,
+    "matched_on": null
+   },
+   {
+    "id": "DB00641",
+    "inn": "simvastatin",
+    "name_ru": "симвастатин",
+    "name_ru_is_transliteration": true,
+    "groups": "approved",
+    "drug_type": "small molecule",
+    "query": null,
+    "matched_on": null
+   },
+   {
+    "id": "DB01211",
+    "inn": "clarithromycin",
+    "name_ru": "кларитромицин",
+    "name_ru_is_transliteration": true,
+    "groups": "approved",
+    "drug_type": "small molecule",
+    "query": null,
+    "matched_on": null
+   },
+   {
+    "id": "DB01118",
+    "inn": "amiodarone",
+    "name_ru": "амиодарон",
+    "name_ru_is_transliteration": true,
+    "groups": "approved|investigational",
+    "drug_type": "small molecule",
+    "query": null,
+    "matched_on": null
+   },
+   {
+    "id": "DB00390",
+    "inn": "digoxin",
+    "name_ru": "дигоксин",
+    "name_ru_is_transliteration": true,
+    "groups": "approved",
+    "drug_type": "small molecule",
+    "query": null,
+    "matched_on": null
+   },
+   {
+    "id": "DB01045",
+    "inn": null,
+    "name_ru": null,
+    "name_ru_is_transliteration": true,
+    "groups": "approved",
+    "drug_type": "small molecule",
+    "query": null,
+    "matched_on": null
+   },
+   {
+    "id": "DB00331",
+    "inn": "metformin",
+    "name_ru": "метформин",
+    "name_ru_is_transliteration": true,
+    "groups": "approved",
+    "drug_type": "small molecule",
+    "query": null,
+    "matched_on": null
+   }
+  ],
+  "pairs": [
+   {
+    "drug_a": "DB00682",
+    "drug_b": "DB00196",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 3,
+    "calibrated_model_score": 0.8108211344965719,
+    "regime": "S2",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ]
+   },
+   {
+    "drug_a": "DB00682",
+    "drug_b": "DB00641",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 4,
+    "calibrated_model_score": 0.48439914908419174,
+    "regime": "S2",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ]
+   },
+   {
+    "drug_a": "DB00682",
+    "drug_b": "DB01211",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 2,
+    "calibrated_model_score": 0.4894444855664803,
+    "regime": "S3",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ]
+   },
+   {
+    "drug_a": "DB00682",
+    "drug_b": "DB01118",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 7,
+    "calibrated_model_score": 0.8323730133899702,
+    "regime": "S2",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ]
+   },
+   {
+    "drug_a": "DB00682",
+    "drug_b": "DB00390",
+    "evidence_status": "no_documented_evidence_found",
+    "n_database_records": 0,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 0,
+    "calibrated_model_score": 0.45442367764364605,
+    "regime": "S2",
+    "training_label_seen": false,
+    "needs_review": false,
+    "review_reasons": []
+   },
+   {
+    "drug_a": "DB00682",
+    "drug_b": "DB01045",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 6,
+    "calibrated_model_score": 0.49738067799058744,
+    "regime": "S3",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ]
+   },
+   {
+    "drug_a": "DB00682",
+    "drug_b": "DB00331",
+    "evidence_status": "no_documented_evidence_found",
+    "n_database_records": 0,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 0,
+    "calibrated_model_score": 0.44394229455360606,
+    "regime": "S2",
+    "training_label_seen": false,
+    "needs_review": false,
+    "review_reasons": []
+   },
+   {
+    "drug_a": "DB00196",
+    "drug_b": "DB00641",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 3,
+    "calibrated_model_score": null,
+    "regime": "S1",
+    "training_label_seen": true,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ]
+   },
+   {
+    "drug_a": "DB00196",
+    "drug_b": "DB01211",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 3,
+    "calibrated_model_score": 0.9137336264872571,
+    "regime": "S2",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ]
+   },
+   {
+    "drug_a": "DB00196",
+    "drug_b": "DB01118",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 2,
+    "calibrated_model_score": null,
+    "regime": "S1",
+    "training_label_seen": true,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ]
+   },
+   {
+    "drug_a": "DB00196",
+    "drug_b": "DB00390",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 1,
+    "calibrated_model_score": null,
+    "regime": "S1",
+    "training_label_seen": true,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ]
+   },
+   {
+    "drug_a": "DB00196",
+    "drug_b": "DB01045",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 0,
+    "calibrated_model_score": 0.803759014698121,
+    "regime": "S2",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity"
+    ]
+   },
+   {
+    "drug_a": "DB00196",
+    "drug_b": "DB00331",
+    "evidence_status": "no_documented_evidence_found",
+    "n_database_records": 0,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 0,
+    "calibrated_model_score": 0.29359325198856107,
+    "regime": "S1",
+    "training_label_seen": false,
+    "needs_review": false,
+    "review_reasons": []
+   },
+   {
+    "drug_a": "DB00641",
+    "drug_b": "DB01211",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 5,
+    "calibrated_model_score": 0.8411772377234219,
+    "regime": "S2",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ]
+   },
+   {
+    "drug_a": "DB00641",
+    "drug_b": "DB01118",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 5,
+    "calibrated_model_score": null,
+    "regime": "S1",
+    "training_label_seen": true,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ]
+   },
+   {
+    "drug_a": "DB00641",
+    "drug_b": "DB00390",
+    "evidence_status": "model_signal_only",
+    "n_database_records": 0,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 5,
+    "calibrated_model_score": 0.5755806684194835,
+    "regime": "S1",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "model_signal_without_documentation",
+     "pharmacokinetic_mechanism_hypothesis"
+    ]
+   },
+   {
+    "drug_a": "DB00641",
+    "drug_b": "DB01045",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 9,
+    "calibrated_model_score": 0.8537938737622485,
+    "regime": "S2",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ]
+   },
+   {
+    "drug_a": "DB00641",
+    "drug_b": "DB00331",
+    "evidence_status": "model_signal_only",
+    "n_database_records": 0,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 0,
+    "calibrated_model_score": 0.506449805823384,
+    "regime": "S1",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "model_signal_without_documentation"
+    ]
+   },
+   {
+    "drug_a": "DB01211",
+    "drug_b": "DB01118",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 5,
+    "calibrated_model_score": 0.9786644442349784,
+    "regime": "S2",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ]
+   },
+   {
+    "drug_a": "DB01211",
+    "drug_b": "DB00390",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 5,
+    "calibrated_model_score": 0.5295242151920286,
+    "regime": "S2",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ]
+   },
+   {
+    "drug_a": "DB01211",
+    "drug_b": "DB01045",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 5,
+    "calibrated_model_score": 0.8598395133629386,
+    "regime": "S3",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ]
+   },
+   {
+    "drug_a": "DB01211",
+    "drug_b": "DB00331",
+    "evidence_status": "no_documented_evidence_found",
+    "n_database_records": 0,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 0,
+    "calibrated_model_score": 0.4965563162607425,
+    "regime": "S2",
+    "training_label_seen": false,
+    "needs_review": false,
+    "review_reasons": []
+   },
+   {
+    "drug_a": "DB01118",
+    "drug_b": "DB00390",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 3,
+    "calibrated_model_score": null,
+    "regime": "S1",
+    "training_label_seen": true,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ]
+   },
+   {
+    "drug_a": "DB01118",
+    "drug_b": "DB01045",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 5,
+    "calibrated_model_score": 0.8147763272348195,
+    "regime": "S2",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ]
+   },
+   {
+    "drug_a": "DB01118",
+    "drug_b": "DB00331",
+    "evidence_status": "model_signal_only",
+    "n_database_records": 0,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 1,
+    "calibrated_model_score": 0.5930241355293361,
+    "regime": "S1",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "model_signal_without_documentation",
+     "pharmacokinetic_mechanism_hypothesis"
+    ]
+   },
+   {
+    "drug_a": "DB00390",
+    "drug_b": "DB01045",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 4,
+    "calibrated_model_score": 0.587148366092438,
+    "regime": "S2",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ]
+   },
+   {
+    "drug_a": "DB00390",
+    "drug_b": "DB00331",
+    "evidence_status": "no_documented_evidence_found",
+    "n_database_records": 0,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 0,
+    "calibrated_model_score": 0.43080828570979707,
+    "regime": "S1",
+    "training_label_seen": false,
+    "needs_review": false,
+    "review_reasons": []
+   },
+   {
+    "drug_a": "DB01045",
+    "drug_b": "DB00331",
+    "evidence_status": "no_documented_evidence_found",
+    "n_database_records": 0,
+    "n_label_records": 0,
+    "n_mechanism_hypotheses": 0,
+    "calibrated_model_score": 0.4613178464446081,
+    "regime": "S2",
+    "training_label_seen": false,
+    "needs_review": false,
+    "review_reasons": []
+   }
+  ],
+  "sources_checked": [
+   {
+    "source": "drugbank_tdc",
+    "status": "ok",
+    "detail": "Local DrugBank export (TDC)."
+   },
+   {
+    "source": "openfda_label",
+    "status": "unavailable",
+    "detail": "openfda_label: recently unreachable; retrying after a cooldown"
+   }
+  ],
+  "scope_note": {
+   "ru": "Каждая пара рассматривается отдельно. Попарные данные ничего не говорят о том, как ведут себя три и более препарата вместе: такая модель не построена и не проверена.",
+   "en": "Each pair is examined on its own. Pairwise findings say nothing about how three or more drugs behave together: no such model has been built or validated."
+  },
+  "disclaimer": {
+   "ru": "Это исследовательский прототип, а не медицинское изделие. Он не заменяет врача или фармацевта и не может сказать, безопасно ли сочетание лекарств для конкретного человека.",
+   "en": "This is a research prototype, not a medical device. It does not replace a doctor or pharmacist and cannot say whether a combination is safe for a particular person."
+  },
+  "generated_at": "2026-10-14T16:11:13+00:00"
+ }
+}

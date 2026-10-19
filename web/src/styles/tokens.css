@@ -43,3 +43,19 @@
 
   --maxw: 1180px;
 }
+
+/*
+ * DDI-Net 3.0 evidence tiers. Added for the evidence layer, not part of the
+ * original handoff. Each tier is a KIND of statement, not a level of danger:
+ * labels and database records are documentation, the cyan tier is a mechanism
+ * hypothesis built from documented parts, slate is the research model, grey is
+ * "nothing found". No tier is green — nothing on this site may read as "safe".
+ */
+:root {
+  --ev-label: #ff9e8a;        /* official label text names the partner drug */
+  --ev-documented: #b9a6ff;   /* database interaction record */
+  --ev-hypothesis: #6fe3f5;   /* mechanism hypothesis from documented roles */
+  --ev-model: #9fb3cc;        /* BIO-GINE research signal — deliberately muted */
+  --ev-missing: #ffc478;      /* missing / unavailable / not checked */
+  --ev-none: rgba(160, 182, 210, 0.55); /* nothing documented found */
+}

@@ -69,7 +69,12 @@ from ddinet.features.molgraph import (  # noqa: E402
     BOND_FEATURE_DIM,
     build_mol_graphs,
 )
-from ddinet.models.bio_gine import BiologicalSets, BioGine, BioGineConfig  # noqa: E402
+# The frozen module, not the research tree's: see serving/frozen_model.py.
+from .frozen_model import load as _load_frozen_bio_gine  # noqa: E402
+
+_bio_gine = _load_frozen_bio_gine()
+BiologicalSets, BioGine, BioGineConfig = (
+    _bio_gine.BiologicalSets, _bio_gine.BioGine, _bio_gine.BioGineConfig)
 
 from .integrity import CHECKPOINT_PATH, IntegrityReport, verify_all  # noqa: E402
 
@@ -215,6 +220,7 @@ class FrozenBioGineEngine:
             mol_batch = Batch.from_data_list(mol_data).to(self.device)
             h, mask = self.model.encode(mol_batch, None)
         self._h, self._mask = h, mask
+        self._mol_batch = mol_batch   # kept for branch_zeroed_encodings()
 
         # Per-drug set sizes, straight from the bundle the model was given, so
         # a displayed count can never disagree with what was encoded.
@@ -236,6 +242,31 @@ class FrozenBioGineEngine:
 
         self.temperature, self.temperature_source = load_frozen_temperature()
         self.startup_seconds = time.perf_counter() - t0
+
+    @torch.no_grad()
+    def branch_zeroed_encodings(self) -> dict[str, torch.Tensor]:
+        """Fused encodings with one branch replaced by zeros before fusion.
+
+        The method of the frozen post-hoc analysis
+        (scripts/49_v2_interpretability.py::score_with_branch_zeroing at the
+        tag): no retraining; the branch representation is zeroed immediately
+        before the frozen fusion layer; the missingness mask is left as it was,
+        because the question is how much the learned representation is relied
+        on, not how the model treats a genuinely missing annotation. Each
+        drug's vector is batch-independent (LayerNorm, eval mode), so encoding
+        every drug once and zeroing equals the analysis's per-batch encoding.
+        """
+        m = self.model
+        prot, path, _ = m.encode_biology(None)
+        mol, _ = m.mol_encoder(self._mol_batch.x, self._mol_batch.edge_index,
+                               self._mol_batch.edge_attr, self._mol_batch.batch)
+        out = {}
+        for name in ("molecular", "protein", "pathway"):
+            parts = [torch.zeros_like(mol) if name == "molecular" else mol,
+                     torch.zeros_like(prot) if name == "protein" else prot,
+                     torch.zeros_like(path) if name == "pathway" else path]
+            out[name] = m.fusion_norm(m.fusion(torch.cat(parts, dim=-1)))
+        return out
 
     # -- scoring -----------------------------------------------------------
     @torch.no_grad()

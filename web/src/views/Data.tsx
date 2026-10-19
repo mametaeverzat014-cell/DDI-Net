@@ -3,6 +3,8 @@ import { Metric } from "../components/Metric";
 import { count, pct } from "../lib/format";
 import { useI18n, pick, type Bi } from "../i18n";
 import { relationLabel, evidenceLabel } from "../data/vocab";
+import type { View } from "../App";
+import { EvidenceSources } from "../components/v3/EvidenceSources";
 
 // Source names (DrugBank, ChEMBL, Reactome, SIDER) are proper nouns and stay as
 // they are in every language; only the role description is translated.
@@ -19,7 +21,7 @@ const SOURCE_COV: Record<string, Bi> = {
   SIDER: { ru: "препаратов есть в SIDER", en: "drugs with SIDER" },
 };
 
-export function Data() {
+export function Data({ setView }: { setView: (v: View) => void }) {
   const { t, lang } = useI18n();
   const cov = frozen.coverage;
   const bg = frozen.biology_graph;
@@ -98,6 +100,8 @@ export function Data() {
           {bg.evidence_types.map((e) => evidenceLabel(e, lang)).join(" · ")}{t("dt.evidence2")}
         </p>
         <span className="mono" style={{ display: "block", marginTop: 8, fontSize: 10.5, color: "var(--text-3)" }}>{bg.source}</span>
+
+        <EvidenceSources setView={setView} />
 
         {/* held-out-coverage honesty */}
         <div style={{ marginTop: 70, border: "1px solid rgba(255,196,120,0.25)", background: "rgba(255,196,120,0.04)", borderRadius: "var(--radius)", padding: 22 }}>
