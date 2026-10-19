@@ -1,0 +1,466 @@
+{
+ "method": {
+  "store_sha256": "4dd4dbea0e766568027c30f42fbd3071d3d782152ea99b48ce8ecadc55446d44",
+  "label_rule": "label_lexicon/v3",
+  "event_map": "meddra_effect_map/v1"
+ },
+ "ddi_corpus": {
+  "dataset": "DDI Corpus 2013, DrugBank part",
+  "citation": "Herrero-Zazo M, Segura-Bedmar I, Martínez P, Declerck T. The DDI corpus: an annotated corpus with pharmacological substances and drug-drug interactions. J Biomed Inform 46(5):914-920 (2013).",
+  "license": "CC BY-NC 4.0 (corpus README); evaluation only, not redistributed",
+  "pinned_commit": "819b0fa538ed83ab2a8b4f5417bba3c03249b7f3",
+  "zip_sha256": "87fc63e32ebce20d9841c372e0c594ec72d60882ab5621550ca73c3eaf80ab60",
+  "rule": "label_lexicon/v3",
+  "unit": "(sentence, document drug, partner drug name); interacting if any of its annotated mention pairs is",
+  "development": {
+   "corpus_split": "train",
+   "pairs": 1896,
+   "interacting_pairs": 1044,
+   "non_interacting_pairs": 852,
+   "mention_pairs_behind_them": {
+    "interacting": 1065,
+    "non_interacting": 1781
+   },
+   "sentences": 1150,
+   "assignment_precision": {
+    "k": 317,
+    "n": 444,
+    "value": 0.714,
+    "wilson95": [
+     0.67,
+     0.754
+    ],
+    "definition": "pairs the rule gives an outcome that the corpus annotates as interacting"
+   },
+   "unsupported_assignment_rate": {
+    "k": 127,
+    "n": 852,
+    "value": 0.149,
+    "wilson95": [
+     0.127,
+     0.175
+    ],
+    "definition": "non-interacting pairs (co-mentioned only) the rule gives an outcome"
+   },
+   "coverage_of_interacting_pairs": {
+    "k": 317,
+    "n": 1044,
+    "value": 0.304,
+    "wilson95": [
+     0.277,
+     0.332
+    ],
+    "definition": "interacting pairs for which the rule finds a named outcome or exposure change"
+   },
+   "coverage_by_ddi_type": {
+    "effect": {
+     "k": 67,
+     "n": 235,
+     "value": 0.285,
+     "wilson95": [
+      0.231,
+      0.346
+     ]
+    },
+    "mechanism": {
+     "k": 226,
+     "n": 524,
+     "value": 0.431,
+     "wilson95": [
+      0.39,
+      0.474
+     ]
+    },
+    "advise": {
+     "k": 24,
+     "n": 215,
+     "value": 0.112,
+     "wilson95": [
+      0.076,
+      0.161
+     ]
+    },
+    "int": {
+     "k": 0,
+     "n": 70,
+     "value": 0.0,
+     "wilson95": [
+      0.0,
+      0.052
+     ]
+    }
+   },
+   "sensitivity_partner_interacts_with_anything_in_sentence": {
+    "precision": {
+     "k": 378,
+     "n": 444,
+     "value": 0.851,
+     "wilson95": [
+      0.815,
+      0.881
+     ]
+    },
+    "unsupported_assignment_rate": {
+     "k": 66,
+     "n": 736,
+     "value": 0.09,
+     "wilson95": [
+      0.071,
+      0.113
+     ]
+    }
+   }
+  },
+  "evaluation": {
+   "corpus_split": "test",
+   "pairs": 397,
+   "interacting_pairs": 233,
+   "non_interacting_pairs": 164,
+   "mention_pairs_behind_them": {
+    "interacting": 241,
+    "non_interacting": 339
+   },
+   "sentences": 216,
+   "assignment_precision": {
+    "k": 51,
+    "n": 61,
+    "value": 0.836,
+    "wilson95": [
+     0.724,
+     0.908
+    ],
+    "definition": "pairs the rule gives an outcome that the corpus annotates as interacting"
+   },
+   "unsupported_assignment_rate": {
+    "k": 10,
+    "n": 164,
+    "value": 0.061,
+    "wilson95": [
+     0.033,
+     0.109
+    ],
+    "definition": "non-interacting pairs (co-mentioned only) the rule gives an outcome"
+   },
+   "coverage_of_interacting_pairs": {
+    "k": 51,
+    "n": 233,
+    "value": 0.219,
+    "wilson95": [
+     0.171,
+     0.276
+    ],
+    "definition": "interacting pairs for which the rule finds a named outcome or exposure change"
+   },
+   "coverage_by_ddi_type": {
+    "effect": {
+     "k": 12,
+     "n": 55,
+     "value": 0.218,
+     "wilson95": [
+      0.129,
+      0.344
+     ]
+    },
+    "mechanism": {
+     "k": 33,
+     "n": 111,
+     "value": 0.297,
+     "wilson95": [
+      0.22,
+      0.388
+     ]
+    },
+    "advise": {
+     "k": 3,
+     "n": 55,
+     "value": 0.055,
+     "wilson95": [
+      0.019,
+      0.149
+     ]
+    },
+    "int": {
+     "k": 3,
+     "n": 12,
+     "value": 0.25,
+     "wilson95": [
+      0.089,
+      0.532
+     ]
+    }
+   },
+   "sensitivity_partner_interacts_with_anything_in_sentence": {
+    "precision": {
+     "k": 53,
+     "n": 61,
+     "value": 0.869,
+     "wilson95": [
+      0.762,
+      0.932
+     ]
+    },
+    "unsupported_assignment_rate": {
+     "k": 8,
+     "n": 136,
+     "value": 0.059,
+     "wilson95": [
+      0.03,
+      0.112
+     ]
+    }
+   }
+  }
+ },
+ "crescenddi": {
+  "dataset": "CRESCENDDI (positive and negative controls), mapped to the 1,705-drug universe",
+  "index_sha256": {
+   "data_records/Data Record 1 - Positive Controls.xlsx": "9e001a6ef078029c4fe7fa4addd4f0e4ad1255ac024d91c5cdbaec9cc07bc22a",
+   "data_records/Data Record 2 - Negative Controls.xlsx": "0d264662ebba4351e32d4942fb4c66b57f3d5e3b4060eae1ea347f91b006b894"
+  },
+  "split_rule": "sha256('drugA|drugB' sorted)[0] < 128 -> development",
+  "engine": "DrugBank only (reference set removed), labels off",
+  "event_grouping": "meddra_effect_map/v1",
+  "development": {
+   "positive_pairs": 1956,
+   "drugbank_documents_the_pair": {
+    "k": 1704,
+    "n": 1956,
+    "value": 0.871,
+    "wilson95": [
+     0.856,
+     0.885
+    ]
+   },
+   "drugbank_names_any_clinical_outcome": {
+    "k": 22,
+    "n": 1943,
+    "value": 0.011,
+    "wilson95": [
+     0.007,
+     0.017
+    ]
+   },
+   "drugbank_names_same_outcome_category": {
+    "k": 22,
+    "n": 1943,
+    "value": 0.011,
+    "wilson95": [
+     0.007,
+     0.017
+    ]
+   },
+   "drugbank_same_category_incl_pharmacodynamic": {
+    "k": 502,
+    "n": 1943,
+    "value": 0.258,
+    "wilson95": [
+     0.239,
+     0.278
+    ],
+    "reading": "DrugBank names a named outcome OR a pharmacodynamic effect (e.g. 'anticoagulant activities increased') in the same category as a reference adverse event"
+   },
+   "event_level_same_effect": {
+    "k": 26,
+    "n": 4117,
+    "value": 0.006,
+    "wilson95": [
+     0.004,
+     0.009
+    ]
+   },
+   "event_level_same_category_clinical": {
+    "k": 27,
+    "n": 4087,
+    "value": 0.007,
+    "wilson95": [
+     0.005,
+     0.01
+    ]
+   },
+   "negative_controls": 1819,
+   "negative_controls_pair_documented_in_drugbank": {
+    "k": 334,
+    "n": 1819,
+    "value": 0.184,
+    "wilson95": [
+     0.166,
+     0.202
+    ]
+   },
+   "drugbank_outcome_in_negative_control_category": {
+    "k": 0,
+    "n": 1819,
+    "value": 0.0,
+    "wilson95": [
+     0.0,
+     0.002
+    ],
+    "reading": "the engine (DrugBank only) names a clinical outcome in the same broad category as an event the reference judged unrelated to the pair; category-level, so an upper bound on contradictions"
+   }
+  },
+  "evaluation": {
+   "positive_pairs": 1996,
+   "drugbank_documents_the_pair": {
+    "k": 1742,
+    "n": 1996,
+    "value": 0.873,
+    "wilson95": [
+     0.857,
+     0.887
+    ]
+   },
+   "drugbank_names_any_clinical_outcome": {
+    "k": 28,
+    "n": 1982,
+    "value": 0.014,
+    "wilson95": [
+     0.01,
+     0.02
+    ]
+   },
+   "drugbank_names_same_outcome_category": {
+    "k": 28,
+    "n": 1982,
+    "value": 0.014,
+    "wilson95": [
+     0.01,
+     0.02
+    ]
+   },
+   "drugbank_same_category_incl_pharmacodynamic": {
+    "k": 514,
+    "n": 1982,
+    "value": 0.259,
+    "wilson95": [
+     0.241,
+     0.279
+    ],
+    "reading": "DrugBank names a named outcome OR a pharmacodynamic effect (e.g. 'anticoagulant activities increased') in the same category as a reference adverse event"
+   },
+   "event_level_same_effect": {
+    "k": 34,
+    "n": 4102,
+    "value": 0.008,
+    "wilson95": [
+     0.006,
+     0.012
+    ]
+   },
+   "event_level_same_category_clinical": {
+    "k": 34,
+    "n": 4077,
+    "value": 0.008,
+    "wilson95": [
+     0.006,
+     0.012
+    ]
+   },
+   "negative_controls": 1844,
+   "negative_controls_pair_documented_in_drugbank": {
+    "k": 400,
+    "n": 1844,
+    "value": 0.217,
+    "wilson95": [
+     0.199,
+     0.236
+    ]
+   },
+   "drugbank_outcome_in_negative_control_category": {
+    "k": 0,
+    "n": 1844,
+    "value": 0.0,
+    "wilson95": [
+     0.0,
+     0.002
+    ],
+    "reading": "the engine (DrugBank only) names a clinical outcome in the same broad category as an event the reference judged unrelated to the pair; category-level, so an upper bound on contradictions"
+   }
+  }
+ },
+ "coverage": {
+  "universe_drugs": 1705,
+  "documented_pairs_drugbank": 191392,
+  "pairs_with_named_clinical_outcome": {
+   "drugbank_only": 676,
+   "with_crescenddi": 4551,
+   "added": 3875
+  },
+  "pair_category_named_clinical_outcomes": {
+   "drugbank_only": 676,
+   "with_crescenddi": 7463
+  },
+  "crescenddi_pairs": 3952,
+  "crescenddi_pairs_not_in_drugbank": 506,
+  "crescenddi_pairs_in_drugbank_without_named_outcome": 3370,
+  "by_category": {
+   "bleeding_coagulation": {
+    "drugbank_only": 128,
+    "with_crescenddi": 1077
+   },
+   "blood_pressure": {
+    "drugbank_only": 47,
+    "with_crescenddi": 1059
+   },
+   "bone_marrow_immune": {
+    "drugbank_only": 0,
+    "with_crescenddi": 100
+   },
+   "cardiac_rhythm": {
+    "drugbank_only": 442,
+    "with_crescenddi": 1495
+   },
+   "cardiovascular_other": {
+    "drugbank_only": 26,
+    "with_crescenddi": 175
+   },
+   "cns_sedation": {
+    "drugbank_only": 0,
+    "with_crescenddi": 579
+   },
+   "electrolyte": {
+    "drugbank_only": 6,
+    "with_crescenddi": 926
+   },
+   "gastrointestinal": {
+    "drugbank_only": 0,
+    "with_crescenddi": 285
+   },
+   "general_other": {
+    "drugbank_only": 0,
+    "with_crescenddi": 134
+   },
+   "glucose": {
+    "drugbank_only": 0,
+    "with_crescenddi": 18
+   },
+   "hypersensitivity_skin": {
+    "drugbank_only": 27,
+    "with_crescenddi": 38
+   },
+   "kidney": {
+    "drugbank_only": 0,
+    "with_crescenddi": 638
+   },
+   "liver": {
+    "drugbank_only": 0,
+    "with_crescenddi": 26
+   },
+   "muscle": {
+    "drugbank_only": 0,
+    "with_crescenddi": 86
+   },
+   "nervous_system_other": {
+    "drugbank_only": 0,
+    "with_crescenddi": 285
+   },
+   "respiratory_airway": {
+    "drugbank_only": 0,
+    "with_crescenddi": 3
+   },
+   "respiratory_depression": {
+    "drugbank_only": 0,
+    "with_crescenddi": 539
+   }
+  }
+ }
+}

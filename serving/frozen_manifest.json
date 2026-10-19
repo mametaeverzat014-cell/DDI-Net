@@ -13,7 +13,7 @@
     "src/ddinet/data/v2_dataset.py": "896f30abf35cc9910232998ecbaec9a6a3e674b9de21151ca6d0a26b9c43d86c",
     "src/ddinet/data/biology.py": "29b979f61e4fa1f6a54c36c812c2bec92ecdd2807e230c0847896a1a8149d523",
     "src/ddinet/features/molgraph.py": "72f727f4c1af6660a360210d54daa3ee7f5b49fcf4b921340267e62877134efb",
-    "src/ddinet/models/bio_gine.py": "8e7b9122be78e7d0149837ef31a956a472822cdd02fb5198b2f15849db7d1a13",
+    "serving/frozen_artifacts/bio_gine.py": "8e7b9122be78e7d0149837ef31a956a472822cdd02fb5198b2f15849db7d1a13",
     "src/ddinet/models/encoders.py": "c2b775022684a47848e11402e940b7eab6b6867dcc02a31ef16b8bb805d03284",
     "src/ddinet/eval/calibration.py": "8761dfb2121654b8bef5bf577c64b97faa9050a96a81402d166a5eab29e57c5a"
   },
@@ -29,6 +29,12 @@
       "sha256": "39c7521b5cacc01eac8fc6851be75ff6d736ee071dae6b81c8f774b6994b180a",
       "copied_from": "reports/v2_calibration/m4_temperature_scaling.csv",
       "why": "Runtime needs the seed-0 temperature, but the deploy branch is not a descendant of the frozen commit so reports/ is absent here. Byte-for-byte copy, never edited; the hash is checked against the tag at startup."
+    }
+  },
+  "vendored_modules": {
+    "serving/frozen_artifacts/bio_gine.py": {
+      "copied_from": "src/ddinet/models/bio_gine.py",
+      "why": "src/ddinet/models/bio_gine.py gained research-only flags after the freeze (911bed9, aa04493). Serving imports this byte-for-byte copy taken from the tag (serving/frozen_model.py), so research can change src/ without changing what inference runs. Its hash is the frozen module hash."
     }
   }
 }

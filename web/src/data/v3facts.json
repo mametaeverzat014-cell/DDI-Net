@@ -1,0 +1,148 @@
+{
+  "direction_audit": {
+    "source": "reports/v3_tdc_direction_audit.json",
+    "verified_threshold": 0.95,
+    "n_records": 191798,
+    "records_by_status": {
+      "symmetric": 61397,
+      "consistent": 14481,
+      "unverified": 115920
+    },
+    "pk_types": {
+      "4": {
+        "template": "The metabolism of #Drug2 can be increased when combined with #Drug1.",
+        "n_informative": 3844,
+        "n_consistent": 3829,
+        "n_reversed": 15,
+        "consistency": 0.9960978147762747,
+        "status": "consistent"
+      },
+      "11": {
+        "template": "The serum concentration of the active metabolites of #Drug2 can be reduced when #Drug2 is used in combination with #Drug1 resulting in a loss in efficacy.",
+        "n_informative": 131,
+        "n_consistent": 96,
+        "n_reversed": 35,
+        "consistency": 0.732824427480916,
+        "status": "unverified"
+      },
+      "47": {
+        "template": "The metabolism of #Drug2 can be decreased when combined with #Drug1.",
+        "n_informative": 20537,
+        "n_consistent": 1647,
+        "n_reversed": 18890,
+        "consistency": 0.08019671811851779,
+        "status": "unverified"
+      },
+      "65": {
+        "template": "#Drug1 may increase the excretion rate of #Drug2 which could result in a lower serum level and potentially a reduction in efficacy.",
+        "n_informative": 0,
+        "n_consistent": 0,
+        "n_reversed": 0,
+        "consistency": null,
+        "status": "unverified"
+      },
+      "72": {
+        "template": "#Drug1 may decrease the excretion rate of #Drug2 which could result in a higher serum level.",
+        "n_informative": 40,
+        "n_consistent": 12,
+        "n_reversed": 28,
+        "consistency": 0.3,
+        "status": "unverified"
+      },
+      "73": {
+        "template": "The serum concentration of #Drug2 can be increased when it is combined with #Drug1.",
+        "n_informative": 12308,
+        "n_consistent": 1270,
+        "n_reversed": 11038,
+        "consistency": 0.10318492037699058,
+        "status": "unverified"
+      },
+      "75": {
+        "template": "The serum concentration of #Drug2 can be decreased when it is combined with #Drug1.",
+        "n_informative": 5080,
+        "n_consistent": 4926,
+        "n_reversed": 154,
+        "consistency": 0.9696850393700788,
+        "status": "consistent"
+      },
+      "77": {
+        "template": "The serum concentration of the active metabolites of #Drug2 can be increased when #Drug2 is used in combination with #Drug1.",
+        "n_informative": 76,
+        "n_consistent": 45,
+        "n_reversed": 31,
+        "consistency": 0.5921052631578947,
+        "status": "unverified"
+      }
+    }
+  },
+  "seed_disagreement": {
+    "source": "reports/v3_seed_disagreement.json",
+    "views": {
+      "pooled": {
+        "n_pairs": 84690,
+        "auroc_sd_detects_error": 0.6857387045773222,
+        "auroc_sd_detects_error_ci95": [
+          0.6814380977331768,
+          0.6897385964488063
+        ],
+        "auroc_margin_detects_error": 0.6981572257799271,
+        "spearman_sd_abs_error": 0.7185160367296247
+      },
+      "S3": {
+        "n_pairs": 7758,
+        "auroc_sd_detects_error": 0.6260673366565686,
+        "auroc_sd_detects_error_ci95": [
+          0.6136652416195095,
+          0.6396212226706365
+        ],
+        "auroc_margin_detects_error": 0.633539066410383,
+        "spearman_sd_abs_error": 0.5182900829723633
+      }
+    }
+  },
+  "coverage_reliability": {
+    "source": "reports/v3_coverage_reliability.json",
+    "views": {
+      "pooled": {
+        "at_least_one_unannotated": {
+          "n_pairs": 4978,
+          "prevalence": 0.33326637203696263,
+          "auroc_mean": 0.7504442338947166,
+          "auroc_sd": 0.023303662945911758,
+          "auprc_mean": 0.6708597110821419,
+          "auprc_sd": 0.03204978910784126,
+          "n_seeds": 5
+        },
+        "both_annotated": {
+          "n_pairs": 79712,
+          "prevalence": 0.5104124849458049,
+          "auroc_mean": 0.8176889406938518,
+          "auroc_sd": 0.009571260994343847,
+          "auprc_mean": 0.8171098627685025,
+          "auprc_sd": 0.009489089749267666,
+          "n_seeds": 5
+        }
+      },
+      "S3": {
+        "at_least_one_unannotated": {
+          "n_pairs": 597,
+          "prevalence": 0.33500837520938026,
+          "auroc_mean": 0.6543828715365239,
+          "auroc_sd": 0.03741580548526296,
+          "auprc_mean": 0.5415821813216004,
+          "auprc_sd": 0.04208886152659253,
+          "n_seeds": 5
+        },
+        "both_annotated": {
+          "n_pairs": 7161,
+          "prevalence": 0.5137550621421589,
+          "auroc_mean": 0.7354349608962428,
+          "auroc_sd": 0.01792476158231145,
+          "auprc_mean": 0.7483742171438337,
+          "auprc_sd": 0.015520495112633098,
+          "n_seeds": 5
+        }
+      }
+    }
+  }
+}

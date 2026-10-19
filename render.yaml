@@ -14,8 +14,19 @@ services:
     dockerContext: .
     plan: starter
     region: frankfurt
-    healthCheckPath: /api/health
+    # 200 only when the frozen model AND the evidence layer are loaded.
+    healthCheckPath: /api/health/ready
     autoDeploy: false
     envVars:
       - key: DDINET_ENGINE
         value: lean
+      - key: DDINET_EXTERNAL_SOURCES
+        value: "on"
+      # Render's proxy appends the client address to X-Forwarded-For; the
+      # rate limiter keys on that right-most entry (serving/ratelimit.py).
+      - key: DDINET_PROXY_HOPS
+        value: "1"
+      # Optional but recommended: free key from open.fda.gov. Entered in the
+      # dashboard, never committed (sync: false = prompt, not stored here).
+      - key: OPENFDA_API_KEY
+        sync: false

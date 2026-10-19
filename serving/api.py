@@ -160,6 +160,13 @@ app = FastAPI(
     ),
     version="1.0.0",
 )
+from .api_v3 import install as _install_evidence, router as _v3_router  # noqa: E402
+from .ratelimit import RateLimitMiddleware  # noqa: E402
+
+app.include_router(_v3_router)
+# Added before CORS so CORS is the outer layer: a 429 still carries the CORS
+# headers and the browser can read why it was refused. /api/v3 only.
+app.add_middleware(RateLimitMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],          # read-only, no credentials, no cookies
@@ -177,24 +184,84 @@ def get_engine():
     return _engine
 
 
+#: DDINET_ALLOW_NO_MODEL=1 lets the evidence layer (/api/v3) serve when the
+#: model artifact is absent — a development convenience. By default a missing or
+#: tampered model still stops the server, as it always has.
+ALLOW_NO_MODEL = os.environ.get("DDINET_ALLOW_NO_MODEL", "0") == "1"
+#: DDINET_REQUIRE_EVIDENCE=1 makes a missing or stale evidence artifact stop the
+#: server at startup instead of degrading /api/v3 to 503. Set in the Docker
+#: images, where the artifact is always built: a failed load there is a broken
+#: deploy and should fail the platform's health check, not serve half an API.
+REQUIRE_EVIDENCE = os.environ.get("DDINET_REQUIRE_EVIDENCE", "0") == "1"
+_model_error: str | None = None
+
+
 @app.on_event("startup")
 def _startup() -> None:
     """Load once. A request must never pay for the checkpoint or the dataset."""
-    global _engine
-    if ENGINE_MODE == "full":
-        from .engine import FrozenBioGineEngine
+    global _engine, _model_error
+    try:
+        if ENGINE_MODE == "full":
+            from .engine import FrozenBioGineEngine
 
-        _engine = FrozenBioGineEngine()
-    else:
-        from .lean import LeanEngine
+            _engine = FrozenBioGineEngine()
+        else:
+            from .lean import LeanEngine
 
-        _engine = LeanEngine()
+            _engine = LeanEngine()
+    except Exception as exc:
+        if not ALLOW_NO_MODEL:
+            raise
+        _engine, _model_error = None, f"{type(exc).__name__}: {str(exc).splitlines()[0]}"
+    _start_evidence()
+
+
+def _start_evidence() -> None:
+    """The v3 evidence layer. Independent of the model: without the model a
+    report is complete except for the score, and says so."""
+    try:
+        from .evidence.engine import EvidenceEngine
+        from .evidence.store import EvidenceStore
+
+        store = EvidenceStore.load()
+    except Exception as exc:  # artifact missing or stale: v3 answers 503, v1 unaffected
+        if REQUIRE_EVIDENCE:
+            raise
+        _install_evidence(None, f"{type(exc).__name__}: {str(exc).splitlines()[0]}")
+        return
+    _install_evidence(EvidenceEngine(store, model=_engine,
+                                     model_unavailable_reason=_model_error or "model not loaded"))
+
+
+@app.get("/api/health/ready")
+def ready():
+    """Readiness for the platform health check: 200 only when the model AND the
+    evidence layer are loaded. /api/health stays a descriptive 200 for humans
+    and for the existing site; this one is what render.yaml points at."""
+    from fastapi.responses import JSONResponse
+
+    from .api_v3 import _engine as _evidence
+
+    ok = _engine is not None and _evidence is not None
+    return JSONResponse({"ready": ok, "model_available": _engine is not None,
+                         "evidence_available": _evidence is not None},
+                        status_code=200 if ok else 503)
 
 
 @app.get("/api/health")
 def health() -> dict:
+    from .api_v3 import _engine as _evidence, _unavailable as _evidence_reason
+
+    evidence = {"evidence_available": _evidence is not None}
+    if _evidence is not None:
+        evidence["evidence_artifact_sha256"] = _evidence.store.sha256
+    else:
+        evidence["evidence_unavailable_reason"] = _evidence_reason
     if _engine is None:
-        return {"status": "loading", "model_available": False}
+        out = {"status": "model_unavailable" if _model_error else "loading", "model_available": False}
+        if _model_error:
+            out["model_unavailable_reason"] = _model_error
+        return {**out, **evidence}
     out = {
         "status": "ok",
         "model_available": True,
@@ -206,7 +273,7 @@ def health() -> dict:
     if ENGINE_MODE == "full":
         out["n_parameters"] = _engine.n_parameters
         out["startup_seconds"] = round(_engine.startup_seconds, 3)
-    return out
+    return {**out, **evidence}
 
 
 def _frozen_tag() -> str:

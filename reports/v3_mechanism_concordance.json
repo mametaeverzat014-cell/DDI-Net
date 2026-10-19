@@ -1,0 +1,96 @@
+{
+  "source": "reports/v2_final/v2_final_pair_predictions.csv @ v2-final-github-safe-2026-09-03; roles from data/mechanism_v1 (DrugBank v5.1 / ChEMBL MOA)",
+  "n_pairs": 84690,
+  "label_concordance": {
+    "config_rate_documented": 0.41407486125870824,
+    "config_rate_unlabelled": 0.15902703979218324,
+    "n_documented": 42345,
+    "n_unlabelled": 42345,
+    "caveat": "not independent: DrugBank interaction records may be derived from the same role annotations"
+  },
+  "model_concordance": {
+    "documented": {
+      "n_with_config": 17534,
+      "n_without_config": 24811,
+      "mean_score_with_config": 0.6430523074034391,
+      "mean_score_without_config": 0.6346269497674802,
+      "diff": 0.008425357635958863,
+      "diff_ci95": [
+        0.0013860227180412302,
+        0.015338599866960937
+      ],
+      "auroc_score_separates_config": 0.5057448936981718
+    },
+    "unlabelled": {
+      "n_with_config": 6734,
+      "n_without_config": 35611,
+      "mean_score_with_config": 0.2981182335945451,
+      "mean_score_without_config": 0.13694145319575582,
+      "diff": 0.16117678039878927,
+      "diff_ci95": [
+        0.15285437570841967,
+        0.1694829903873019
+      ],
+      "auroc_score_separates_config": 0.6680203493617888
+    }
+  },
+  "unlabelled_by_annotation_volume": [
+    {
+      "stratum": 0,
+      "pk_volume_range": [
+        0,
+        3
+      ],
+      "n": 8469,
+      "config_rate": 0.0027157869878379976,
+      "diff": 0.0016812171234220907,
+      "auroc": 0.4982548981251737
+    },
+    {
+      "stratum": 1,
+      "pk_volume_range": [
+        3,
+        5
+      ],
+      "n": 8469,
+      "config_rate": 0.043334514110284564,
+      "diff": 0.03992817928129086,
+      "auroc": 0.5096958600728989
+    },
+    {
+      "stratum": 2,
+      "pk_volume_range": [
+        5,
+        9
+      ],
+      "n": 8469,
+      "config_rate": 0.11866808359900814,
+      "diff": 0.0842237052063308,
+      "auroc": 0.5724270528387004
+    },
+    {
+      "stratum": 3,
+      "pk_volume_range": [
+        9,
+        14
+      ],
+      "n": 8469,
+      "config_rate": 0.2128940843074743,
+      "diff": 0.12080624494943992,
+      "auroc": 0.6165028316475574
+    },
+    {
+      "stratum": 4,
+      "pk_volume_range": [
+        14,
+        79
+      ],
+      "n": 8469,
+      "config_rate": 0.41752272995631123,
+      "diff": 0.1836466436234957,
+      "auroc": 0.6772297428070075
+    }
+  ],
+  "unlabelled_high_score_with_config": 1737,
+  "unlabelled_high_score": 5158
+}

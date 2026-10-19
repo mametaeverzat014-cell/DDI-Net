@@ -8,6 +8,29 @@ Regeneron ISEF, категория Computational Biology & Bioinformatics.
 
 ---
 
+## DDI-Net 3.0 — объяснимая аналитика взаимодействий
+
+Слой доказательств поверх замороженной модели BIO-GINE (сама модель не менялась).
+Ответ разделён на три вида утверждений, которые никогда не смешиваются:
+задокументированные записи источников (DrugBank, инструкции FDA), гипотезы о
+механизме из задокументированных ролей препаратов и исследовательский сигнал
+модели с указанием режима и измеренной точности.
+
+| Документ | Содержание |
+|---|---|
+| [`docs/DDINET_V3_REPOSITORY_AUDIT.md`](docs/DDINET_V3_REPOSITORY_AUDIT.md) | состояние репозитория до начала работ |
+| [`docs/DDINET_V3_ARCHITECTURE.md`](docs/DDINET_V3_ARCHITECTURE.md) | архитектура, источники, API, запуск, развёртывание |
+| [`docs/DDINET_V3_SCIENTIFIC_LIMITATIONS.md`](docs/DDINET_V3_SCIENTIFIC_LIMITATIONS.md) | что утверждения 3.0 могут и не могут значить |
+| [`docs/DDINET_V3_IMPLEMENTATION_LOG.md`](docs/DDINET_V3_IMPLEMENTATION_LOG.md) | что сделано, что нет и почему |
+| [`docs/DDINET_V3_TEST_REPORT.md`](docs/DDINET_V3_TEST_REPORT.md) | какие проверки запускались и с каким результатом |
+
+Новые измерения (только на существующих артефактах, без обучения):
+порядок препаратов в выгрузке TDC DrugBank для ряда типов записей перевёрнут
+(`reports/v3_tdc_direction_audit.md`); разброс между сидами не даёт информации
+о неопределённости сверх самой оценки (`reports/v3_seed_disagreement.md`);
+без данных о белках точность модели ниже (`reports/v3_coverage_reliability.md`);
+вклад модальностей воспроизводит замороженный анализ (`reports/v3_modality_parity.md`).
+
 ## Статус данных
 
 **Загружено 2026-08-24:** TDC DrugBank DDI (`data/raw/drugbank.tab.gz`, PyTDC 1.1.15) —

@@ -1,0 +1,138 @@
+{
+  "source": "data/raw/drugbank.tab.gz (TDC DrugBank, PyTDC 1.1.15) + data/mechanism_v1/drug_protein_edges.parquet (DrugBank v5.1 / ChEMBL MOA roles)",
+  "method": "serving/evidence/direction.py::audit",
+  "verified_threshold": 0.95,
+  "min_informative": 30,
+  "pk_types": {
+    "4": {
+      "template": "The metabolism of #Drug2 can be increased when combined with #Drug1.",
+      "required_role": "inducer",
+      "relations": [
+        "enzyme"
+      ],
+      "checkable": true,
+      "n_rows": 5011,
+      "n_informative": 3844,
+      "n_consistent": 3829,
+      "n_reversed": 15,
+      "consistency": 0.9960978147762747,
+      "status": "consistent"
+    },
+    "11": {
+      "template": "The serum concentration of the active metabolites of #Drug2 can be reduced when #Drug2 is used in combination with #Drug1 resulting in a loss in efficacy.",
+      "required_role": "inhibitor",
+      "relations": [
+        "enzyme"
+      ],
+      "checkable": true,
+      "n_rows": 312,
+      "n_informative": 131,
+      "n_consistent": 96,
+      "n_reversed": 35,
+      "consistency": 0.732824427480916,
+      "status": "unverified"
+    },
+    "47": {
+      "template": "The metabolism of #Drug2 can be decreased when combined with #Drug1.",
+      "required_role": "inhibitor",
+      "relations": [
+        "enzyme"
+      ],
+      "checkable": true,
+      "n_rows": 34360,
+      "n_informative": 20537,
+      "n_consistent": 1647,
+      "n_reversed": 18890,
+      "consistency": 0.08019671811851779,
+      "status": "unverified"
+    },
+    "65": {
+      "template": "#Drug1 may increase the excretion rate of #Drug2 which could result in a lower serum level and potentially a reduction in efficacy.",
+      "required_role": "inducer",
+      "relations": [
+        "transporter"
+      ],
+      "checkable": true,
+      "n_rows": 32,
+      "n_informative": 0,
+      "n_consistent": 0,
+      "n_reversed": 0,
+      "consistency": null,
+      "status": "unverified"
+    },
+    "72": {
+      "template": "#Drug1 may decrease the excretion rate of #Drug2 which could result in a higher serum level.",
+      "required_role": "inhibitor",
+      "relations": [
+        "transporter"
+      ],
+      "checkable": true,
+      "n_rows": 1825,
+      "n_informative": 40,
+      "n_consistent": 12,
+      "n_reversed": 28,
+      "consistency": 0.3,
+      "status": "unverified"
+    },
+    "73": {
+      "template": "The serum concentration of #Drug2 can be increased when it is combined with #Drug1.",
+      "required_role": "inhibitor",
+      "relations": [
+        "enzyme",
+        "transporter"
+      ],
+      "checkable": true,
+      "n_rows": 23779,
+      "n_informative": 12308,
+      "n_consistent": 1270,
+      "n_reversed": 11038,
+      "consistency": 0.10318492037699058,
+      "status": "unverified"
+    },
+    "75": {
+      "template": "The serum concentration of #Drug2 can be decreased when it is combined with #Drug1.",
+      "required_role": "inducer",
+      "relations": [
+        "enzyme",
+        "transporter"
+      ],
+      "checkable": true,
+      "n_rows": 9470,
+      "n_informative": 5080,
+      "n_consistent": 4926,
+      "n_reversed": 154,
+      "consistency": 0.9696850393700788,
+      "status": "consistent"
+    },
+    "77": {
+      "template": "The serum concentration of the active metabolites of #Drug2 can be increased when #Drug2 is used in combination with #Drug1.",
+      "required_role": "inducer",
+      "relations": [
+        "enzyme"
+      ],
+      "checkable": true,
+      "n_rows": 538,
+      "n_informative": 76,
+      "n_consistent": 45,
+      "n_reversed": 31,
+      "consistency": 0.5921052631578947,
+      "status": "unverified"
+    }
+  },
+  "symmetric_types": [
+    31,
+    33,
+    42,
+    49,
+    50,
+    56,
+    66
+  ],
+  "n_types": 86,
+  "n_records": 191798,
+  "records_by_status": {
+    "symmetric": 61397,
+    "consistent": 14481,
+    "unverified": 115920
+  }
+}

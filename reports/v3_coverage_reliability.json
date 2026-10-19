@@ -1,0 +1,46 @@
+{
+  "source": "reports/v2_final/v2_final_pair_predictions.csv @ v2-final-github-safe-2026-09-03",
+  "n_annotated_drugs": 1638,
+  "views": {
+    "pooled": {
+      "at_least_one_unannotated": {
+        "n_pairs": 4978,
+        "prevalence": 0.33326637203696263,
+        "auroc_mean": 0.7504442338947166,
+        "auroc_sd": 0.023303662945911758,
+        "auprc_mean": 0.6708597110821419,
+        "auprc_sd": 0.03204978910784126,
+        "n_seeds": 5
+      },
+      "both_annotated": {
+        "n_pairs": 79712,
+        "prevalence": 0.5104124849458049,
+        "auroc_mean": 0.8176889406938518,
+        "auroc_sd": 0.009571260994343847,
+        "auprc_mean": 0.8171098627685025,
+        "auprc_sd": 0.009489089749267666,
+        "n_seeds": 5
+      }
+    },
+    "S3": {
+      "at_least_one_unannotated": {
+        "n_pairs": 597,
+        "prevalence": 0.33500837520938026,
+        "auroc_mean": 0.6543828715365239,
+        "auroc_sd": 0.03741580548526296,
+        "auprc_mean": 0.5415821813216004,
+        "auprc_sd": 0.04208886152659253,
+        "n_seeds": 5
+      },
+      "both_annotated": {
+        "n_pairs": 7161,
+        "prevalence": 0.5137550621421589,
+        "auroc_mean": 0.7354349608962428,
+        "auroc_sd": 0.01792476158231145,
+        "auprc_mean": 0.7483742171438337,
+        "auprc_sd": 0.015520495112633098,
+        "n_seeds": 5
+      }
+    }
+  }
+}

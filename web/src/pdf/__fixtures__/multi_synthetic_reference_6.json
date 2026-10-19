@@ -1,0 +1,532 @@
+{
+ "_comment": "SYNTHETIC reference-set fixture. The response shape is real engine output; the reference-set records are synthetic test data, not CRESCENDDI records (CRESCENDDI is not redistributed; see docs/DATASET_AUDIT.md). Their pair-event content was chosen to coincide with interactions stated in FDA labels (fluconazole: bleeding with warfarin; simvastatin: myopathy/rhabdomyolysis with clarithromycin).",
+ "data": {
+  "report_version": "3.0",
+  "drugs": [
+   {
+    "id": "DB00682",
+    "inn": "warfarin",
+    "name_ru": "варфарин",
+    "name_ru_is_transliteration": true,
+    "groups": "approved",
+    "drug_type": "small molecule",
+    "query": null,
+    "matched_on": null
+   },
+   {
+    "id": "DB00945",
+    "inn": "acetylsalicylic acid",
+    "name_ru": "ацетилсалициловая кислота",
+    "name_ru_is_transliteration": true,
+    "groups": "approved|vet_approved",
+    "drug_type": "small molecule",
+    "query": null,
+    "matched_on": null
+   },
+   {
+    "id": "DB00196",
+    "inn": "fluconazole",
+    "name_ru": "флуконазол",
+    "name_ru_is_transliteration": true,
+    "groups": "approved|investigational",
+    "drug_type": "small molecule",
+    "query": null,
+    "matched_on": null
+   },
+   {
+    "id": "DB00641",
+    "inn": "simvastatin",
+    "name_ru": "симвастатин",
+    "name_ru_is_transliteration": true,
+    "groups": "approved",
+    "drug_type": "small molecule",
+    "query": null,
+    "matched_on": null
+   },
+   {
+    "id": "DB01211",
+    "inn": "clarithromycin",
+    "name_ru": "кларитромицин",
+    "name_ru_is_transliteration": true,
+    "groups": "approved",
+    "drug_type": "small molecule",
+    "query": null,
+    "matched_on": null
+   },
+   {
+    "id": "DB00331",
+    "inn": "metformin",
+    "name_ru": "метформин",
+    "name_ru_is_transliteration": true,
+    "groups": "approved",
+    "drug_type": "small molecule",
+    "query": null,
+    "matched_on": null
+   }
+  ],
+  "pairs": [
+   {
+    "drug_a": "DB00682",
+    "drug_b": "DB00945",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_label_documents": 0,
+    "n_reference_records": 1,
+    "n_mechanism_hypotheses": 2,
+    "calibrated_model_score": 0.7641836505184048,
+    "regime": "S3",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ],
+    "interaction_status": "documented_interaction",
+    "outcome_categories": [
+     "bleeding_coagulation"
+    ],
+    "outcome_ids": [
+     "outcome:DB00682+DB00945:bleeding_coagulation:bleeding",
+     "outcome:DB00682+DB00945:bleeding_coagulation:anticoagulant_increase"
+    ],
+    "seriousness": "documented_no_standard_severity"
+   },
+   {
+    "drug_a": "DB00682",
+    "drug_b": "DB00196",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_label_documents": 0,
+    "n_reference_records": 1,
+    "n_mechanism_hypotheses": 3,
+    "calibrated_model_score": 0.8108211344965719,
+    "regime": "S2",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ],
+    "interaction_status": "documented_interaction",
+    "outcome_categories": [
+     "bleeding_coagulation",
+     "exposure_increase"
+    ],
+    "outcome_ids": [
+     "outcome:DB00196+DB00682:bleeding_coagulation:bleeding",
+     "outcome:DB00196+DB00682:exposure_increase:serum_concentration_increase"
+    ],
+    "seriousness": "documented_no_standard_severity"
+   },
+   {
+    "drug_a": "DB00682",
+    "drug_b": "DB00641",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_label_documents": 0,
+    "n_reference_records": 0,
+    "n_mechanism_hypotheses": 4,
+    "calibrated_model_score": 0.48439914908419174,
+    "regime": "S2",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ],
+    "interaction_status": "documented_interaction",
+    "outcome_categories": [
+     "bleeding_coagulation"
+    ],
+    "outcome_ids": [
+     "outcome:DB00641+DB00682:bleeding_coagulation:anticoagulant_increase"
+    ],
+    "seriousness": "documented_no_standard_severity"
+   },
+   {
+    "drug_a": "DB00682",
+    "drug_b": "DB01211",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_label_documents": 0,
+    "n_reference_records": 1,
+    "n_mechanism_hypotheses": 2,
+    "calibrated_model_score": 0.4894444855664803,
+    "regime": "S3",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ],
+    "interaction_status": "documented_interaction",
+    "outcome_categories": [
+     "bleeding_coagulation",
+     "exposure_increase"
+    ],
+    "outcome_ids": [
+     "outcome:DB00682+DB01211:bleeding_coagulation:bleeding",
+     "outcome:DB00682+DB01211:exposure_increase:metabolism_decrease"
+    ],
+    "seriousness": "documented_no_standard_severity"
+   },
+   {
+    "drug_a": "DB00682",
+    "drug_b": "DB00331",
+    "evidence_status": "no_documented_evidence_found",
+    "n_database_records": 0,
+    "n_label_records": 0,
+    "n_label_documents": 0,
+    "n_reference_records": 0,
+    "n_mechanism_hypotheses": 0,
+    "calibrated_model_score": 0.44394229455360606,
+    "regime": "S2",
+    "training_label_seen": false,
+    "needs_review": false,
+    "review_reasons": [],
+    "interaction_status": "source_unavailable",
+    "outcome_categories": [],
+    "outcome_ids": [],
+    "seriousness": "not_applicable"
+   },
+   {
+    "drug_a": "DB00945",
+    "drug_b": "DB00196",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_label_documents": 0,
+    "n_reference_records": 0,
+    "n_mechanism_hypotheses": 2,
+    "calibrated_model_score": 0.44546109802252076,
+    "regime": "S2",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ],
+    "interaction_status": "documented_outcome_unclear",
+    "outcome_categories": [
+     "exposure_increase"
+    ],
+    "outcome_ids": [
+     "outcome:DB00196+DB00945:exposure_increase:metabolism_decrease"
+    ],
+    "seriousness": "documented_no_standard_severity"
+   },
+   {
+    "drug_a": "DB00945",
+    "drug_b": "DB00641",
+    "evidence_status": "model_signal_only",
+    "n_database_records": 0,
+    "n_label_records": 0,
+    "n_label_documents": 0,
+    "n_reference_records": 0,
+    "n_mechanism_hypotheses": 4,
+    "calibrated_model_score": 0.5459016119192227,
+    "regime": "S2",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "model_signal_without_documentation",
+     "pharmacokinetic_mechanism_hypothesis"
+    ],
+    "interaction_status": "source_unavailable",
+    "outcome_categories": [],
+    "outcome_ids": [],
+    "seriousness": "not_applicable"
+   },
+   {
+    "drug_a": "DB00945",
+    "drug_b": "DB01211",
+    "evidence_status": "model_signal_only",
+    "n_database_records": 0,
+    "n_label_records": 0,
+    "n_label_documents": 0,
+    "n_reference_records": 0,
+    "n_mechanism_hypotheses": 2,
+    "calibrated_model_score": 0.5057913508710338,
+    "regime": "S3",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "model_signal_without_documentation",
+     "pharmacokinetic_mechanism_hypothesis"
+    ],
+    "interaction_status": "source_unavailable",
+    "outcome_categories": [],
+    "outcome_ids": [],
+    "seriousness": "not_applicable"
+   },
+   {
+    "drug_a": "DB00945",
+    "drug_b": "DB00331",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_label_documents": 0,
+    "n_reference_records": 0,
+    "n_mechanism_hypotheses": 0,
+    "calibrated_model_score": 0.5444521802812233,
+    "regime": "S2",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity"
+    ],
+    "interaction_status": "documented_interaction",
+    "outcome_categories": [
+     "glucose"
+    ],
+    "outcome_ids": [
+     "outcome:DB00331+DB00945:glucose:hypoglycemic_increase"
+    ],
+    "seriousness": "documented_no_standard_severity"
+   },
+   {
+    "drug_a": "DB00196",
+    "drug_b": "DB00641",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_label_documents": 0,
+    "n_reference_records": 0,
+    "n_mechanism_hypotheses": 3,
+    "calibrated_model_score": null,
+    "regime": "S1",
+    "training_label_seen": true,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ],
+    "interaction_status": "documented_outcome_unclear",
+    "outcome_categories": [
+     "exposure_increase"
+    ],
+    "outcome_ids": [
+     "outcome:DB00196+DB00641:exposure_increase:serum_concentration_increase"
+    ],
+    "seriousness": "documented_no_standard_severity"
+   },
+   {
+    "drug_a": "DB00196",
+    "drug_b": "DB01211",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_label_documents": 0,
+    "n_reference_records": 0,
+    "n_mechanism_hypotheses": 3,
+    "calibrated_model_score": 0.9137336264872571,
+    "regime": "S2",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ],
+    "interaction_status": "documented_outcome_unclear",
+    "outcome_categories": [
+     "exposure_increase"
+    ],
+    "outcome_ids": [
+     "outcome:DB00196+DB01211:exposure_increase:metabolism_decrease"
+    ],
+    "seriousness": "documented_no_standard_severity"
+   },
+   {
+    "drug_a": "DB00196",
+    "drug_b": "DB00331",
+    "evidence_status": "no_documented_evidence_found",
+    "n_database_records": 0,
+    "n_label_records": 0,
+    "n_label_documents": 0,
+    "n_reference_records": 0,
+    "n_mechanism_hypotheses": 0,
+    "calibrated_model_score": 0.29359325198856107,
+    "regime": "S1",
+    "training_label_seen": false,
+    "needs_review": false,
+    "review_reasons": [],
+    "interaction_status": "source_unavailable",
+    "outcome_categories": [],
+    "outcome_ids": [],
+    "seriousness": "not_applicable"
+   },
+   {
+    "drug_a": "DB00641",
+    "drug_b": "DB01211",
+    "evidence_status": "documented_no_severity",
+    "n_database_records": 1,
+    "n_label_records": 0,
+    "n_label_documents": 0,
+    "n_reference_records": 2,
+    "n_mechanism_hypotheses": 5,
+    "calibrated_model_score": 0.8411772377234219,
+    "regime": "S2",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "documented:documented_no_severity",
+     "pharmacokinetic_mechanism_hypothesis"
+    ],
+    "interaction_status": "documented_interaction",
+    "outcome_categories": [
+     "exposure_increase",
+     "muscle"
+    ],
+    "outcome_ids": [
+     "outcome:DB00641+DB01211:muscle:myopathy_rhabdomyolysis",
+     "outcome:DB00641+DB01211:exposure_increase:serum_concentration_increase"
+    ],
+    "seriousness": "documented_no_standard_severity"
+   },
+   {
+    "drug_a": "DB00641",
+    "drug_b": "DB00331",
+    "evidence_status": "model_signal_only",
+    "n_database_records": 0,
+    "n_label_records": 0,
+    "n_label_documents": 0,
+    "n_reference_records": 0,
+    "n_mechanism_hypotheses": 0,
+    "calibrated_model_score": 0.506449805823384,
+    "regime": "S1",
+    "training_label_seen": false,
+    "needs_review": true,
+    "review_reasons": [
+     "model_signal_without_documentation"
+    ],
+    "interaction_status": "source_unavailable",
+    "outcome_categories": [],
+    "outcome_ids": [],
+    "seriousness": "not_applicable"
+   },
+   {
+    "drug_a": "DB01211",
+    "drug_b": "DB00331",
+    "evidence_status": "no_documented_evidence_found",
+    "n_database_records": 0,
+    "n_label_records": 0,
+    "n_label_documents": 0,
+    "n_reference_records": 0,
+    "n_mechanism_hypotheses": 0,
+    "calibrated_model_score": 0.4965563162607425,
+    "regime": "S2",
+    "training_label_seen": false,
+    "needs_review": false,
+    "review_reasons": [],
+    "interaction_status": "source_unavailable",
+    "outcome_categories": [],
+    "outcome_ids": [],
+    "seriousness": "not_applicable"
+   }
+  ],
+  "sources_checked": [
+   {
+    "source": "drugbank_tdc",
+    "status": "ok",
+    "detail": "Local DrugBank export (TDC)."
+   },
+   {
+    "source": "openfda_label",
+    "status": "unavailable",
+    "detail": "openfda_label: recently unreachable; retrying after a cooldown"
+   }
+  ],
+  "scope_note": {
+   "ru": "Каждая пара рассматривается отдельно. Попарные данные ничего не говорят о том, как ведут себя три и более препарата вместе: такая модель не построена и не проверена.",
+   "en": "Each pair is examined on its own. Pairwise findings say nothing about how three or more drugs behave together: no such model has been built or validated."
+  },
+  "disclaimer": {
+   "ru": "Это исследовательский прототип, а не медицинское изделие. Он не заменяет врача или фармацевта и не может сказать, безопасно ли сочетание лекарств для конкретного человека.",
+   "en": "This is a research prototype, not a medical device. It does not replace a doctor or pharmacist and cannot say whether a combination is safe for a particular person."
+  },
+  "generated_at": "2026-10-16T05:17:30+00:00",
+  "shared_outcome_categories": {
+   "bleeding_coagulation": [
+    [
+     "DB00682",
+     "DB00945"
+    ],
+    [
+     "DB00682",
+     "DB00196"
+    ],
+    [
+     "DB00682",
+     "DB00641"
+    ],
+    [
+     "DB00682",
+     "DB01211"
+    ]
+   ],
+   "exposure_increase": [
+    [
+     "DB00682",
+     "DB00196"
+    ],
+    [
+     "DB00682",
+     "DB01211"
+    ],
+    [
+     "DB00945",
+     "DB00196"
+    ],
+    [
+     "DB00196",
+     "DB00641"
+    ],
+    [
+     "DB00196",
+     "DB01211"
+    ],
+    [
+     "DB00641",
+     "DB01211"
+    ]
+   ]
+  },
+  "outcome_categories": {
+   "bleeding_coagulation": {
+    "ru": "Кровотечения и свёртываемость крови",
+    "en": "Bleeding and blood clotting"
+   },
+   "exposure_increase": {
+    "ru": "Повышение содержания препарата в организме",
+    "en": "Increased drug exposure"
+   },
+   "glucose": {
+    "ru": "Уровень глюкозы",
+    "en": "Blood glucose"
+   },
+   "muscle": {
+    "ru": "Мышцы (миопатия, рабдомиолиз)",
+    "en": "Muscle (myopathy, rhabdomyolysis)"
+   }
+  }
+ },
+ "meta": {
+  "endpoint": "http://127.0.0.1:8765/api/v3/multi",
+  "request": {
+   "drugs": [
+    "DB00682",
+    "DB00945",
+    "DB00196",
+    "DB00641",
+    "DB01211",
+    "DB00331"
+   ],
+   "include_labels": true
+  },
+  "receivedAt": "2026-10-16T05:17:30.000Z"
+ }
+}
