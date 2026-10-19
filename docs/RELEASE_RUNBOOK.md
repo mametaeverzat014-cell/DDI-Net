@@ -43,17 +43,28 @@
 6. Before deploying, note the currently live deploy in **Events**. That is the backend rollback
    target.
 
-**Step 2 — YOU: verify the backend** from your own computer:
+**Step 2 — YOU: verify the backend, in the browser only.** This uses
+`.github/workflows/release-smoke.yml`, which runs `scripts/release/smoke_api.py` on a
+GitHub-hosted runner.
+1. Open https://github.com/mametaeverzat014-cell/DDI-Net/actions/workflows/release-smoke.yml.
+2. Open the latest run for **PR #1** (branch `release/ddinet-v3`). If the backend was deployed
+   after that run, click **Re-run all jobs**.
+   - The workflow is not on the default branch yet, so GitHub does not show a **Run workflow**
+     button. Re-running the PR run is the browser route.
+   - After the release is merged, **Run workflow** appears, with an `api_url` field.
+3. Wait for the green tick. Open the run and read the **Summary** table, or the job log
+   **Run smoke checks**: one PASS/FAIL line per check, and a final `N/N checks passed`.
+4. Read the result:
+   - **Pass:** every check PASS, job green.
+   - **Fail:** any FAIL turns the job red. Do not continue, and send me the failing lines.
+   - With openFDA reachable from Render, the warfarin + fluconazole line may report a
+     **documented clinical outcome with citations** instead of the "no specific outcome"
+     sentence. Both pass.
+   - The workflow is read-only. It never deploys, merges or changes any setting, and response
+     bodies are hidden in the log.
 
-```bash
-git fetch origin release/ddinet-v3 && git checkout origin/release/ddinet-v3 -- scripts/release/smoke_api.py
-python3 scripts/release/smoke_api.py https://ddinet-api.onrender.com
-```
-
-Every line must be `PASS`, and the last line must read `N/N checks passed`.
-- With openFDA reachable from Render, the warfarin + fluconazole line may report a **documented
-  clinical outcome with citations** instead of the "no specific outcome" sentence. Both pass.
-- If anything fails, **stop** and send me the output.
+If you have a terminal after all, `python3 scripts/release/smoke_api.py https://ddinet-api.onrender.com`
+does the same.
 
 **Step 3 — YOU: set the frontend variable.** In Vercel, open project `ddi-net` → **Settings →
 Environment Variables**:
